@@ -121,12 +121,19 @@ function checkMembers(root, api, problems) {
     for (const one of allMembers(api)) {
         const m = one.m;
 
-        /* **A static is left out here on purpose.** A native one belongs to a
-         * C `JS_SetPropertyStr` run and is checked where the C is, in
-         * `bintana`; the ones a class of the prelude hangs on itself
-         * (`Widget.TypeName`) were never a row this check asked for. */
-        if (m.Kind === "Static")
+        /* **A static is written `Widget.New(type)`**, and only a native one:
+         * a class of the prelude hangs statics of its own (`Widget.TypeName`)
+         * that were never a row this check asked for. */
+        if (m.Kind === "Static") {
+            if (!m.Native)
+                continue;
+            const row = new Regex("^\\|\\s*`" + Regex.Escape(one.owner + "." +
+                                  m.Name) + "[`(]", { Multiline: true });
+            if (!row.IsMatch(text))
+                problems.push(`controls.md: ${one.owner}.${m.Name} has no row`);
+            counted++;
             continue;
+        }
         if (!memberRow(m.Name, m.Kind).IsMatch(text))
             problems.push(`controls.md: ${one.owner}.${m.Name} has no row`);
         counted++;
