@@ -49,4 +49,4 @@ this tree reads a stopwatch on each tick rather than counting the ticks.
 ## See also
 
 [`Timer`](Timer.md) · [`Time`](Time.md) ·
-[`examples/stopwatch`](../../../examples/stopwatch)
+[`examples/stopwatch`](https://github.com/getbintana/bintana/tree/main/examples/stopwatch)

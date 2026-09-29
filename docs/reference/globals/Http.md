@@ -229,7 +229,7 @@ Sent as the body of a `Post`/`Put`/`Patch`, which sets **its own**
 ## See also
 
 [`Bytes`](Bytes.md) · [`Logger`](Logger.md) ·
-[`examples/http`](../../../examples/http) ·
-[`examples/jokes`](../../../examples/jokes) ·
-[`examples/session`](../../../examples/session) ·
-[`examples/serve`](../../../examples/serve)
+[`examples/http`](https://github.com/getbintana/bintana/tree/main/examples/http) ·
+[`examples/jokes`](https://github.com/getbintana/bintana/tree/main/examples/jokes) ·
+[`examples/session`](https://github.com/getbintana/bintana/tree/main/examples/session) ·
+[`examples/serve`](https://github.com/getbintana/bintana/tree/main/examples/serve)

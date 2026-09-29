@@ -133,4 +133,4 @@ rows.sort((a, b) => Locale.Compare(a.Name, b.Name));
 
 [`Decimal`](Decimal.md) · [`Day`](Day.md) ·
 [resources.md](../../resources.md), for catalogues and what goes in one ·
-[`examples/i18n`](../../../examples/i18n)
+[`examples/i18n`](https://github.com/getbintana/bintana/tree/main/examples/i18n)

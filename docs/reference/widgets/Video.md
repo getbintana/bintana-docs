@@ -73,7 +73,7 @@ It is a `Widget` and a control like any other, so everything on
 
 There is no *position changed* event: a slider under a clip is a
 [`Timer.Every`](../../llm/library.md#timer) reading `Position`, which is what
-[`examples/video`](../../../examples/video) does, and it is the shape that does
+[`examples/video`](https://github.com/getbintana/bintana/tree/main/examples/video) does, and it is the shape that does
 not fight the pipeline.
 
 ## Sound
@@ -153,4 +153,4 @@ on the text of a message is how that breaks in the next language.
 
 [`Picture`](Picture.md) · [`AspectFrame`](AspectFrame.md) ·
 [`AudioPlayer`](../../llm/library.md#audioplayer) ·
-[`examples/video`](../../../examples/video)
+[`examples/video`](https://github.com/getbintana/bintana/tree/main/examples/video)

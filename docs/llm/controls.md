@@ -51,7 +51,7 @@ Widget                            (abstract)
 `Widget`, `Control`, `Container` and `Editor` cannot be instantiated. `Form` and `Component`
 are what a project's own classes extend.
 
-[`examples/factory`](../../examples/factory) is this whole page as a window: a
+[`examples/factory`](https://github.com/getbintana/bintana/tree/main/examples/factory) is this whole page as a window: a
 tab per family, each class shown in a few of the configurations it is used in.
 
 ### What there is, and what this build can run
@@ -1282,7 +1282,7 @@ view never grows, and which of the two happens is decided by how much there is
 rather than declared in advance. Unarranged, the same declarations leave the
 grid at what is in it — **180x130** for the one tile, **366x266** for the four —
 with the rest of the view empty.
-[`examples/kanban`](../../examples/kanban) is both ways round in one window: a
+[`examples/kanban`](https://github.com/getbintana/bintana/tree/main/examples/kanban) is both ways round in one window: a
 row of columns that scrolls sideways, each column a scroller that fills.
 
 **An axis that may not scroll asks its parent for room instead.** `Scrollbars`
@@ -1336,7 +1336,7 @@ drawing surface: there is no coordinate to give a layer, so a hand-written
 saved. The property grid says so on the row.
 
 A message over the content instead of in front of it, which is what
-[`examples/notify`](../../examples/notify) is:
+[`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify) is:
 
 ```json
 { "type": "Overlay", "name": "Stage", "properties": { "Expand": true },
@@ -1518,6 +1518,7 @@ The window. See [forms.md](forms.md#form-the-window) for the behaviour a table c
 
 | Member | |
 |---|---|
+| `Actions` (ro) | the commands as the `.form` declared them — the spec, not the live actions; `[]` when there are none |
 | `Controls` (ro) | every child bound to the form by name, in creation order. `Children` is the containment tree instead, one level deep |
 | `Menus` (ro) | the menu spec as declared. It cannot be read back from GTK, which is why the spec is kept; `[]` when there are none |
 | `Serialize()` | the whole file, keyed by class |
@@ -1556,5 +1557,5 @@ Do not file an issue for these; the argument is written down and settled.
   or refiltered it is the wrong row's tick — which is the single most common bug
   in every toolkit that offers one. Keep a `Set` of what is on, show it when you
   build the row, and update it in the button's `Click`. Then filtering, sorting
-  and rebuilding cannot lie. [`examples/todo`](../../examples/todo) is the shape
+  and rebuilding cannot lie. [`examples/todo`](https://github.com/getbintana/bintana/tree/main/examples/todo) is the shape
   at its smallest.

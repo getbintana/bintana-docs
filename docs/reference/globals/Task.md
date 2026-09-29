@@ -78,7 +78,7 @@ throwing line callback.
 
 A stopped or stale answer still arrives, so the application tells live answers
 from dead ones where they land — a generation counter, as in
-[`examples/usage`](../../../examples/usage). A handler may be assigned any
+[`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage). A handler may be assigned any
 time before the job ends.
 
 ## Reporting

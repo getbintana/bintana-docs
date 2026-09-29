@@ -102,4 +102,4 @@ to go somewhere; this decides, so that the pieces and the total agree.
 [`Locale`](Locale.md), which writes one for the user ·
 [`Record`](Record.md), whose `Field.Decimal` keeps the type through a form ·
 [`Database`](Database.md), which stores the digits ·
-[`examples/quote`](../../../examples/quote)
+[`examples/quote`](https://github.com/getbintana/bintana/tree/main/examples/quote)

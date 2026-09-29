@@ -76,4 +76,4 @@ what should show.
 ## See also
 
 [`Calendar`](Calendar.md) · [`Day`](../../llm/library.md#day) ·
-[`SpinBox`](SpinBox.md) · [`examples/agenda`](../../../examples/agenda)
+[`SpinBox`](SpinBox.md) · [`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda)

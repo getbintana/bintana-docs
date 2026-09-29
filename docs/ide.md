@@ -345,7 +345,7 @@ translation of it would have nowhere to come from.
 
 It found a runtime bug that had nothing to do with about boxes and everything to
 do with being the last window alive — see *A finalised widget is still reachable
-from GTK* in [`architecture.md`](architecture.md).
+from GTK* in [`architecture.md`](https://github.com/getbintana/bintana/blob/main/docs/architecture.md).
 
 ## Where files go
 
@@ -994,7 +994,7 @@ in the file, which is most of what one wants from a local. Going further needs a
 [runtime-api.md](runtime-api.md#the-one-thing-eval-is-still-missing-from-and-the-shape-its-answer-has-to-take).
 
 **How far that limit could be pushed, and whether pushing it needs an analyser,
-is measured in [plans/completion-plan.md](plans/completion-plan.md)** -- and the measurement
+is measured in [plans/completion-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/completion-plan.md)** -- and the measurement
 says the blocker is a *declaration* and not an analyser. TypeScript, handed a
 complete `.d.ts`, resolves **exactly** what a table lookup resolves: `this.ide.`
 is `any` for it too, because a constructor parameter is not written down
@@ -1357,7 +1357,7 @@ reason to build them. The arguments a project needs in order to start were the
 second, and two was.
 
 What it cost to make possible, and why a widget's own properties are now exactly
-its properties, is [`plans/strict-plan.md`](plans/strict-plan.md).
+its properties, is [`plans/strict-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/strict-plan.md).
 
 **The output pane is a log view, not a console**, and that is the whole of what
 changed here. It ran in a `Terminal` — a real pty — for a consumer that never
@@ -1959,7 +1959,7 @@ apart at the first change and everything below it is compared against the wrong
 line.
 
 **The diff is git's own**, parsed out of the unified output that is already in
-the tab beside it ([`Ide.Diff`](../ide/modules/Diff.js)). Nothing here computes
+the tab beside it ([`Ide.Diff`](https://github.com/getbintana/bintana/blob/main/ide/modules/Diff.js)). Nothing here computes
 one: a second opinion about the same two files would be a second opinion, and an
 expensive one -- the pair can be four thousand lines and a table of that is
 sixteen million cells. Where git offers no diff at all -- a file it has never been
@@ -2104,7 +2104,7 @@ the IDE already had.
 
 ### What git does not do
 
-The plan is [plans/git-plan.md](plans/git-plan.md), and all seven of its stages
+The plan is [plans/git-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/git-plan.md), and all seven of its stages
 are here: status, the viewer, staging and committing, branches and the history,
 and the remotes. `git init` is here because a project without a repository is the
 one case where a menu full of disabled items is a dead end. What is deliberately
@@ -2123,7 +2123,7 @@ before it is staged.
 said. What does the stopping is the runtime (`bintana --debug`, and
 `runtime/src/bta_debug.c`); what is here talks to it and draws what it says.
 The design, the measurements and what was refused are in
-[plans/debug-plan.md](plans/debug-plan.md).
+[plans/debug-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/debug-plan.md).
 
 | | |
 |---|---|
@@ -2560,7 +2560,7 @@ on the menu for the same reason, since clicking the row already did it.
 ## project.json, as a record
 
 Every mutation of the manifest goes through one funnel, `withConfig`, which reads
-the file as a [`ProjectFile`](../ide/modules/ProjectFile.js) — a `Record` — hands it to a
+the file as a [`ProjectFile`](https://github.com/getbintana/bintana/blob/main/ide/modules/ProjectFile.js) — a `Record` — hands it to a
 mutator and writes it back. Before that, what the file was *allowed* to say lived
 in the mutators, one `Array.isArray(config.sources)` at a time, and what was wrong
 with a broken one was discovered by whoever tripped over it.
@@ -2660,7 +2660,7 @@ one sentence here.
   with the project's own name suggested and the parent folder to start in.
 - `write(path)` does it. Everything worth asserting is on this side, because a
   file chooser is a surface nothing in JS can close — see
-  [testing](testing.md#what-the-tests-cannot-see). `tests/ide` puts a double in
+  [testing](https://github.com/getbintana/bintana/blob/main/docs/testing.md#what-the-tests-cannot-see). `tests/ide` puts a double in
   `Dialog.SaveFile`, presses the real menu item and reads back the arguments,
   which is how the item is driven without a window being left open.
 
@@ -2760,7 +2760,7 @@ is — so *Update* moves it to the new name and *Uninstall* removes it.
 **And it is the Linux desktop's for now.** A `.desktop` file is the freedesktop
 format and nothing on Windows reads one; a Start-menu shortcut is the equivalent
 there, and it is the packaging item in
-[the portability plan](plans/portability-plan.md#out-of-scope-here-and-why). The
+[the portability plan](https://github.com/getbintana/bintana/blob/main/docs/plans/portability-plan.md#out-of-scope-here-and-why). The
 runtime's `Desktop.Entries` compiles and answers on Windows because the XDG
 directories do — what is missing is a format to write.
 
@@ -3783,7 +3783,7 @@ Four things make it safe, and each one is a place something could have leaked:
 - **A list that holds controls of its own is refused.** It has nothing to preview
   and clearing it to draw a drawing would delete somebody's work.
 
-[`examples/contacts`](../examples/contacts) is the one project here that
+[`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts) is the one project here that
 declares one. Converting it is the argument in miniature: `row(contact)` was
 forty lines building a `Panel` and three `Label`s, nothing else could use it, and
 the designer drew the list it filled as an empty box. As a `Contact` component
@@ -3821,7 +3821,7 @@ and a click that appears to do nothing is worse than either, which is what the
 status line is for.
 
 The tree's menu acts on the file that is *open*, for the reason in
-[AGENTS.md](../AGENTS.md) about right clicks not moving a selection. A catalogue
+[AGENTS.md](https://github.com/getbintana/bintana/blob/main/AGENTS.md) about right clicks not moving a selection. A catalogue
 is never open, so it has a word of its own — `ide.selectedCatalogue`, set by the
 left button, released the moment anything else is selected — which keeps *select
 then ask* true without letting the item act on a row nobody pointed at.

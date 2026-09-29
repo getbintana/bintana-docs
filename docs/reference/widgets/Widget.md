@@ -350,7 +350,7 @@ both of them.** Measured on a column scrolled down: the drop arrived at
 in it `55, 142, 229`, so adding `ScrollY` would count the scroll twice.
 A control that is hidden measures **0x0 at the origin** rather than keeping its
 old rectangle, so anything comparing against children has to skip what is not
-`Visible`. [`examples/kanban`](../../../examples/kanban) places a dropped card
+`Visible`. [`examples/kanban`](https://github.com/getbintana/bintana/tree/main/examples/kanban) places a dropped card
 from exactly that comparison.
 
 ## The mouse and the keyboard

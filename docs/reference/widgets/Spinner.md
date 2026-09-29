@@ -31,7 +31,7 @@ after an error is a program that looks like it is still trying.
 
 **Over the thing that is loading, not beside it**, is usually the right place: an
 [`Overlay`](Overlay.md) with the spinner as its second layer, which is what
-[`examples/notify`](../../../examples/notify) shows.
+[`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify) shows.
 
 ## When it is not a `Spinner`
 
@@ -54,4 +54,4 @@ after an error is a program that looks like it is still trying.
 ## See also
 
 [`ProgressBar`](ProgressBar.md) · [`Overlay`](Overlay.md) ·
-[`examples/notify`](../../../examples/notify)
+[`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify)

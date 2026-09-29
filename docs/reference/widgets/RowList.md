@@ -97,7 +97,7 @@ addRow(name, info) {
 }
 ```
 
-That is [`examples/files`](../../../examples/files), shortened. Note the order:
+That is [`examples/files`](https://github.com/getbintana/bintana/tree/main/examples/files), shortened. Note the order:
 **the row goes into the list before it is filled**, which is what keeps a half
 built row from being measured.
 
@@ -201,5 +201,5 @@ list comes to show thirteen rows while claiming twelve.
 ## See also
 
 [`ListBox`](ListBox.md) · [`TableView`](TableView.md) ·
-[`Container`](Container.md) · [`examples/files`](../../../examples/files) ·
-[`examples/contacts`](../../../examples/contacts)
+[`Container`](Container.md) · [`examples/files`](https://github.com/getbintana/bintana/tree/main/examples/files) ·
+[`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts)

@@ -49,7 +49,7 @@ says what kind of program it is:
 
 *Fit to window* in a viewer is therefore not a mode this control has: it is a
 zoom worked out from the room — `SourceWidth` and the scroller's size — which is
-what [`examples/viewer`](../../../examples/viewer) does and why `SourceWidth` is
+what [`examples/viewer`](https://github.com/getbintana/bintana/tree/main/examples/viewer) does and why `SourceWidth` is
 published at all.
 
 ## What goes wrong
@@ -74,4 +74,4 @@ published at all.
 ## See also
 
 [`Image`](Image.md) · [`Scroller`](Scroller.md) · [`Video`](Video.md) ·
-[`examples/viewer`](../../../examples/viewer)
+[`examples/viewer`](https://github.com/getbintana/bintana/tree/main/examples/viewer)

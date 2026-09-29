@@ -37,7 +37,7 @@ A message over the content rather than in front of it:
 
 The list is the base because it is first; the panel floats at the bottom centre
 and is shown when there is something to say. That is
-[`examples/notify`](../../../examples/notify).
+[`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify).
 
 ## What goes wrong
 
@@ -61,4 +61,4 @@ and is shown when there is something to say. That is
 ## See also
 
 [`Container`](Container.md) · [`AspectFrame`](AspectFrame.md) ·
-[`Spinner`](Spinner.md) · [`examples/notify`](../../../examples/notify)
+[`Spinner`](Spinner.md) · [`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify)

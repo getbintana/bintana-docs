@@ -39,7 +39,7 @@ that directory, and `Application.Directory` is that directory. So listing
 found, every `this.<control>` is `undefined`, and **nothing says so**, because a
 form with no `.form` is legal and built from code. A second project that drives an
 application has to bring the `.form` and the data files with it, by copy or by
-symlink. See [validation.md](validation.md#2-make-it-check-itself).
+symlink. See [validation.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/validation.md#2-make-it-check-itself).
 
 ### A tool with no window
 
@@ -678,12 +678,12 @@ The desktop's theme already declares plenty, so a project is dressed before
 `caption-heading`, `dim-label`, `monospace`, `frame`, `view`, `sidebar`,
 `toolbar`, `linked`, `boxed-list`, `navigation-sidebar`. A class the theme does
 not declare is not an error — it simply does nothing, so check with
-[`tests/styles.sh`](validation.md#5-style-classes) rather than copying a name from
+[`tests/styles.sh`](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/validation.md#5-style-classes) rather than copying a name from
 elsewhere.
 
 A toolbar is a `Panel` with `Arrangement: "Horizontal"` and `Style: "toolbar"`,
 holding `flat` buttons. There is no `ToolBar`, `ToolButton` or `MenuButton`
-class and none is coming; see [issues.md](issues.md#already-decided).
+class and none is coming; see [issues.md](https://github.com/getbintana/bintana/blob/main/docs/llm/issues.md#already-decided).
 
 `Background`, `Foreground` and `Font` are the exception, not the norm: they
 dress one control by hand and win over the stylesheet. Use them for a colour the
@@ -712,7 +712,7 @@ recoloured by GTK to follow the text colour — for that, the drawing must be
 **fills**, since the recolouring forces `fill` and a `stroke` keeps its own
 colour.
 
-Check every icon you declared with [`tests/icons.sh`](validation.md#4-icons)
+Check every icon you declared with [`tests/icons.sh`](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/validation.md#4-icons)
 before handing the work over. Four of nine "universal" names failed on the
 machine this was written on.
 

@@ -102,4 +102,4 @@ a widget: it has no name on a form for an event to be dispatched to.
 ## See also
 
 [`Video`](../widgets/Video.md) · [`Timer`](Timer.md) ·
-[`examples/video`](../../../examples/video)
+[`examples/video`](https://github.com/getbintana/bintana/tree/main/examples/video)

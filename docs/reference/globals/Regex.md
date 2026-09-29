@@ -57,7 +57,7 @@ function back. `/x/g` is syntax, so a literal still works and is the right way t
 write a pattern that does not change; a pattern **built from a string** has one
 spelling, and it is this one. `rad.js` captured the constructor before the name
 went, which is what `Regex` is built on — see
-[language.md](../../llm/language.md#what-is-not-installed).
+[language.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md#what-is-not-installed).
 
 ## Replacing
 

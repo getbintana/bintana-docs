@@ -76,4 +76,4 @@ argument.
 
 [`Time`](Time.md) · [`Locale`](Locale.md) ·
 [`DatePicker`](../widgets/DatePicker.md) · [`Calendar`](../widgets/Calendar.md) ·
-[`examples/agenda`](../../../examples/agenda)
+[`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda)

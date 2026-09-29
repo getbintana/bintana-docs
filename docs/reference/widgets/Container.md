@@ -56,7 +56,7 @@ back to `Fixed` restores their coordinates.
 ### Which model a form should use
 
 This was settled by measuring rather than by taste:
-[`examples/clients`](../../../examples/clients) was drawn both ways.
+[`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients) was drawn both ways.
 
 **In coordinates** it is 27 controls and **117 numbers, 54 of them an X or a Y**
 — and it broke on a resize, because on a drawing surface the default is *stay
@@ -221,5 +221,5 @@ them is a question about the widget tree that no program can answer for itself.
 
 [`Widget`](Widget.md) · [`Grid`](Grid.md) · [`Split`](Split.md) ·
 [`Notebook`](Notebook.md) · [`Scroller`](Scroller.md) ·
-[`examples/clients`](../../../examples/clients), the window that was drawn both
+[`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients), the window that was drawn both
 ways · [forms.md](../../llm/forms.md), for what a `.form` declares

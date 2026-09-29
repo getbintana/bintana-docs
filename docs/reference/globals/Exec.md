@@ -145,4 +145,4 @@ application was started from.
 ## See also
 
 [`Terminal`](../widgets/Terminal.md) · [`TextEditor`](../widgets/TextEditor.md) ·
-[`Application`](Application.md) · [`examples/usage`](../../../examples/usage)
+[`Application`](Application.md) · [`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage)

@@ -526,7 +526,7 @@ threads saving one path cannot tear it; what concurrency costs here is the
 lost update (read, change, write from two threads and the first change is
 gone), and that is a *sequence* only the program can mark — `Lock.Hold(name,
 fn)`, not a guard the runtime can put on a call.
-[`examples/usage`](../../examples/usage) is the whole of it running: N tasks
+[`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage) is the whole of it running: N tasks
 sizing N subtrees, one window adding up.
 
 ## Lock
@@ -793,7 +793,7 @@ than answering the replacement character. And `${b}` is deliberately
 noise that reads as if it had worked.
 
 `ArrayBuffer` and the typed arrays stay off the language — see
-[language.md](language.md). This is one class with the operations an application
+[language.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md). This is one class with the operations an application
 performs on a file, and no view/buffer distinction to learn.
 
 ## Decimal
@@ -1021,7 +1021,7 @@ function is handed the `Match`.
 is not in the language any more, and `Unicode` is where the `u` went — without
 it `\p{L}` compiles and matches the literal text `p{L}`. A fixed pattern is still
 well written as a literal (`/x/g` is syntax and needs no global); see
-[language.md](language.md#what-is-not-installed).
+[language.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md#what-is-not-installed).
 
 **And what a person types into a find bar is a different engine.** An editor's
 `Search(text, { Regex: true })` is GtkSourceView's own, which is PCRE2 (GRegex):
@@ -1348,7 +1348,7 @@ clients.Save(c);                                      // UPDATE, by the key
   safe path.
 - **Not built**: a detail saved with its master (a `Field.List` is refused), a
   cursor for a grid, and a `.conn` project resource. If one of those blocks the
-  application you were asked for, that is an [ISSUE](issues.md).
+  application you were asked for, that is an [ISSUE](https://github.com/getbintana/bintana/blob/main/docs/llm/issues.md).
 - No lazy loading, no identity map, no session. A detail is loaded with its
   master or not at all.
 - sqlite is optional at build time; without it `Database.Sqlite` says which

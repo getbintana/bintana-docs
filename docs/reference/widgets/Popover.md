@@ -60,7 +60,7 @@ because there is one row per task — and `tests/widgets` asserts the round trip
 itself: it opens, raises `Open`, closes and raises `Close`, and the content
 goes in and out again.
 
-[`examples/composites`](../../../examples/composites) has the other two shapes
+[`examples/composites`](https://github.com/getbintana/bintana/tree/main/examples/composites) has the other two shapes
 a popover comes in, and the flag that separates them: a suggestion list under a
 field keeps `Autohide: false` because the keyboard has to stay in the entry, so
 the program closes it; a select opens with GTK's own menu behaviour and lets

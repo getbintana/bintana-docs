@@ -105,7 +105,7 @@ FileTree_Activate() { this.open(this.byKey[this.FileTree.Key]); }
 ```
 
 That is the shape of the IDE's own project tree
-([`ide/modules/ProjectTree.js`](../../../ide/modules/ProjectTree.js)), which is
+([`ide/modules/ProjectTree.js`](https://github.com/getbintana/bintana/blob/main/ide/modules/ProjectTree.js)), which is
 the largest tree in this repository and worth reading: it keys forms by
 `form:<name>`, categories by `cat:<name>` and folders by `dir:<path>` so that a
 key can never collide with a file's, and keeps a `byKey` map from key to whatever
@@ -225,6 +225,6 @@ every node itself on every `Add`; what that cost is in
 ## See also
 
 [`TableView`](TableView.md) · [`ListBox`](ListBox.md) ·
-[`ide/modules/ProjectTree.js`](../../../ide/modules/ProjectTree.js) ·
-[`examples/table`](../../../examples/table), whose third page is the same
+[`ide/modules/ProjectTree.js`](https://github.com/getbintana/bintana/blob/main/ide/modules/ProjectTree.js) ·
+[`examples/table`](https://github.com/getbintana/bintana/tree/main/examples/table), whose third page is the same
 hierarchy with columns

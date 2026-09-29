@@ -92,7 +92,7 @@ wanted.
 This is the pair other toolkits spell as two words — WinForms'
 `TableLayoutPanel` with `AutoScroll`, CSS `overflow: auto` around a grid — and
 it is worth knowing before reaching for a size read off `Bounds()` on every
-resize, which is what it replaces. [`examples/kanban`](../../../examples/kanban)
+resize, which is what it replaces. [`examples/kanban`](https://github.com/getbintana/bintana/tree/main/examples/kanban)
 uses both directions in one window: the board is a `Scroller` arranged
 `Horizontal` whose columns are as tall as it is and scroll sideways when there
 are more than fit, and each column is a `Scroller` arranged `Vertical` whose

@@ -126,4 +126,4 @@ something a mapper should make silently.
 ## See also
 
 [`Record`](Record.md) · [`Decimal`](Decimal.md) ·
-[`examples/clients`](../../../examples/clients) · [../../plans/data-plan.md](../../plans/data-plan.md)
+[`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients) · [../../plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md)

@@ -68,4 +68,4 @@ picks the nearest size it has.
 ## See also
 
 [`Picture`](Picture.md) · [`Button`](Button.md) ·
-[`DrawingArea`](DrawingArea.md) · [`examples/files`](../../../examples/files)
+[`DrawingArea`](DrawingArea.md) · [`examples/files`](https://github.com/getbintana/bintana/tree/main/examples/files)

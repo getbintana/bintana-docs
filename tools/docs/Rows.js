@@ -1,32 +1,101 @@
 /*
- * The rows of the documentation, written from the code.
+ * The rows of the documentation, written from `api.json`.
  *
  * A member says what it is for once, beside itself -- the lines after its
- * signature comment in the C -- and the runtime publishes it: `Widget.Members`
- * as `Doc`, `Widget.EventDoc` for an event. This is the half that puts it in
- * front of a reader: every table row of `docs/llm` and `docs/reference` that
- * names a member gets that member's description in its text cell -- the whole
- * of it in a two-column table, its first sentence in an index row that links
- * to a section. The tables themselves -- which members, in what order, under
- * which heading -- and all the prose around them are written by hand, and stay
- * so: what a table is *about* is an editorial choice, and what a member *does*
- * is not.
+ * signature comment in the C, the JSDoc above it in JavaScript -- and the
+ * runtime publishes it in `api.json`, which is the one file this repository
+ * knows about the code: every widget class with what it declares and from
+ * which class, every global with public members, the types no global holds,
+ * and the libraries' classes with their events.
  *
- * Shared by `tools/docs`, which writes the result, and `tests/api`, which
- * fails when a page is not what this would write -- so a description changed
- * in the C and not regenerated is caught the way an undocumented member is.
+ * This is the half that puts it in front of a reader: every table row of
+ * `docs/llm` and `docs/reference` that names a member gets that member's
+ * description in its text cell -- the whole of it in a two-column table, its
+ * first sentence in an index row that links to a section. The tables
+ * themselves -- which members, in what order, under which heading -- and all
+ * the prose around them are written by hand, and stay so: what a table is
+ * *about* is an editorial choice, and what a member *does* is not.
  *
- * A member written in JavaScript -- rad.js, forms.js, a library under `lib/`
- * -- says it the same way, in the JSDoc comment above its declaration, and
- * the same `Doc` carries it: the parser reads the comment, the runtime answers
- * with it. A library is asked about through its sources (`Sources`), since no
- * library is loaded in the process that writes the pages.
+ * Shared by `tools/docs`, which writes the result, and `check`, which fails
+ * when a page is not what this would write -- so a description changed in the
+ * runtime and not regenerated is caught the way an undocumented member is.
+ * Both run out of `bintana`, the manifests' repository, and neither asks it
+ * anything: the file is the whole answer.
  */
 
+/* The manifest. `BINTANA_API` points a check at a file built from the runtime
+ * in the same run; otherwise it is the one fetched for the pinned ref. */
+function docApi(root) {
+    const path = Environment.Get("BINTANA_API") || File.Join(root, "api.json");
+    return File.LoadJson(path);
+}
+
+/*
+ * Everything a row may ask for, once: `owner` -> its members, most derived
+ * first, and its events.
+ *
+ * **`api.json` carries what a class declares and its `Parent`**, because the
+ * accumulated list per class was the same seventy names written out
+ * forty-eight times. Accumulating it here is the same walk the runtime does --
+ * the class, then its base, a name once -- and this is the one place that
+ * knows how.
+ */
+function docIndex(root) {
+    const api        = docApi(root);
+    const widgets    = {};
+    const libClasses = {};
+
+    for (const w of api.Widgets) widgets[w.Name] = w;
+    for (const lib of api.Libraries)
+        for (const c of lib.Classes) libClasses[c.Name] = c;
+
+    const gather = (name) => {
+        const out  = [];
+        const seen = {};
+
+        for (let at = name, guard = 0; at && guard < 64; guard++) {
+            const own = widgets[at] || libClasses[at];
+            if (!own) break;
+            for (const m of own.Members)
+                if (!seen[m.Name]) { seen[m.Name] = true; out.push(m); }
+            at = own.Parent || "";
+        }
+        return out;
+    };
+
+    const members = {};
+    const events  = {};
+
+    for (const w of api.Widgets) {
+        members[w.Name] = gather(w.Name);
+        events[w.Name]  = w.Events || [];
+    }
+    for (const g of api.Globals)
+        members[g.Name] = g.Members;
+    for (const t of api.Types)
+        members[t.Name] = t.Members;
+    for (const lib of api.Libraries)
+        for (const c of lib.Classes) {
+            members[c.Name] = gather(c.Name);
+            events[c.Name]  = c.Events || [];
+        }
+
+    return {
+        api, members, events,
+        libraries: api.Libraries.map((l) => l.Name).sort(),
+        classesOf: (name) => {
+            const lib = api.Libraries.find((l) => l.Name === name);
+            return lib ? lib.Classes : [];
+        },
+        globalNames: api.Globals.map((g) => g.Name),
+        typeNames:   api.Types.map((t) => t.Name),
+    };
+}
+
 /* The pages whose rows are written. */
-function docPages(root) {
+function docPages(root, index) {
     const pages = ["docs/llm/controls.md", "docs/llm/library.md", "docs/llm/forms.md"];
-    for (const lib of docLibraries(root))
+    for (const lib of index.libraries)
         if (File.Exists(File.Join(root, `docs/llm/${lib}.md`)))
             pages.push(`docs/llm/${lib}.md`);
     /* A page's name is a repository path and is always spelt with `/`, while
@@ -39,22 +108,6 @@ function docPages(root) {
                                     { Pattern: "*.md", Recursive: true }).sort())
         pages.push(p.slice(root.length + 1).replace(/\\/g, "/"));
     return pages;
-}
-
-/* The libraries shipped under `lib/`, by directory name. */
-function docLibraries(root) {
-    return Directory.List(File.Join(root, "lib"))
-        .filter((d) => File.IsDir(File.Join(root, "lib", d))).sort();
-}
-
-/* Every source a library is written in, which is how its classes are asked
- * about. */
-function docLibrarySources(root) {
-    const out = [];
-    for (const lib of docLibraries(root))
-        for (const f of Directory.Files(File.Join(root, "lib", lib), { Pattern: "*.js" }).sort())
-            out.push(File.Load(f));
-    return out;
 }
 
 /* Which classes or globals a row under this heading of this page can be about:
@@ -126,38 +179,31 @@ function docCell(text) {
 const DOC_ROW = /^(\|\s*(\*\*event\*\*\s*)?`([^`]+)`[^|]*\|)(.*)\|\s*$/;
 
 /*
- * `{ page: text }` for every page whose rows are not what the code says, with
- * the text they should be. `members` caches `Widget.Members` per owner.
+ * `{ page: text }` for every page whose rows are not what the manifest says,
+ * with the text they should be.
  */
 function docRows(root) {
-    const members = new Map();
-    const sources = docLibrarySources(root);
+    const index = docIndex(root);
+
     const memberDoc = (owner, name, qualified) => {
-        if (!members.has(owner)) {
-            let got = [];
-            try { got = Widget.Members(owner, { Sources: sources }); } catch (e) { got = []; }
-            members.set(owner, got);
-        }
-        const m = members.get(owner).find((x) => x.Name === name && x.Doc);
-        /* `Widget.PropertyNames(type)` is a static and `PropertyNames()` the
-         * method of the same name, and a class lists a name once: a row
-         * written with the class in front of it is about the static, and the
-         * method's description is not its own. */
+        const list = index.members[owner] || [];
+        const m    = list.find((x) => x.Name === name && x.Doc);
+
+        /* `Widget.PropertyNames(type)` is a static and a name the class may
+         * also have as a method; a row written with the class in front of it
+         * is about the static, and the other's description is not its own. */
         if (m && qualified && m.Kind !== "Static" &&
-            members.get(owner).some((x) => x.Kind === "Static"))
+            list.some((x) => x.Kind === "Static"))
             return null;
         return m ? m.Doc : null;
     };
-    /* A library's event is asked about through the same sources its members
-     * are: the comment above the `static Events` line that declares it, which
-     * is where a library writes what an event is for. */
     const eventDoc = (owner, name) => {
-        try { return Widget.EventDoc(owner, name, { Sources: sources }); }
-        catch (e) { return null; }
+        const e = (index.events[owner] || []).find((x) => x.Name === name);
+        return e && e.Doc ? e.Doc : null;
     };
 
     const out = {};
-    for (const page of docPages(root)) {
+    for (const page of docPages(root, index)) {
         const path = File.Join(root, page);
         const text = File.Load(path);
         const lines = text.split("\n");

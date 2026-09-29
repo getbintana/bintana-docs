@@ -165,5 +165,5 @@ out — `Bounds()` is the allocation and nothing else.
 
 [`QrCode`](QrCode.md) · [`DrawingArea`](../widgets/DrawingArea.md) ·
 [`Picture`](../widgets/Picture.md) · [`Bytes`](../globals/Bytes.md) ·
-[`examples/qr`](../../../examples/qr) · [llm/qr.md](../../llm/qr.md), the short
+[`examples/qr`](https://github.com/getbintana/bintana/tree/main/examples/qr) · [llm/qr.md](../../llm/qr.md), the short
 form

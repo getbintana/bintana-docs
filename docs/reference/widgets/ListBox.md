@@ -85,7 +85,7 @@ Notes_Select()   { this.open(this.Notes.Index); }
 Notes_Activate() { this.Ed.SetFocus(); }
 ```
 
-That is [`examples/notes`](../../../examples/notes), which keeps its notes in an
+That is [`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes), which keeps its notes in an
 array and the list in step with it — the shape almost every use of this control
 has: **the list shows, the array knows**. `Index` is what joins them, which is
 why the rows go in in the array's order and stay in it.
@@ -174,4 +174,4 @@ the action — a menu of choices, a palette.
 ## See also
 
 [`ComboBox`](ComboBox.md) · [`RowList`](RowList.md) · [`TreeView`](TreeView.md) ·
-[`TableView`](TableView.md) · [`examples/notes`](../../../examples/notes)
+[`TableView`](TableView.md) · [`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes)

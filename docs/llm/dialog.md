@@ -2,7 +2,7 @@
 
 Two classes, both `Form` subclasses, and both are the answer to a gap the runtime
 declines to close in C: **GTK4's dialogs are fire-and-forget, so there is no
-blocking `MsgBox`**, and [`issues.md`](issues.md) records the answer as *"a
+blocking `MsgBox`**, and [`issues.md`](https://github.com/getbintana/bintana/blob/main/docs/llm/issues.md) records the answer as *"a
 question is a form"*. These are those forms, shipped, so a project writes one call
 instead of a window.
 

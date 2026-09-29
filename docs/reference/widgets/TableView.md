@@ -155,7 +155,7 @@ Files_Activate() { Message.Info("{0} is {1}", this.Files.Cell(this.Files.Index, 
                                               this.Files.Cell(this.Files.Index, 2)); }
 ```
 
-That fragment is the first page of [`examples/table`](../../../examples/table),
+That fragment is the first page of [`examples/table`](https://github.com/getbintana/bintana/tree/main/examples/table),
 shortened; the example itself is the three shapes side by side, on three pages.
 
 **It scrolls itself.** A `TableView` is already a scrolling view of its rows —
@@ -460,4 +460,4 @@ control, and means *absorb the slack in the box*.
 
 [`ListBox`](ListBox.md) · [`RowList`](RowList.md) · [`TreeView`](TreeView.md) ·
 [`Record`](../globals/Record.md), for rows that are data rather than strings ·
-[`examples/table`](../../../examples/table) · [`examples/clients`](../../../examples/clients)
+[`examples/table`](https://github.com/getbintana/bintana/tree/main/examples/table) · [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients)

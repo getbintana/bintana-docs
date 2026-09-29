@@ -148,5 +148,5 @@ invisible drawing.
 
 [`Chart`](Chart.md) · [`Markdown`](Markdown.md) ·
 [`DrawingArea`](../widgets/DrawingArea.md) ·
-[`examples/report`](../../../examples/report) ·
+[`examples/report`](https://github.com/getbintana/bintana/tree/main/examples/report) ·
 [llm/report.md](../../llm/report.md), the short form and the full element grammar

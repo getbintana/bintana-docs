@@ -67,4 +67,4 @@ bar must stay in place because it will become determinate in a moment.
 ## See also
 
 [`Spinner`](Spinner.md) · [`LevelBar`](LevelBar.md) ·
-[`examples/usage`](../../../examples/usage)
+[`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage)

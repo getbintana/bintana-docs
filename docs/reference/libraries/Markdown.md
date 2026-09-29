@@ -193,5 +193,5 @@ picture of somebody's pointer.
 
 [`Report`](Report.md) · [`Chart`](Chart.md) ·
 [`Text`](../globals/Text.md), whose markup and hit-testing calls this library
-asked for · [`examples/markdown`](../../../examples/markdown) ·
+asked for · [`examples/markdown`](https://github.com/getbintana/bintana/tree/main/examples/markdown) ·
 [llm/markdown.md](../../llm/markdown.md), the short form

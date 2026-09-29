@@ -58,6 +58,10 @@ menu*, and the format is GLib's and not ours: the escaping, the localized keys
 (`Name[es]`) and the value syntax all come from `GKeyFile`, which is what every
 desktop's own reader is built on.
 
+| | |
+|---|---|
+| `Entries` | the module below |
+
 ### Where an entry lives
 
 | | |

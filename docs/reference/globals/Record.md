@@ -214,5 +214,5 @@ never the desktop's comma.
 ## See also
 
 [`Decimal`](Decimal.md) · [`Database`](Database.md), which maps a record onto a
-table · [`File`](File.md) · [`examples/quote`](../../../examples/quote) ·
-[../../plans/data-plan.md](../../plans/data-plan.md)
+table · [`File`](File.md) · [`examples/quote`](https://github.com/getbintana/bintana/tree/main/examples/quote) ·
+[../../plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md)

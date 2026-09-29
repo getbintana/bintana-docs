@@ -183,5 +183,5 @@ control — which is the whole argument of this environment, and the reason `Typ
 
 [`Report`](Report.md) · [`Markdown`](Markdown.md) ·
 [`DrawingArea`](../widgets/DrawingArea.md) ·
-[`examples/charts`](../../../examples/charts) ·
+[`examples/charts`](https://github.com/getbintana/bintana/tree/main/examples/charts) ·
 [llm/charts.md](../../llm/charts.md), the short form

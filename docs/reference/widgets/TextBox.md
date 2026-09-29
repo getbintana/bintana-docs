@@ -72,8 +72,8 @@ TxtFind_Change()    { this.needle = this.TxtFind.Text; this.List.Refilter(); }
 TxtFind_IconClick() { this.TxtFind.Text = ""; }
 ```
 
-That is the shape of a search field — [`examples/files`](../../../examples/files)
-and [`examples/contacts`](../../../examples/contacts) both have one: it filters as
+That is the shape of a search field — [`examples/files`](https://github.com/getbintana/bintana/tree/main/examples/files)
+and [`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts) both have one: it filters as
 you type, so there is no button to press and nothing to wait for.
 
 ## What is in it
@@ -168,4 +168,4 @@ console entry.
 
 [`TextEditor`](TextEditor.md) · [`SpinBox`](SpinBox.md) ·
 [`DatePicker`](DatePicker.md) · [`ComboBox`](ComboBox.md) ·
-[`Label`](Label.md) · [`examples/files`](../../../examples/files)
+[`Label`](Label.md) · [`examples/files`](https://github.com/getbintana/bintana/tree/main/examples/files)

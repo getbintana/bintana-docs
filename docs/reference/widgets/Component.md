@@ -93,5 +93,5 @@ program builds, so the drawing and the running list cannot drift.
 
 [`Form`](Form.md) · [`Container`](Container.md) ·
 [forms.md](../../llm/forms.md#components--a-form-that-is-not-a-window) ·
-[`examples/contacts`](../../../examples/contacts) ·
-[`examples/hello`](../../../examples/hello)
+[`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts) ·
+[`examples/hello`](https://github.com/getbintana/bintana/tree/main/examples/hello)

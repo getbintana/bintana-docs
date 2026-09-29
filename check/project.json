@@ -1,0 +1,7 @@
+{
+  "name": "docs-check",
+  "main": "Main",
+  "version": "1.0",
+  "description": "Does the documentation say what api.json says?",
+  "sources": ["../tools/docs/Rows.js", "Check.js"]
+}

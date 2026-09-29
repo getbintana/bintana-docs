@@ -8,7 +8,7 @@ JSON file as itself; XML is a **document** model, and attributes, element order
 (an MSPDI schema is an `xsd:sequence`), namespaces and mixed content have
 nowhere to go in a plain object. So this answers a tree, and a shape maps onto an
 element by **declaring** it — [`Record`](Record.md)'s `static Xml` and its
-`LoadXml`/`ToXml`/`SaveXml`. [`docs/plans/xml-plan.md`](../../plans/xml-plan.md)
+`LoadXml`/`ToXml`/`SaveXml`. [`docs/plans/xml-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/xml-plan.md)
 is where that design is argued.
 
 ## Every member
@@ -218,4 +218,4 @@ off the main thread.
 
 [`File`](File.md) · [`Record`](Record.md) · [`Bytes`](Bytes.md), which
 `ParseBytes` takes · [`Http`](Http.md), whose body is often one of these ·
-[`docs/plans/xml-plan.md`](../../plans/xml-plan.md)
+[`docs/plans/xml-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/xml-plan.md)

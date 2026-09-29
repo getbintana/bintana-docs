@@ -2,7 +2,7 @@
 
 Five minutes, in the IDE, no code written by hand except one method.
 What you build is a window with a field, a button, and a greeting —
-the same shape as [`examples/hello`](../examples/hello), minus its extras.
+the same shape as [`examples/hello`](https://github.com/getbintana/bintana/tree/main/examples/hello), minus its extras.
 
 ## 1. New project
 
@@ -77,11 +77,11 @@ this user — no root, no package — and the same dialog removes it. See
 
 ## Next
 
-- [`examples/hello`](../examples/hello): this same app with a check box
+- [`examples/hello`](https://github.com/getbintana/bintana/tree/main/examples/hello): this same app with a check box
   (reading `Active`), an `About` component of its own, and `po/es.po` —
   run it with `LANGUAGE=es` to see the greeting translated.
 - [`reference/`](reference/README.md): one page per control and per global,
   for the person at the IDE — press F1 over anything. This is where you go
   when you know *which* control and want *every member explained*.
-- [`llm/`](llm/README.md): the same surface said briefly, for a model — or
+- [`llm/`](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/README.md): the same surface said briefly, for a model — or
   for writing every file by hand. Not this road.

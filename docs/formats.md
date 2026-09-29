@@ -124,7 +124,7 @@ be evaluated first. The other is a **static field that mentions a class**, which
 runs at declaration just the same — `Lines: Field.List(Line)` in a `Record` is a
 `ReferenceError: Line is not defined` if `Line`'s file comes second, with the
 traceback pointing at the declaration and nothing pointing at `sources`.
-[`examples/quote`](../examples/quote) is the case in the tree: `Quote.js` before
+[`examples/quote`](https://github.com/getbintana/bintana/tree/main/examples/quote) is the case in the tree: `Quote.js` before
 `QuoteForm.js`, and `Line` before `Quote` inside it. Where the order cannot be
 arranged, `Field.List(() => Line)` defers the mention to the first use instead —
 see [runtime-api.md](runtime-api.md#a-record-inside-a-record). Creating a form from
@@ -150,7 +150,7 @@ loads.
 | `arguments` | handed to the project as `Application.Arguments`, one entry per argument — not one string to split, because a path with a space in it is ordinary |
 | `directory` | where the child starts. Empty is the project's own, which is what most want |
 | `environment` | `NAME=value`, one a line. A **change** and not a replacement: what is not named here is inherited, since a child that lost `HOME` would not start |
-| `strict` | run it with [`--strict`](plans/strict-plan.md) |
+| `strict` | run it with [`--strict`](https://github.com/getbintana/bintana/blob/main/docs/plans/strict-plan.md) |
 | `stoponthrow` | the debugger stops where something is thrown |
 
 **Versioned on purpose.** *What this project needs in order to start* is a fact
@@ -200,7 +200,7 @@ the same reason — all three resolve against the icon theme — and that is a f
 about the display rather than about the desktop. The other four fields of `Info`
 answer normally. A tool that asks what icons exist has to
 read the themes off the disk, which is what it wanted anyway (see
-[testing.md](testing.md)).
+[testing.md](https://github.com/getbintana/bintana/blob/main/docs/testing.md)).
 
 A missing `project.json` is not fatal: the IDE will open the directory and say the
 project cannot run. Neither is a broken one: the IDE reads it as a `Record` (see
@@ -260,7 +260,7 @@ Everything a project can have beside its classes, a library can have too:
 | `<lib>/po/<lang>.po` | its own catalogue, read **before** the project's. One table and several files, so a project that translates a string a library also translates has the last word; a language only a library ships is still offered by `Locale.Available` |
 | `<lib>/icons/` | on the icon search path after the project's, so a project can put its own drawing over a library's by shipping the same name |
 | `<lib>/app.css` | **not** read. A stylesheet belongs to an application: a library that restyled every `button` in the program would be the one thing here that cannot be overruled |
-| `<lib>/<name>.<suffix>` | **the native half**: a plugin, named after the directory and loaded before the library's `.js` so it can install a global the JavaScript then wraps. `so`, `dll` or `dylib` by platform. A directory with none is an ordinary JavaScript library; one that is there and cannot be used stops the program. See [plugins.md](plugins.md) |
+| `<lib>/<name>.<suffix>` | **the native half**: a plugin, named after the directory and loaded before the library's `.js` so it can install a global the JavaScript then wraps. `so`, `dll` or `dylib` by platform. A directory with none is an ordinary JavaScript library; one that is there and cannot be used stops the program. See [plugins.md](https://github.com/getbintana/bintana/blob/main/docs/plugins.md) |
 
 ### Where a library is looked for
 
@@ -279,7 +279,7 @@ and carries the reasons; this is the summary:
 **The two that resolve from the binary are the same relative hop**, and that is
 the point: `bin/` and `share/bintana/` move together under `--prefix` and under a
 packager's `DESTDIR`, where a path baked in at configure time does not. It is the
-argument [`tools/bintana-ide.in`](../tools/bintana-ide.in) already makes for the
+argument [`tools/bintana-ide.in`](https://github.com/getbintana/bintana/blob/main/tools/bintana-ide.in) already makes for the
 launcher, applied inside the runtime -- and it is what makes
 `./build/bintana examples/charts` find `lib/charts` in the source tree with nothing
 configured and nothing installed. The order otherwise follows the icon theme's,
@@ -298,14 +298,14 @@ would resolve it. The IDE's project dialog ticks them off the second one; it is
 in the runtime because a second copy of a six-entry search path drifts, and the
 copy that drifts is the one nobody runs from a shell.
 
-Five ship here. `lib/charts` is [`examples/charts`](../examples/charts)' chart
+Five ship here. `lib/charts` is [`examples/charts`](https://github.com/getbintana/bintana/tree/main/examples/charts)' chart
 component, `lib/report` is the banded `Report` that
-[`examples/report`](../examples/report) draws a statement of account with,
+[`examples/report`](https://github.com/getbintana/bintana/tree/main/examples/report) draws a statement of account with,
 `lib/markdown` is the document viewer
-[`examples/markdown`](../examples/markdown) reads its own guide in, and `lib/qr`
-is the encoder and the view [`examples/qr`](../examples/qr) draws codes with;
+[`examples/markdown`](https://github.com/getbintana/bintana/tree/main/examples/markdown) reads its own guide in, and `lib/qr`
+is the encoder and the view [`examples/qr`](https://github.com/getbintana/bintana/tree/main/examples/qr) draws codes with;
 `lib/package` is the packaging step the IDE uses and
-[`tools/pack.sh`](../tools/pack.sh) is a command line around. None of them uses
+[`tools/pack.sh`](https://github.com/getbintana/bintana/blob/main/tools/pack.sh) is a command line around. None of them uses
 any of the optional files beside its classes, which is the ordinary case for a
 library that is a handful of classes. What they publish is documented like the
 runtime's own surface, in [llm/charts.md](llm/charts.md),
@@ -440,7 +440,7 @@ not a property throws there and the control falls back to a stand-in. `strip` is
 the precedent for a node saying something that is neither its type nor a
 property.
 
-[`examples/contacts`](../examples/contacts) is the one that has one, and it is
+[`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts) is the one that has one, and it is
 worth reading as the argument for the shape: its row used to be a forty-line
 `row(contact)` method — a class with the word `class` left out — and is a
 `Contact` component now, so the designer draws the same class the program builds.

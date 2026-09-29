@@ -62,7 +62,7 @@ absorbing the difference.
 
 **A half that must not be squeezed to nothing says so with `MinWidth` — and with
 `HAlign: "Fill"`.** This is the trap that was measured while writing
-[`examples/clients`](../../../examples/clients): a `MinWidth` on an axis that is
+[`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients): a `MinWidth` on an axis that is
 not filling means nothing, so the divider could be dragged down to 46 pixels
 instead of stopping at 280. See
 [Container](Container.md#which-model-a-form-should-use).

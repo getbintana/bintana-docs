@@ -36,7 +36,7 @@ went with the rest of `Object`'s statics, so nothing can lock it or ask whether
 somebody already did — and from that moment `for…in` recites the addition over
 every bag in the program. `Dictionary.Keys` does not: it is `Object.keys`, own
 and enumerable, captured before the name was taken away. See
-[`llm/language.md`](../../llm/language.md#reading-a-bag-of-properties).
+[`llm/language.md`](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md#reading-a-bag-of-properties).
 
 **When the keys are numbers, use a `Map`**: an object's keys are strings, and a
 bag keyed by id is a bag that turns `12` into `"12"` behind you.
@@ -54,5 +54,5 @@ type exists to replace.
 
 ## See also
 
-[`Record`](Record.md) · [language.md](../../llm/language.md), for what else is
+[`Record`](Record.md) · [language.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md), for what else is
 deliberately not in the language

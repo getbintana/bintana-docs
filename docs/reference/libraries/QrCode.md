@@ -188,5 +188,5 @@ name `QrCode.Encode` and what was wrong with it.
 
 [`QrView`](QrView.md) · [`DrawingArea`](../widgets/DrawingArea.md) ·
 [`Painter`](../../llm/controls.md#painter) · [`Bytes`](../globals/Bytes.md) ·
-[`examples/qr`](../../../examples/qr) · [llm/qr.md](../../llm/qr.md), the short
+[`examples/qr`](https://github.com/getbintana/bintana/tree/main/examples/qr) · [llm/qr.md](../../llm/qr.md), the short
 form

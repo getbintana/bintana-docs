@@ -80,9 +80,9 @@ to translate.
   controls, and a set of days is what the marks draw.
 - **No events, no entries, no times.** The calendar shows days; what is *on* a
   day is your list beside it — see
-  [`examples/agenda`](../../../examples/agenda).
+  [`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda).
 
 ## See also
 
 [`DatePicker`](DatePicker.md) · [`Day`](../../llm/library.md#day) ·
-[`examples/agenda`](../../../examples/agenda)
+[`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda)

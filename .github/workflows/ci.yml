@@ -1,0 +1,118 @@
+# Does the documentation say what the runtime says?
+#
+# The check itself needs no display: `check/` is a Bintana console project that
+# reads `api.json` and the Markdown. What it needs is a `bintana` to run with,
+# and the runtime has to be the one the manifest was built from -- so the
+# pinned ref is cloned, built, and its `api.json` regenerated and compared with
+# the one this repository fetched. That comparison is the half the documentation
+# repository cannot ask on its own: from the file a page can be verified, and
+# the file cannot be verified from itself.
+name: docs
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Weekly, against the runtime's main: the surface moving without the
+    # documentation is a slow drift, and nothing else would report it.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config \
+            libgtk-4-dev libgtksourceview-5-dev libvte-2.91-gtk4-dev \
+            libsqlite3-dev libsoup-3.0-dev libxml2-dev \
+            libgstreamer1.0-dev gstreamer1.0-plugins-base
+
+      - name: The runtime this documentation is written against
+        run: |
+          set -euo pipefail
+          ref=$(tr -d '[:space:]' < bintana-ref.txt)
+          mkdir bintana-src
+          git -C bintana-src init -q
+          git -C bintana-src remote add origin https://github.com/getbintana/bintana
+          git -C bintana-src fetch --depth 1 -q origin "$ref"
+          git -C bintana-src checkout -q FETCH_HEAD
+          cmake -S bintana-src -B bintana-src/build
+          cmake --build bintana-src/build -j
+
+      - name: The manifest is what that runtime says
+        run: |
+          set -euo pipefail
+          tools/fetch-api.sh
+          BINTANA=$PWD/bintana-src/build/bintana \
+            bintana-src/tools/apijson.sh --out "$PWD/api.json.generated"
+          diff -u api.json api.json.generated
+
+      - name: Check the pages
+        env:
+          BINTANA: ${{ github.workspace }}/bintana-src/build/bintana
+          BINTANA_API: ${{ github.workspace }}/api.json.generated
+          BINTANA_SRC: ${{ github.workspace }}/bintana-src
+        run: ./check.sh
+
+  upstream:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config \
+            libgtk-4-dev libgtksourceview-5-dev libvte-2.91-gtk4-dev \
+            libsqlite3-dev libsoup-3.0-dev libxml2-dev \
+            libgstreamer1.0-dev gstreamer1.0-plugins-base
+
+      - name: The runtime's main
+        run: |
+          set -euo pipefail
+          git clone --depth 1 -q https://github.com/getbintana/bintana bintana-src
+          cmake -S bintana-src -B bintana-src/build
+          cmake --build bintana-src/build -j
+
+      - name: Check against main
+        id: check
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          BINTANA=$PWD/bintana-src/build/bintana \
+            bintana-src/tools/apijson.sh --out "$PWD/api.json.generated"
+          BINTANA=$PWD/bintana-src/build/bintana \
+          BINTANA_API=$PWD/api.json.generated \
+          BINTANA_SRC=$PWD/bintana-src \
+            ./check.sh
+
+      - name: Say so, once
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          open=$(gh issue list --state open --search "in:title Upstream diverged" \
+                               --json number --jq 'length')
+          if [[ $open -eq 0 ]]; then
+            gh issue create \
+              --title "Upstream diverged" \
+              --body "The weekly check against \`bintana\`'s \`main\` failed: the
+          surface moved and these pages do not say what it says. The run is
+          ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.
+          Bump \`bintana-ref.txt\` when the documentation has followed." >/dev/null
+          fi

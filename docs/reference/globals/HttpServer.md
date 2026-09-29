@@ -88,7 +88,7 @@ to answer later gets the `500`. A second `Answer`, or a late one, is refused —
 the request was already answered, or already ended.
 
 Why that is so, and what else was deliberately left out — WebSocket, CGI shapes
-— is in [../../plans/http-server-plan.md](../../plans/http-server-plan.md), with the argument for
+— is in [../../plans/http-server-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/http-server-plan.md), with the argument for
 each.
 
 ## What arrived
@@ -118,5 +118,5 @@ each.
 ## See also
 
 [`Http`](Http.md) · [`Bytes`](Bytes.md) ·
-[`examples/serve`](../../../examples/serve) ·
-[../../plans/http-server-plan.md](../../plans/http-server-plan.md)
+[`examples/serve`](https://github.com/getbintana/bintana/tree/main/examples/serve) ·
+[../../plans/http-server-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/http-server-plan.md)

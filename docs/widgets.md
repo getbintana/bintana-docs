@@ -8,7 +8,7 @@ the behaviour that comes with that.
 ## Widget — the base
 
 Every widget is one to three `GtkWidget`s (`gtk` / `inner` / `slot`; see
-[architecture.md](architecture.md#the-object-model)).
+[architecture.md](https://github.com/getbintana/bintana/blob/main/docs/architecture.md#the-object-model)).
 
 **Geometry.** `Width`/`Height` are `set_size_request`, a **minimum**, so a control
 whose natural size exceeds the request renders larger than the `.form` says — a
@@ -56,7 +56,7 @@ size the coordinates were written for: `Start` stays put, `End` keeps the distan
 to the far edge and slides, `Fill` keeps both and stretches, `Center` keeps the
 proportion and moves half the slack. This is what a drawn form uses to survive a
 resize without being rebuilt out of boxes; see
-[architecture.md](architecture.md#anchoring-what-a-fixed-surface-does-with-the-slack).
+[architecture.md](https://github.com/getbintana/bintana/blob/main/docs/architecture.md#anchoring-what-a-fixed-surface-does-with-the-slack).
 
 *In a box* — or a split, or a page — they are handed to GTK and say where the
 child sits in the cell it was given: `Fill` takes the whole of it, `Center` sits
@@ -603,7 +603,7 @@ and GTK's own `activate` already means the right thing in each.
 
 The action is GTK's `activate` and **not a callback of ours**, deliberately: a
 callback would be a pointer to the wrapper held by a controller that outlives it,
-which is the second crash class in [architecture.md](architecture.md#lifetimes).
+which is the second crash class in [architecture.md](https://github.com/getbintana/bintana/blob/main/docs/architecture.md#lifetimes).
 Activating goes through the widget's existing handler, which the finaliser's
 sweep already disconnects.
 
@@ -635,7 +635,7 @@ and a command in two places is still written twice.
 
 Declared in a top-level block beside `menus`, and for the same reason menus have
 one: a command is not a widget, and the children of a `.form` are widgets — the
-argument [plans/data-plan.md](plans/data-plan.md#what-was-rejected-and-why) makes against a
+argument [plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md#what-was-rejected-and-why) makes against a
 non-visual child. Read back as `Form.Actions`, and serialised **before** `menus`
 because the loader reads it first: an item and a control may both name one.
 
@@ -1313,7 +1313,7 @@ lets it through when the field is not required, so before this the control
 answered *today* for a field nobody filled in -- a date the program never meant,
 going into the record with no error and no warning, which is the one failure in
 this widget set that was invisible rather than merely wrong.
-[`plans/data-plan.md`](plans/data-plan.md) had written it down as the limit that kept an
+[`plans/data-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md) had written it down as the limit that kept an
 optional date from making the round trip.
 
 `Placeholder` is what the button reads while there is no date, an em dash by
@@ -1408,7 +1408,7 @@ same handler answers for the popover.
 **Neither half of the page turn is in the suite, and cannot be**: nothing in JS can
 press GTK's own arrow, and an assignment blocks the handler by design. Both were
 measured under an `Xvfb` of the probe's own with `xdotool`, and the commands are in
-[AGENTS.md](../AGENTS.md#traps) so the next person does not have to invent them.
+[AGENTS.md](https://github.com/getbintana/bintana/blob/main/AGENTS.md#traps) so the next person does not have to invent them.
 
 ### ListBox
 
@@ -1783,7 +1783,7 @@ the child's index is the column's until a `Columns[i].Visible` exists.
 clicking it — which in Gambas is exactly what separates `GridView` from
 `TableView`, so this one does not yet mean what that one does — and per-column
 types (`DataGridViewCheckBoxColumn` and its family). Binding a table to a
-`Record` is [plans/data-plan.md](plans/data-plan.md), and `Data` is the hook it was missing.
+`Record` is [plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md), and `Data` is the hook it was missing.
 
 **`examples/table` is the whole of it running.** Two pages side by side, because
 which mode you picked is what everything else follows from: one table holds five
@@ -1893,7 +1893,7 @@ on a scroller's content has nothing to fill.
 floor.** An axis that may not scroll has to be given its content's minimum and
 propagates it outwards: the same twenty tiles under `Scrollbars: "Vertical"`
 take the window from 900 to 924 wide, and a `MinWidth` on the scroller changes
-nothing either way (measured both). [`examples/kanban`](../examples/kanban) is
+nothing either way (measured both). [`examples/kanban`](https://github.com/getbintana/bintana/tree/main/examples/kanban) is
 the shape in both directions — a board arranged `Horizontal` whose columns are
 as tall as it is, each column a scroller arranged `Vertical` whose cards are as
 wide as it is.
@@ -2222,9 +2222,9 @@ from bytes is named in the dump by how many there were (`Image "24630 bytes" at
 **Three classes over two widgets, and the shape is GTK's own**: a `GtkSourceView`
 *is* a `GtkTextView`, so everything a plain view can answer -- the buffer, the
 cursor, the selection, undo, and the `Change` and `Cursor` events -- is declared
-once on an abstract `Editor` ([bta_text.c](../runtime/src/bta_text.c)) and
+once on an abstract `Editor` ([bta_text.c](https://github.com/getbintana/bintana/blob/main/runtime/src/bta_text.c)) and
 inherited by both. `TextEditor` is the plain one and `SourceEditor` is the source
-one ([bta_editor.c](../runtime/src/bta_editor.c)); everything from `Language`
+one ([bta_editor.c](https://github.com/getbintana/bintana/blob/main/runtime/src/bta_editor.c)); everything from `Language`
 down in this section is the second one's.
 
 **`TextEditor` is the control this widget set went without**, and the cost of not
@@ -2622,7 +2622,7 @@ class says which of the two it is.
 
 Everything above describes both ways of laying a form out and does not say when
 to reach for which, which is a gap this section is here to close. It was closed
-by measurement: [`examples/clients`](../examples/clients) was drawn twice.
+by measurement: [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients) was drawn twice.
 
 **Drawn in coordinates** it is 27 controls and **117 numbers, 54 of them an X or
 a Y** — and it broke on a resize. On a drawing surface `HAlign`/`VAlign` are what
@@ -3288,7 +3288,7 @@ from a row without a table of class names — the table that let `Overlay`, `Flo
 and `RowList` onto its palette while every gesture treated them as boxes.
 
 A message over the content rather than in front of it is
-[`examples/notify`](../examples/notify): one overlay, three layers — the form's
+[`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify): one overlay, three layers — the form's
 content as the base, a spinner `Center`/`Center` while something is going, a
 banner `Center`/`Start` with `Style: "osd"` — and all three declared in the
 `.form`, where a designer can draw them.
@@ -3398,14 +3398,14 @@ the popover while it is open and a closed one goes on naming it, so the walk in
 left: `FocusNext()` answered `false` on a panel full of controls. Popovers are
 left out of the stops.
 
-[`examples/todo`](../examples/todo) is the smallest real one: every row
+[`examples/todo`](https://github.com/getbintana/bintana/tree/main/examples/todo) is the smallest real one: every row
 carries a three-dots button that drops its options, and each row's popover is a
 child of the row -- invisible, no room taken -- so it is deleted with the row
 and its handlers are the row's own. It is a popover and not a `Menu` because a
 menu item's handler is looked up on the *form* by name, and there is one row too
 many for that.
 
-[`examples/composites`](../examples/composites) has the two flags that decide
+[`examples/composites`](https://github.com/getbintana/bintana/tree/main/examples/composites) has the two flags that decide
 how a popover behaves, and each one is a whole design. **`Autohide: true`** is
 GTK's menu: the popup takes the keyboard, arrows walk the list, Enter activates,
 Escape and a click outside close it -- which is what a select wants.
@@ -3464,7 +3464,7 @@ same thing VTE does to a click (above). A column of *draggable* cards is a
 [`Scroller`](#scroller) arranged `Vertical`, which claims nothing, with what the
 list would have given written by hand — selection is a `MouseDown` and a class,
 filtering sets `Visible`, editing is a double click, and each of those is one
-`On(event, fn)` on the card itself. [`examples/kanban`](../examples/kanban) is
+`On(event, fn)` on the card itself. [`examples/kanban`](https://github.com/getbintana/bintana/tree/main/examples/kanban) is
 that, both halves.
 
 **A drag can be shown while it travels, and the board above is what does.**

@@ -130,4 +130,4 @@ leaves a dump with no closing `Pop`.
 
 [`Painter`](../../llm/controls.md#painter) · [`charts`](../../llm/charts.md) ·
 [`report`](../../llm/report.md) · [`markdown`](../../llm/markdown.md) ·
-[`examples/drawing`](../../../examples/drawing)
+[`examples/drawing`](https://github.com/getbintana/bintana/tree/main/examples/drawing)

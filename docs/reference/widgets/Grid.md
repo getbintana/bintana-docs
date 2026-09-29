@@ -64,7 +64,7 @@ that spans the whole dialog, or a separator between sections, is written.
 | `ColumnSpacing` | pixels between the columns |
 | `Homogeneous` | every cell the same size, which is what a keypad wants and a form of fields does not |
 
-[`examples/calculator`](../../../examples/calculator) is the homogeneous case:
+[`examples/calculator`](https://github.com/getbintana/bintana/tree/main/examples/calculator) is the homogeneous case:
 every key the same size, four across. A dialog of labelled fields is the other —
 the caption column is as narrow as the captions and the field column takes the
 rest.
@@ -97,4 +97,4 @@ rest.
 
 [`Container`](Container.md) · [`Panel`](Panel.md) · [`Flow`](Flow.md) ·
 [`TableView`](TableView.md) ·
-[`examples/calculator`](../../../examples/calculator)
+[`examples/calculator`](https://github.com/getbintana/bintana/tree/main/examples/calculator)

@@ -18,7 +18,7 @@ of continuations, and leaving it out makes that a fact instead of advice.
 alongside `Promise`, so one that merely parsed left an object nothing could
 collect and a process that could not close. What a sequence is written with
 instead, and what would make that answer change, is
-[plans/async-plan.md](plans/async-plan.md).
+[plans/async-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/async-plan.md).
 
 **Removed after boot**: `eval`, `Function`, `globalThis`, `Symbol`, the
 scheduling primitives `setTimeout` / `setInterval` / their `clear` pair, and the
@@ -66,7 +66,7 @@ pass took the singulars and left the *plurals*: `defineProperties` went on
 writing the accessors `defineProperty` had been removed to withhold, and
 `getOwnPropertyDescriptors` read what its singular no longer could — between them
 enough to replace the setter on a `Record`'s field with one that validates
-nothing, which [architecture.md](architecture.md) said an application could not
+nothing, which [architecture.md](https://github.com/getbintana/bintana/blob/main/docs/architecture.md) said an application could not
 do. The same capability was also spelled on the prototype, in the four `__*__`
 names, where every object in the program carried it.
 
@@ -582,7 +582,7 @@ whose msgid reads *Sunday, 8 March 2026* and whose `es.po` says
 `"{0} {1} de {2} de {3}"` — reordering it and putting in the two *de* that only a
 translator knows about. That is the bargain `{0}` makes everywhere else here, and
 it is why these are fields and not a fifth whole spelling.
-[`examples/agenda`](../examples/agenda) is that one line of catalogue, running.
+[`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda) is that one line of catalogue, running.
 
 Slicing the ISO text for the day number and the year is reading a field of a
 fixed format, not parsing a date: those two are digits, and the parts that differ
@@ -683,7 +683,7 @@ desktop's language changed would be a diff nobody asked for.
 `TableView.SortBy` has collated since it was written — it is `g_utf8_collate`, in
 C — which is exactly what kept the gap invisible: the widget that sorts its own
 rows was right, and every list an application sorted by hand was wrong, including
-the IDE's own project tree. [`examples/contacts`](../examples/contacts) is the
+the IDE's own project tree. [`examples/contacts`](https://github.com/getbintana/bintana/tree/main/examples/contacts) is the
 whole of it running — a phone book that argues nothing and is simply in order,
 with *Ñanculeo* between *Núñez* and *Ortiz* where somebody would look for it.
 
@@ -694,7 +694,7 @@ with *Ñanculeo* between *Núñez* and *Ortiz* where somebody would look for it.
 GTK4 alert dialogs are fire-and-forget, so these **show and return** rather than
 blocking like VB's `MsgBox`. A question that needs an answer is a form: see
 `ide/forms/ConfirmForm.js`, which is 39 lines and no runtime primitive at all,
-or [`examples/notes`](../examples/notes), which has one of each — a prompt whose
+or [`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes), which has one of each — a prompt whose
 `Default` is OK, and a confirmation where nothing is `Default` because Enter must
 not be able to delete anything.
 
@@ -755,7 +755,7 @@ A trash lives on the filesystem the file is on, so a folder on a stick, on tmpfs
 or on a share may have none, and this **throws** rather than quietly unlinking:
 that would be the one thing it exists for, gone. What to do about it is the
 caller's — the IDE deletes and says which of the two happened, and
-[`examples/notes`](../examples/notes) puts up the confirmation it otherwise never
+[`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes) puts up the confirmation it otherwise never
 needs.
 
 **`Open` is the answer to "this program cannot edit that"** that is not "then
@@ -796,7 +796,7 @@ is dropped with the rest.
 thing to do: an editor told that its file changed underneath reloads it, and
 reloading means watching the new file instead — so `Stop()` runs one frame below
 the callback, inside the monitor's own signal emission. It is said here because
-it *was* a segfault, found by [`examples/notes`](../examples/notes) doing the
+it *was* a segfault, found by [`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes) doing the
 obvious thing; stopping in that position now marks the watch and the frame that
 owns it does the freeing.
 
@@ -824,7 +824,7 @@ medium over, with `SaveXml` the road an interchange needs — writing into the
 element it is handed and touching only what the shape models.
 [`Xml`](reference/globals/Xml.md) is the page, and
 [`Record`](reference/globals/Record.md) has the mapping; the argument, and what
-is deliberately not there, is [`plans/xml-plan.md`](plans/xml-plan.md).
+is deliberately not there, is [`plans/xml-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/xml-plan.md).
 
 ```js
 const doc   = File.LoadXml("plan.xml");     // reads bytes: the declaration says the encoding
@@ -1186,8 +1186,8 @@ concurrency costs is the **lost update** — read, change, write from two
 threads and the first change never happened — and no automatic lock reaches
 it, because the gap is between two calls and only the program knows which two.
 `Lock.Hold(name, fn)` is what orders those, named rather than held because the
-two runtimes share no heap; see [`docs/plans/task-plan.md`](plans/task-plan.md).
-[`examples/usage`](../examples/usage) is the shape running today: N tasks
+two runtimes share no heap; see [`docs/plans/task-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/task-plan.md).
+[`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage) is the shape running today: N tasks
 sizing N subtrees, one window adding up.
 
 Teardown stops and joins every live task before the context goes away: a
@@ -1391,7 +1391,7 @@ to a counter falls behind and never catches up — twenty ticks of 100 ms measur
 2003 ms of real time on the machine this was written on, which is a minute short
 by most of a second and an hour short by most of a minute. **A tick is for
 deciding when to repaint; what is painted comes from `Elapsed`.**
-[`examples/stopwatch`](../examples/stopwatch) is built on that separation and
+[`examples/stopwatch`](https://github.com/getbintana/bintana/tree/main/examples/stopwatch) is built on that separation and
 says how to test it: turn its repaint down from twenty times a second to once,
 and the reading stays exact.
 
@@ -1656,7 +1656,7 @@ value is not using.
 quickjs-ng removed the operator overloading and the `BigDecimal` that Bellard's
 quickjs carried, so `JS_SetArithHandler` is a hook the arithmetic slow paths
 consult before they reach `ToPrimitive`
-([`AGENTS.md`](../AGENTS.md#the-two-patches-in-vendor)). Two consequences worth
+([`AGENTS.md`](https://github.com/getbintana/bintana/blob/main/AGENTS.md#the-two-patches-in-vendor)). Two consequences worth
 knowing:
 
 **`===` is not hooked, deliberately.** Strict equality on objects is identity, it
@@ -1810,7 +1810,7 @@ long before any of this: `g_date_add_days`, `g_date_days_between`,
 is what four digits of year can hold — and the bound is enforced so that
 everything `Add` answers is something `Weekday` accepts.
 
-[`examples/agenda`](../examples/agenda) is the whole of it running: a day at a
+[`examples/agenda`](https://github.com/getbintana/bintana/tree/main/examples/agenda) is the whole of it running: a day at a
 time, with weekly and yearly entries, and not one `new Date` in the file.
 
 ## Text
@@ -2065,7 +2065,7 @@ JPEG are both accepted and an application never names one.
 A widget just created or just shown has no allocation until the main loop runs
 again, so anything that measures (`OriginIn`, `PickAt`, an unset `Width`) has to
 let a frame pass first — `Timer.After(0, …)`. The test suite uses generators for
-exactly this; see [testing.md](testing.md).
+exactly this; see [testing.md](https://github.com/getbintana/bintana/blob/main/docs/testing.md).
 
 `Timer` runs on the GLib main loop. The browser-named primitives it is built out
 of are captured by `rad.js` and then removed, so `Timer` is the only way to
@@ -2275,7 +2275,7 @@ answers with something that is not a `Record`.
 
 The values live where only the runtime can reach them, which is what makes the
 setter the only way in: there is no `customer._Name` to go around it with. See
-[architecture.md](architecture.md#what-radjs-keeps-for-itself).
+[architecture.md](https://github.com/getbintana/bintana/blob/main/docs/architecture.md#what-radjs-keeps-for-itself).
 
 ### A record over XML
 
@@ -2346,9 +2346,9 @@ is what preserves it. A scalar field reads its element's **text**, so an
 attribute of that element, child markup inside it, or a second element with the
 same name is reported too — those are things the shape is not taking.
 
-[`examples/feeds`](../examples/feeds) is the first real caller: two shapes
+[`examples/feeds`](https://github.com/getbintana/bintana/tree/main/examples/feeds) is the first real caller: two shapes
 (RSS 2.0 and Atom 1.0) over one list, and the window counts what either shape
-could not take rather than hiding it. [`examples/gpx`](../examples/gpx) is the
+could not take rather than hiding it. [`examples/gpx`](https://github.com/getbintana/bintana/tree/main/examples/gpx) is the
 second: a track whose points carry their position as **attributes** and whose
 watch's `<extensions>` survive a Save that changes the name.
 
@@ -2387,7 +2387,7 @@ comes back, where the metadata lives, and whether an exact decimal exists at all
 `Connection.Open`, because opening is the one operation that belongs to a driver
 rather than to a connection. A driver's connections **are** `Connection`s and
 inherit `Table` from it; the head of
-[`bta_sqlite.c`](../runtime/src/bta_sqlite.c) has the per-engine table and what a
+[`bta_sqlite.c`](https://github.com/getbintana/bintana/blob/main/runtime/src/bta_sqlite.c) has the per-engine table and what a
 second driver has to provide.
 
 `Table` reads what differs off `Dialect`, so a second driver changes nothing in
@@ -2468,7 +2468,7 @@ why the check exists:
 
 | | |
 |---|---|
-| a field that is a record or a list | a detail is a table of its own, and saving one with its master is not built (see [plans/data-plan.md](plans/data-plan.md)) |
+| a field that is a record or a list | a detail is a table of its own, and saving one with its master is not built (see [plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md)) |
 | a field with no column | named, with the columns the table does have |
 | **a column spelled with another case** | SQL identifiers are case-insensitive, so `Code` against a column `code` *writes perfectly and reads empty*: the values land in the bag of keys the shape does not describe, nothing throws, and the first thing anybody notices is a form full of blanks |
 | no such table | said here, rather than arriving from the middle of a generated statement |
@@ -2479,7 +2479,7 @@ why the check exists:
 for anything else — the runtime does the escaping so no program has to remember
 to. A filter is SQL because SQL is the filter language and sqlite already says
 what is wrong with one; a grammar of our own inside a value is what
-[plans/data-plan.md](plans/data-plan.md) refused twice. `Execute` takes **one** statement,
+[plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md) refused twice. `Execute` takes **one** statement,
 because running the head of what it was given and reporting success is worse
 than a complaint. An `Update` or a `Delete` that matched no row **throws**: a
 save that saved nothing and said so is found days later by somebody looking for
