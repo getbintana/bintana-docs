@@ -45,6 +45,9 @@ jobs:
           git -C bintana-src remote add origin https://github.com/getbintana/bintana
           git -C bintana-src fetch --depth 1 -q origin "$ref"
           git -C bintana-src checkout -q FETCH_HEAD
+          # QuickJS is a submodule, and a fetch does not bring one: without
+          # this the configure stops saying `vendor/quickjs is empty`.
+          git -C bintana-src submodule update --init --recursive
           cmake -S bintana-src -B bintana-src/build
           cmake --build bintana-src/build -j
 
@@ -85,6 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 -q https://github.com/getbintana/bintana bintana-src
+          git -C bintana-src submodule update --init --recursive
           cmake -S bintana-src -B bintana-src/build
           cmake --build bintana-src/build -j
 
