@@ -26,11 +26,16 @@ not repeated here.
 | `ColumnLines` | rules between the columns | [the columns](#the-columns) |
 | `Columns` | an array of `{ Text, Width, Alignment, Editable }` | [the columns](#the-columns) |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws | [the rows](#the-rows-it-holds), [on demand](#on-demand-a-table-that-holds-nothing) |
+| `HeaderHeight` (ro) | how tall the row of column headings is | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes | [the heading's menu](#the-headings-menu) |
+| `HeaderMinHeight` | a floor for the row of column headings, in pixels | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Index` | the selected row, `-1` for none | [the selection](#the-selection) |
 | `Key` | the selected node's key; assigning selects, opening the way to it | [a tree](#a-tree) |
 | `MultiSelect` | more than one row at a time | [the selection](#the-selection) |
+| `RowHeight` (ro) | how tall one row is, as GTK measured it | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `RowLines` | rules between the rows | [the columns](#the-columns) |
+| `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Selection` (ro) | every selected row, as an array of indices in order | [the selection](#the-selection) |
 | `Sortable` | makes the headers clickable | [sorting](#sorting) |
 
@@ -425,6 +430,61 @@ hierarchy has: sorting the flattened list would put a child above its own parent
 
 `ExpandNode` and not `Expand`: `Expand` is `Widget`'s layout property, on every
 control, and means *absorb the slack in the box*.
+
+## Beside something else: the geometry it can say
+
+A schedule, a chart or a diff drawn next to a table needs three numbers from it —
+where its rows are scrolled to, how tall one row is, and how tall the heading row
+is — and **`GtkColumnView` has none of the three**: no row-height getter, no scroll
+accessor and no way to ask which child is the heading. They are read out of what
+GTK *does* publish, and each has a trap.
+
+| | |
+|---|---|
+| `RowHeight` (ro) | how tall one row is, as GTK measured it. `0` while the table holds no row or has not been laid out |
+| `HeaderHeight` (ro) | how tall the row of column headings is. `0` before the first allocation |
+| `HeaderMinHeight` | a floor for the row of column headings, in pixels. **The heading does not follow the control's font** -- the theme sizes it -- so this is what makes a taller one. `0`, nothing said |
+| `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment. Assigning **clamps** to `[0, ScrollMaxY]`, so a number past the end means the end |
+| `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view. `0` when there is nothing to scroll |
+
+```js
+const rowsTop = this.Table.HeaderHeight;           // where the first row starts
+const y       = rowsTop + i * this.Table.RowHeight - this.Table.ScrollY;
+```
+
+**`RowHeight` is the rows' natural height over the rows that are drawn.** In a tree
+that is not `Count`, which is every node at every level: a folded branch is in
+neither the count nor the height, and dividing by `Count` answered a row that got
+shorter every time something was folded — a third short with one branch closed, on
+a tree of fifteen. And it is not the scroll range divided by the rows either: that
+range is never less than the view, so a plan of three tasks in a tall window
+answered 102 for a row that is 36.
+
+**The heading does not follow the font.** At 10, 11, 12 and 13 points the rows are
+36, 37, 39 and 41 pixels tall and the heading is **25 in every one**: the theme
+sizes it and not the control. `HeaderMinHeight` is a floor for it, and it moves the
+heading and nothing else — the rows and their extent stay the theme's. A chart
+beside a list used it to put two rows of axis type in the same band without making
+the type seven points.
+
+**A table with no columns has no heading row at all**, so `HeaderHeight` is `0`
+there — and `0` is also what it answers before the first layout, which is why a
+check for "has it been laid out" has to give the table a column to be true.
+
+**The numbers need a viewport, and a table in a `Fixed` never gets one.** It is
+handed a rectangle and the scrolled window inside it keeps a viewport of zero, so
+the heading measures as the whole control and the rows come out 24 of 37. Put the
+table in a [`Scroller`](Scroller.md) of its own, or in a box.
+
+**They are a frame behind the rows.** A row added in this turn has no allocation
+yet, so `RowHeight` is the one before it and `ScrollMaxY` the one before that. Wait
+for a number rather than asserting as you go — `Timer.After(0, …)` is the usual
+place.
+
+`ScrollY` is assignable and **clamps** to `[0, ScrollMaxY]`, so a number past the
+end means the end. It is the same pair of ideas as the `Scroller`'s and the
+editors', and the same two panes locked together is
+[`Editor.md`](Editor.md#where-it-is-scrolled-to)'s recipe.
 
 ## What goes wrong
 

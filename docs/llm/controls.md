@@ -162,7 +162,7 @@ Every control and every container has all of this.
 |---|---|
 | `AcceptDrop` | receives a drop from **this application**, which arrives as `Drop(data, x, y)` |
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)`. Independent of `AcceptDrop`: a control may take one, the other, or both |
-| `Background` | any CSS colour; `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
+| `Background` | any CSS colour — a value, not a reference: `"@view_bg_color"` is one too, and is refused. **For a ground, `Style` is what to reach for**: a theme paints a surface with a class, and a control that has to be on the same ground as another one wears the same class. `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
 | `Border` | width, style and colour in one string: `"2 dashed #3584e4"` |
 | `ColumnSpan` | how many columns of a `Grid` it runs under. `1` |
 | `DragData` | the string that travels when this control is dragged. Empty turns dragging off |
@@ -820,6 +820,11 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `Index` | the selected row, `-1` for none. Assigning selects it. Default `-1` |
 | `MultiSelect` | more than one row at a time. Refused on a tree |
 | `RowLines` | rules between the rows. Default `true` |
+| `RowHeight` (ro) | how tall one row is, as GTK measured it. `0` while the table holds no row or has not been laid out |
+| `HeaderHeight` (ro) | how tall the row of column headings is. `0` before the first allocation |
+| `HeaderMinHeight` | a floor for the row of column headings, in pixels. **The heading does not follow the control's font** -- the theme sizes it -- so this is what makes a taller one. `0`, nothing said |
+| `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment. Assigning **clamps** to `[0, ScrollMaxY]`, so a number past the end means the end |
+| `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view. `0` when there is nothing to scroll |
 | `Sortable` | makes the headers clickable. **The table does not reorder itself** — it raises `Sort`. Default `false` |
 | `Selection` (ro) | every selected row, as an array of indices in order |
 | `ActivateOnSingleClick` | raise `Activate` on one click instead of two. Default `false` |

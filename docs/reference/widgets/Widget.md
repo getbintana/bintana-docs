@@ -27,7 +27,7 @@ in the section.
 | `AcceptDrop` | receives a drop from **this application**, which arrives as `Drop(data, x, y)` | [drag and drop](#drag-and-drop) |
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)` | [drag and drop](#drag-and-drop) |
 | `Action` | the **command** this control points at, or `""` | [commands, menus and keys](#commands-menus-and-keys) |
-| `Background` | any CSS colour | [how it looks](#how-it-looks) |
+| `Background` | any CSS colour — a value, not a reference | [how it looks](#how-it-looks) |
 | `Border` | width, style and colour in one string | [how it looks](#how-it-looks) |
 | `ColumnSpan` | how many columns of a `Grid` it runs under | [how it is placed](#how-it-is-placed) |
 | `Cursor` | what the pointer looks like over it | [how it looks](#how-it-looks) |
@@ -226,7 +226,7 @@ because a container refuses a widget that already has a parent.
 | | |
 |---|---|
 | `Style` | the CSS classes it wears, space separated: `"card title-3"`. **The first thing to reach for**: the theme draws `suggested-action`, `destructive-action`, `dim-label`, `title-1`…`title-4`, `heading`, `card`, `frame`, `boxed-list`, `toolbar`, `flat`, `linked`, `pill`, `monospace`. A name that could not be a class is refused |
-| `Background` | any CSS colour; `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
+| `Background` | any CSS colour — a value, not a reference: `"@view_bg_color"` is one too, and is refused. **For a ground, `Style` is what to reach for**: a theme paints a surface with a class, and a control that has to be on the same ground as another one wears the same class. `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
 | `Foreground` | likewise, for the text |
 | `Font` | a Pango description — `"Cantarell Bold 12"` — or a partial one: `"Bold"`, `"12"`. `""` restores the theme |
 | `FontScale` | a multiplier on whatever size is in force: `1.1` is 110%. `1` is "nothing said"; `0` is refused |
