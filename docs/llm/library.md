@@ -872,6 +872,53 @@ About 50 MB a second to compress and 500 to decompress: a big one belongs in a
 raw deflate or zip here; the name goes out when something needs it.
 [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) is the file verbs in use, with every copy read back.
 
+## Zip
+
+Reading the container every office document, ebook and jar is. **Read only**: there is
+no writer yet.
+
+```js
+const z = Zip.Open("accounts.xlsx");
+for (const e of z.Entries) print(e.Name, e.Size);
+const sheet = Xml.ParseBytes(z.Read("xl/worksheets/sheet1.xml"));
+z.ExtractAll("/tmp/accounts");
+z.Close();
+```
+
+| | |
+|---|---|
+| `Open(path)` | reads the archive's directory and answers a handle on it. Throws, naming the file and the reason, for anything that is not a zip, is cut short, is zip64 or split over disks, or lists one name twice. An archive up to 32 MiB is held in memory; a bigger one is mapped, so do not open one that is still being written |
+| `Entries` | what the archive holds |
+| `Read(name, [{ MaxSize }])` | one entry's bytes |
+| `Extract(name, path, [{ MaxSize }])` | one entry written to a path |
+| `ExtractAll(folder, [{ MaxSize }])` | every entry under a folder |
+| `Close()` | lets go of the archive |
+
+**Whatever is read is checked, and a failure throws rather than answers.** Every entry's
+CRC-32 is verified; an entry that inflates to more than its directory says, whose local
+header names something else than the directory does, or that is over `MaxSize`
+(256 MiB unless told) is refused with a sentence naming it. A name listed twice refuses
+the whole archive at `Open`, because which of two an application reads is not something
+to leave to chance.
+
+**Names are checked before they are paths.** `ExtractAll` refuses an archive holding an
+entry that would leave its folder — `../x`, an absolute path, a drive letter, a backslash,
+an empty part, a NUL — **before it writes a byte**, so a refusal leaves nothing and not
+half an archive. Only files and folders are ever made, never a link.
+
+**Refused by name, and nothing else is:** encryption, zip64 (past 4 GiB or 65,535 entries),
+a multi-disk archive, and any method but stored and deflate. An encrypted *entry* does not
+stop the others being read. Measured on 49 real documents (859 entries) every one was
+stored or deflated and none used any of the rest — and 31 % of the entries carry a data
+descriptor, which is why the sizes come from the directory at the end and not from the
+header in front of the data. Names are UTF-8.
+
+`Modified` is a `Date` in local time (a zip has no zone and counts in two seconds).
+An archive up to 32 MiB is held in memory; a bigger one is mapped, so do not open a zip
+that is still being written. A worker has `Zip`, and the handle stays in the thread that
+opened it. [`examples/sheets`](https://github.com/getbintana/bintana/tree/main/examples/sheets) is the whole of it in use: an `.xlsx` read in a
+`Task` and shown in a table that holds no rows.
+
 ## Bytes
 
 A file's contents, when they are not text. This is what a `File.Load` cannot

@@ -1583,6 +1583,37 @@ leaves nothing. Measured on 47 MB: about 960 ms to compress and 90 ms to inflate
 which is why the page sends big ones to a `Task`. Only gzip is published; zlib
 framing and raw deflate are other names for one algorithm.
 
+## Zip
+
+`Zip.Open(path)` and the `ZipArchive` it answers, in `bta_zip.c`: a reader of the central
+directory over `GZlibDecompressor`'s RAW format. There is no zip in GIO and neither libzip
+nor libarchive is on every machine this builds on, so an optional dependency would be a
+branch nobody here can compile; this is the small reader instead, and **its scope was
+measured**. 49 real documents (`.docx`, `.xlsx`, `.odt`, `.ods`) held 859 entries: every one
+stored or deflated, none encrypted, none zip64, none with a name that leaves its folder, at
+most 34 entries and 1 MB an entry. Everything outside that is refused by name.
+
+Three things the measurement and the build settled:
+
+- **Sizes come from the directory at the end, never the header in front.** 271 of those
+  859 entries had a data descriptor — the header does not know the size — because
+  LibreOffice writes one on every entry. A reader that trusted local headers fails a
+  third of a desktop's documents. The local header's *name* is still compared with the
+  directory's.
+- **Every entry's CRC is checked**, and the stream is stopped if it inflates past what the
+  directory declared; `MaxSize` is compared with the *declared* size before anything is
+  allocated, since the declaration is the archive's author's choice.
+- **Zip-slip is a refusal of the whole archive before the first byte is written**, by a name
+  check that runs over every entry first. With that check taken out the hostile entries
+  *were* written outside the destination (inside the test's scratch directory, which is why
+  the tests aim there): `../evil.txt` landed beside the folder.
+
+The test builds its hostile archives by hand, and takes the CRC and the deflate stream from
+`Gzip.Compress` — a gzip member is a header, a raw deflate stream and a trailer that starts
+with the CRC — so the reader is not checked against a writer that shares its mistakes, and
+`unzip -t` accepts what the builder makes. Real archives come from `zip` (deflate, stored,
+and one written to a pipe so every entry has a data descriptor) and from `soffice`.
+
 ## Bytes
 
 The value a file is when it is not text: one class with a copy of the bytes,

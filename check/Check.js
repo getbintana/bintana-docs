@@ -254,6 +254,7 @@ const GLOBAL_SECTIONS = [
     ["Hash",              "Hash"],
     ["Random",            "Random"],
     ["Gzip",              "Gzip"],
+    ["Zip",               "Zip", "ZipArchive"],
     ["Notification",      "Notification"],
     ["Bytes",             "Bytes"],
     ["Decimal",           "Decimal"],
@@ -457,6 +458,7 @@ const GLOBAL_PAGE_OWNERS = {
     Text:        ["Text"],
     Time:        ["Time"],
     Xml:         ["Xml", "XmlDocument", "XmlNode"],
+    Zip:         ["Zip", "ZipArchive"],
 };
 
 function checkGlobalPages(root, index, problems) {
