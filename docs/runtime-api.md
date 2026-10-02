@@ -1511,6 +1511,57 @@ These are checksums and **not** password hashes: no salt, no work factor. What
 they are for is comparing a download against a published digest, keying a cache,
 and telling two files apart.
 
+`Hash.Hmac(key, message, [algorithm])` is the keyed digest (`GHmac`, the same four
+algorithms, `Sha256` unless told) and `Hash.Verify(key, message, signature,
+[algorithm])` checks one **in constant time**, because `===` on a signature leaks
+how many leading characters were right. Key and message are text or `Bytes` and
+nothing else — `Hmac(secret, undefined)` would otherwise sign the word
+"undefined". It is checked against RFC 4231 and RFC 2202's published vectors,
+including the case of a key longer than the block size, and not against itself.
+There is still no password hashing: a call cannot keep the promise of the whole
+ceremony (salt, stored parameters, an upgrade path).
+
+## Random
+
+`Random.Bytes(count)`, `Random.Int(min, max)` and `Random.Uuid()`, in
+`bta_random.c`. The operating system's source and no other — `getrandom(2)` on
+Linux, `arc4random_buf` on macOS, `RtlGenRandom` on Windows (fetched at run time
+so the link line did not change; the last two cannot be compiled on the machine
+this was written on) — and a failure **throws**. There is deliberately no
+fallback to `g_random_*`, a Mersenne Twister that is right for shuffling a
+playlist and is exactly what a reader would assume this was.
+
+**`Int` is rejection sampling**: a draw below `2^64 mod span` is thrown away, so
+every value is exactly as likely, where `r % span` is biased whenever the span
+does not divide the range. It is held to what a JavaScript number holds exactly,
+so a span past 2^53 is refused and not rounded. **`Uuid()` is built from
+`Random.Bytes(16)`** with the version and variant bits set, rather than by
+`g_uuid_string_random`, because where that one gets its bytes is what this
+refuses to assume. It is installed in a worker too — nothing in it calls back.
+
+## Gzip
+
+`Gzip.Compress`, `Decompress`, `CompressFile` and `DecompressFile`, in
+`bta_gzip.c`, over GIO's `GZlibCompressor` — which is zlib, already linked, so no
+dependency and no CI job. Three things the converter does by default are wrong
+for a program and were measured before this was written:
+
+- **Concatenated members decompress to the first one, with no error.** `cat a.gz
+  b.gz` is valid gzip and answered 6 bytes of 12 and a success. `Decompress`
+  resets the converter at each member's end and goes on until the input is used.
+- **A stream that stops inside a member** is an error and says how many bytes of
+  input it had consumed; what was decoded so far is never the answer.
+- **There is no ceiling.** `MaxSize` is 256 MiB unless told, and the refusal says
+  it is the ceiling.
+
+The converter's own sentence is never quoted — it is translated into the
+desktop's language, and an error that reads differently on each machine cannot be
+matched by a program. The file verbs stream 64 KB at a time into a temporary
+beside the destination and rename it over once the stream is whole, so a failure
+leaves nothing. Measured on 47 MB: about 960 ms to compress and 90 ms to inflate,
+which is why the page sends big ones to a `Task`. Only gzip is published; zlib
+framing and raw deflate are other names for one algorithm.
+
 ## Bytes
 
 The value a file is when it is not text: one class with a copy of the bytes,

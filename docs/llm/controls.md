@@ -1540,6 +1540,17 @@ declared by the class — `static Events`, `static Options`, `static TextPropert
 
 Do not file an issue for these; the argument is written down and settled.
 
+- **A stream type for compression.** `Gzip` takes and answers a value, and its two
+  file verbs read 64 KB at a time for what is too big to hold. The language has no
+  stream to hand out, and every caller measured is one of those two.
+- **Password hashing.** `Hash.Hmac` signs a message; storing what somebody typed
+  is a promise about a whole ceremony — a salt, parameters stored beside the hash,
+  an upgrade path — that one call cannot keep. It waits for an application that
+  stores a password, and then for the ceremony and not for a function.
+- **A fallback for `Random`.** If the operating system has no randomness to give
+  the call throws; nothing weaker is used in its place, because a silent fallback
+  in the one function whose job is to be unguessable is the bug.
+
 - **`RadioButton`** — a `CheckButton` with a `Group`.
 - **`ToolBar`** — a `Panel`, `Arrangement: "Horizontal"`, `Style: "toolbar"`.
   GTK4 removed `GtkToolbar`.

@@ -734,6 +734,8 @@ File.Hash(path, "md5")
 | | |
 |---|---|
 | `Md5(v)`, `Sha1(v)`, `Sha256(v)`, `Sha512(v)` | the digest as lower-case hex. `v` is text (hashed as its UTF-8) or a [`Bytes`](#bytes) (hashed as the bytes it is) |
+| `Hmac(key, message, [algorithm])` | the keyed digest (RFC 2104) as lower-case hex, `"Sha256"` unless told. `key` and `message` are text (its UTF-8) or a [`Bytes`](#bytes), and **nothing else**: a number or `undefined` is refused rather than signed as the word it spells. For a signature somebody sent you, **do not compare the answer with `===`** -- that is what `Verify` is for |
+| `Verify(key, message, signature, [algorithm])` | whether `signature` is the keyed digest of `message`, compared in constant time. `signature` is hex (either case) or a [`Bytes`](#bytes) of the raw digest; text that is not hex of the right length is `false`, not an error, since it is what a forged one looks like. Never answers by throwing for a wrong signature |
 | `File.Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video |
 
 **What is hashed is the text's UTF-8 bytes**, which is what every other tool
@@ -747,11 +749,87 @@ caller's decision and not a default.
 costs 64 KB of memory. It is also the one to use for anything that is not text,
 since `File.Load` answers a string and a JPEG is not one.
 
+**A keyed digest is how a message is signed, and the comparison is where it goes
+wrong.** `Hash.Hmac("secret", body)` is the signature a webhook carries; checking
+one with `===` answers faster the more leading characters are right, which is
+enough to forge it. `Hash.Verify("secret", body, signature)` compares in constant
+time, takes the signature as hex (either case) or as `Bytes`, and answers `false`
+— not an error — for text that is not a signature at all. The key and the message
+are text or `Bytes` and **nothing else**: a number or `undefined` is refused
+rather than signed as the word it spells.
+
+```js
+if (!Hash.Verify(Settings.Get("webhook"), req.Body, req.Headers["x-signature"], "Sha256"))
+    return req.Answer(401, "no");
+```
+
 **A hash is not a password.** These are checksums — same input, same digest, as
 fast as the machine can go, which is what makes them right for comparing a
 download against a published digest, keying a cache, or telling two files apart,
 and wrong for storing what somebody typed. There is no salt, no work factor and
 no `bcrypt` here.
+
+## Random
+
+Numbers a program cannot predict, from the operating system. **`Math.random` is
+not a source for a token, a session id or a nonce**; this is.
+
+```js
+Random.Bytes(32)            // Bytes: a key, a nonce, a token's worth
+Random.Bytes(16).ToHex()    // a hex token
+Random.Int(1, 6)            // 1 to 6, both ends included
+Random.Uuid()               // "3f1c0a9e-5b7d-4c2e-9a1f-0d8e6b4a2c10"
+```
+
+| | |
+|---|---|
+| `Bytes(count)` | `count` bytes from the operating system's source, 0 to 1,048,576. **The one to make a token, a key or a nonce from** -- `Math.random` is not. Throws, and never falls back to something weaker, if the system has no randomness to give |
+| `Int(min, max)` | a whole number from `min` to `max`, **both ends included**, every value exactly as likely. Throws for ends that are not whole numbers, for `min` above `max`, and for a range wider than 2^53 |
+| `Uuid()` | a version 4 UUID in its lower-case 8-4-4-4-12 spelling, from the same source as `Bytes`. Random, so it does not sort by creation: as a database key it scatters an index |
+
+**It throws rather than fall back.** If the system has no randomness to give, the
+call fails — there is no weaker source behind it, because a silent one is the bug.
+`Bytes` takes 0 to 1,048,576. `Int` is **unbiased** (every value exactly as likely,
+not `r % span`), takes whole numbers within 2^53 and refuses `min` above `max`.
+`Uuid()` is random, so it **does not sort by creation**: as a database key it
+scatters an index. A worker has all three.
+
+## Gzip
+
+The one compression format, on the zlib that GIO already links.
+
+```js
+const z = Gzip.Compress("some text")                  // Bytes
+Gzip.Decompress(z).ToText()                           // "some text"
+Gzip.CompressFile(path, path + ".gz")                 // streamed; answers the bytes written
+Gzip.DecompressFile(path + ".gz", path)
+```
+
+| | |
+|---|---|
+| `Compress(data, [{ Level }])` | `data` (text as its UTF-8, or a [`Bytes`](#bytes)) as one gzip member. `Level` is 1 (fast) to 9 (small), 6 unless told. A second option, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a [`Task`](#task) |
+| `Decompress(bytes, [{ MaxSize }])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip. The answer may not pass `MaxSize` bytes (256 MiB unless told), because a few kilobytes can inflate to gigabytes. Text comes out as `ToText()` of the answer |
+| `CompressFile(source, destination, [{ Level }])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written. The destination appears only when it is whole: a failure leaves no half-written file, and an existing one is untouched |
+| `DecompressFile(source, destination, [{ MaxSize }])` | the reverse, streamed, with the same ceiling and the same promise about the destination. Answers the bytes written |
+
+**`Decompress` answers all of it or throws.** Several members glued together
+(`cat a.gz b.gz`, which is valid gzip) are read to the end; a stream that stops
+inside a member throws and says how far it got, instead of returning the half it
+had; anything that is not gzip, and bytes after the last member, throw too.
+
+**The output has a ceiling**, `MaxSize` (256 MiB unless told), because a few
+kilobytes can inflate to gigabytes and a body off the network is exactly where
+that arrives. Raise it for data you trust. An option the verb does not know is
+refused, so `{ Lvel: 9 }` does not quietly mean level 6.
+
+**The file verbs never leave half a file.** The destination appears only when the
+stream is whole; a failure removes the temporary and an existing destination is
+untouched. The new file keeps the old one's permissions, as `gzip` does.
+
+About 50 MB a second to compress and 500 to decompress: a big one belongs in a
+[`Task`](#task), which has it. Compressed data is not text — `Decompress` takes
+`Bytes`, and `ToText()` is the way back to a string. There is no zlib framing,
+raw deflate or zip here; the name goes out when something needs it.
 
 ## Bytes
 
