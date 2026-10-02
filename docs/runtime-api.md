@@ -1608,6 +1608,24 @@ Three things the measurement and the build settled:
   *were* written outside the destination (inside the test's scratch directory, which is why
   the tests aim there): `../evil.txt` landed beside the folder.
 
+**The writer** (`Zip.Create`, the `ZipWriter`) is the other half and is held to tools that
+are not ours: `unzip -t` for every CRC, Python's `zipfile` as a second implementation of the
+format, and this runtime's own reader for byte-for-byte content. Four things it settled:
+
+- **The compressor answers *Need more input* as an error**, as the decompressor does. A
+  streaming loop that calls it with nothing left and not yet at the end gets `PARTIAL_INPUT`,
+  which is a request for the next block and not a failure; the first version of `AddFile` took
+  it for one, and an archive of any file past 64 KB failed with "could not be compressed".
+- **65,534 entries, not 65,535.** A count of `0xFFFF` in the end record is the sentinel for the
+  zip64 record, so an archive of exactly that many already needs one — and the reader refuses it
+  for that reason. The test writes 65,534 and reads them back, in under two seconds.
+- **A NUL has to be looked for before the name is checked as UTF-8**, since `g_utf8_validate`
+  stops at one and calls it invalid, which answered a hostile name with the wrong sentence.
+- **The destination is the last thing touched**: a temporary beside it, a rename in `Finish`, and
+  the temporary removed by `Abort` and by the finaliser. With the removal taken out the test sees
+  the leftover; with the descriptor flag left off a streamed entry, `unzip -t` and `zipfile` both
+  refuse the archive.
+
 The test builds its hostile archives by hand, and takes the CRC and the deflate stream from
 `Gzip.Compress` — a gzip member is a header, a raw deflate stream and a trailer that starts
 with the CRC — so the reader is not checked against a writer that shares its mistakes, and

@@ -874,8 +874,7 @@ raw deflate or zip here; the name goes out when something needs it.
 
 ## Zip
 
-Reading the container every office document, ebook and jar is. **Read only**: there is
-no writer yet.
+The container every office document, ebook and jar is: read it, and write one.
 
 ```js
 const z = Zip.Open("accounts.xlsx");
@@ -883,16 +882,25 @@ for (const e of z.Entries) print(e.Name, e.Size);
 const sheet = Xml.ParseBytes(z.Read("xl/worksheets/sheet1.xml"));
 z.ExtractAll("/tmp/accounts");
 z.Close();
+
+const out = Zip.Create("report.xlsx");
+out.Add("[Content_Types].xml", types).Add("xl/workbook.xml", book).AddFile("media/logo.png", logo);
+out.Finish();
 ```
 
 | | |
 |---|---|
 | `Open(path)` | reads the archive's directory and answers a handle on it. Throws, naming the file and the reason, for anything that is not a zip, is cut short, is zip64 or split over disks, or lists one name twice. An archive up to 32 MiB is held in memory; a bigger one is mapped, so do not open one that is still being written |
+| `Create(path)` | starts an archive that will be at `path` **when `Finish()` says so** and not before: it is written to a temporary beside it, so a failure, an abort or a dropped writer leaves nothing and an existing file untouched. Throws, naming the folder, when it cannot write there |
 | `Entries` | what the archive holds |
 | `Read(name, [{ MaxSize }])` | one entry's bytes |
 | `Extract(name, path, [{ MaxSize }])` | one entry written to a path |
 | `ExtractAll(folder, [{ MaxSize }])` | every entry under a folder |
 | `Close()` | lets go of the archive |
+| `Add(name, [data], [{ Store, Modified }])` | puts an entry in the archive being written |
+| `AddFile(name, path, [{ Store, Modified }])` | the same for a file, streamed |
+| `Finish()` | writes the directory and puts the archive at its path |
+| `Abort()` | throws the archive away |
 
 **Whatever is read is checked, and a failure throws rather than answers.** Every entry's
 CRC-32 is verified; an entry that inflates to more than its directory says, whose local
@@ -916,8 +924,20 @@ header in front of the data. Names are UTF-8.
 `Modified` is a `Date` in local time (a zip has no zone and counts in two seconds).
 An archive up to 32 MiB is held in memory; a bigger one is mapped, so do not open a zip
 that is still being written. A worker has `Zip`, and the handle stays in the thread that
-opened it. [`examples/sheets`](https://github.com/getbintana/bintana/tree/main/examples/sheets) is the whole of it in use: an `.xlsx` read in a
-`Task` and shown in a table that holds no rows.
+opened it.
+
+**Writing: nothing is at the path until `Finish()`.** The archive is written to a temporary
+beside it and renamed into place last, so a failure, an `Abort()` or a writer that is dropped
+leaves nothing and an existing file untouched. `Add` takes the names `ExtractAll` accepts and
+refuses the ones it refuses — `../x`, an absolute path, a drive letter, a backslash, an empty
+part, a NUL — and a name twice, so what is written here is a zip nobody can be hurt by
+extracting. Entries are deflated **unless that did not make them smaller** or `Store: true` (an
+`.odt`'s `mimetype`, first); `AddFile` streams and cannot see whether it helped, so it costs a
+few bytes on an incompressible file. No zip64: past 65,534 entries or 4 GiB is refused.
+
+[`examples/sheets`](https://github.com/getbintana/bintana/tree/main/examples/sheets) reads an `.xlsx` in a `Task` and shows it in a table that
+holds no rows; [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients) is the other direction, a button that writes
+what its list shows as a workbook.
 
 ## Bytes
 

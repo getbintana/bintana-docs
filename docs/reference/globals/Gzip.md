@@ -99,7 +99,7 @@ a [`Task`](Task.md), which has `Gzip` — nothing here calls back or keeps a lis
 **zlib framing, raw deflate, tar, and a stream type.** One name per published
 format, and a name goes out when something needs one; the file verbs are the
 answer to a file too big to hold, and the language has no stream to hand out.
-**zip is [`Zip`](Zip.md)**, which reads archives and does not yet write them.
+**zip is [`Zip`](Zip.md)**, which reads archives and writes them.
 
 ## What goes wrong
 
