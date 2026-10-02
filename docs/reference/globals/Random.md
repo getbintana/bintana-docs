@@ -84,3 +84,6 @@ the order rows were made in matters, keep a number beside it.
   shape of a UUID — and not a distribution.
 
 A worker has all three: nothing here calls back or keeps a list.
+
+[`examples/webhook`](https://github.com/getbintana/bintana/tree/main/examples/webhook) makes its secret with `Random.Bytes(32).ToHex()`
+and each delivery's id with `Random.Uuid()`.

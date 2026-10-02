@@ -197,7 +197,7 @@ Every control and every container has all of this.
 | `Width` | width **requested**: a minimum, not an exact size. Reads the allocation when nothing was declared. `0`..`32767` (or `-1`, *not asked*) — a display holds no more, and more was a `BadAlloc` that killed the process; the same for `Height`, `MinWidth`, `MinHeight` and `Resize`. Reading it gives what was asked for, falling back to what GTK allocated when nothing was |
 | `X` | the left edge, in the parent's coordinates. **It means something only inside a container laying out by coordinate**; in a row or a column the parent decides and this reports where it ended up. `-32767`..`32767`, like `Y` and `Move` |
 | `Y` | the top edge, likewise |
-| `Focused` (ro) | whether the focus is **within** it, which is why a `TextBox` answers `true` while the focus really sits on the entry inside it |
+| `Focused` (ro) | whether the focus is **within** it, which is why a `TextBox` answers `true` while the focus really sits on the entry inside it. **On a `Form` it is also whether the window is the one the user is in**: it turns `false` when another window is activated and `true` again when this one is -- measured under a window manager -- which is what a program asks before deciding a notification is worth sending |
 | `Bounds([container])` | `{ X, Y, Width, Height }`: what GTK really allocated, in window coordinates or in the coordinates of the container you pass |
 | `CssNode()` | the GTK node name it is styled as (`"button"`, `"entry"`) |
 | `Delete()` | removes it **and destroys it**. What is in it goes too |

@@ -167,7 +167,8 @@ same**: the daemon knows low, normal and critical, and only `"Urgent"` is critic
 `Locale.Text` at the call site, which is where the extractor looks and where `{0}`
 interpolates. **There is no click that calls back**, no buttons, sound or image: a
 callback held by a notification the desktop owns outlives the window that sent it,
-and nothing needs one yet.
+and nothing needs one yet. [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) sends one when its window is
+not the one the user is in.
 
 ## Locale
 
@@ -799,6 +800,9 @@ if (!Hash.Verify(Settings.Get("webhook"), req.Body, req.Headers["x-signature"], 
     return req.Answer(401, "no");
 ```
 
+[`examples/webhook`](https://github.com/getbintana/bintana/tree/main/examples/webhook) runs the whole scheme, with the six deliveries a
+receiver has to tell apart.
+
 **A hash is not a password.** These are checksums — same input, same digest, as
 fast as the machine can go, which is what makes them right for comparing a
 download against a published digest, keying a cache, or telling two files apart,
@@ -866,6 +870,7 @@ About 50 MB a second to compress and 500 to decompress: a big one belongs in a
 [`Task`](#task), which has it. Compressed data is not text — `Decompress` takes
 `Bytes`, and `ToText()` is the way back to a string. There is no zlib framing,
 raw deflate or zip here; the name goes out when something needs it.
+[`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) is the file verbs in use, with every copy read back.
 
 ## Bytes
 

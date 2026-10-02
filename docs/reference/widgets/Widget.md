@@ -210,7 +210,7 @@ component with a drawn size of its own is put into a small pane: `HAlign` and
 | `Hide()` | makes it invisible. A hidden control **keeps its place in the tree** and its position in a box |
 | `Enabled` | answers the mouse and the keyboard. `true` by default, and **read-only in effect while `Action` is set**: a control that points at a command takes the command's answer |
 | `Focusable` | can take the keyboard focus. Turn it on for a container that wants keys — a drawing surface, a board. The answer is the **control's** and not the outside widget's: a `TextBox` reads `true` while the entry GTK lays out is not focusable at all, its inner `GtkText` being where the focus really sits |
-| `Focused` (ro) | whether the focus is **within** it, which is why a `TextBox` answers `true` while the focus really sits on the entry inside it |
+| `Focused` (ro) | whether the focus is **within** it, which is why a `TextBox` answers `true` while the focus really sits on the entry inside it. **On a `Form` it is also whether the window is the one the user is in**: it turns `false` when another window is activated and `true` again when this one is -- measured under a window manager -- which is what a program asks before deciding a notification is worth sending |
 | `SetFocus()` | gives it the keyboard focus |
 | `Remove()` | detaches it from its parent **without destroying it**, so it can be put somewhere else |
 | `Delete()` | removes it **and destroys it**. What is in it goes too |

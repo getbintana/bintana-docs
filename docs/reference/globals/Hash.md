@@ -75,6 +75,12 @@ will hash what it is given; a signature cannot be so lenient, since
 signature that looks valid and covers nothing. A number or a missing argument is
 refused naming which one.
 
+[`examples/webhook`](https://github.com/getbintana/bintana/tree/main/examples/webhook) is the whole of this running: a receiver that
+verifies a signature over the timestamp and the body's own bytes, and six deliveries —
+a good one, a retry, a changed body, somebody else's secret, a good signature ten
+minutes old, and none at all — each answered as it must be. It exits `1` when one is
+not, so it is also a check.
+
 It is held to RFC 4231's vectors (the case with a key longer than the hash's block
 size included) and RFC 2202's, and not to itself.
 

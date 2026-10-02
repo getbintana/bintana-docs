@@ -83,6 +83,11 @@ removes the temporary and an existing destination is untouched. A half-written
 `.gz` looks exactly like one that worked, which is why it is never left. The new
 file keeps the permissions of the old one, as `gzip` does.
 
+[`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) is the file verbs in use: a folder compressed file
+by file in a `Task`, every copy decompressed to a scratch file and its SHA-256
+compared with the original's, and a copy that does not match deleted — so the
+destination never holds a backup that is known to be wrong.
+
 ## What it costs
 
 On 47 MB of text: about **960 ms to compress** and **90 ms to decompress**. A

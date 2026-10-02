@@ -73,6 +73,11 @@ on a desktop, **the notification portal inside a Flatpak**, a native service
 elsewhere. A direct call to `org.freedesktop.Notifications` would be shorter and
 would need a hole in every package's sandbox.
 
+[`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) sends one when a long job ends and the window is not
+the one the user is in — `this.Focused` on a form, which turns `false` the moment
+another window is activated. [`examples/notify`](https://github.com/getbintana/bintana/tree/main/examples/notify) is the other half: the
+message *inside* the window, for when it is the one being looked at.
+
 ## Withdrawing
 
 | | |
