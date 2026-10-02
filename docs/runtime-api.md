@@ -862,8 +862,27 @@ File.SaveXml("plan.xml", doc);              // canonical: declaration, indent 2,
 this build carries libxml2 — it is optional, the `Database.Sqlite` mould, and
 without it every verb refuses with a sentence. An element answers `Name`,
 `Prefix`, `Namespace`, `Text`, `Attr`/`SetAttr`/`RemoveAttr`/`AttributeNames`,
-`Children`, `Find`/`FindAll`, `Add`/`Insert`/`Remove`, `Parent`, `Copy` and
-`SetNamespace`; a document answers `Root`.
+`Children`, `Find`/`FindAll`, `Add`/`Insert`/`Remove`, `Parent`, `Copy`,
+`SetNamespace` and `DeclareNamespace`; a document answers `Root`.
+
+**Building `examples/clients`' `Excel.js` with `Xml` found three things it got wrong**,
+all fixed in the runtime rather than worked around in the program:
+
+- **It wrote what it could not read.** A control character in `Text` or an attribute
+  went out as the raw byte and `Xml.Parse` refused its own output (*PCDATA invalid Char
+  value 1*); half a surrogate pair went out as bytes that are not UTF-8; a NUL cut the
+  text short in silence. `Text`, `SetAttr`, `SetAttrNS` and the URI of a namespace now
+  refuse anything outside XML 1.0's `Char`, naming the character and where it is.
+- **A prefix could not be declared for an attribute** without moving an element into it.
+  `DeclareNamespace(uri, prefix)` binds one; `SetAttrNS` already looked the namespace up
+  in scope, so `r:id` is the two calls OOXML's own writers make.
+- **A child added under a default namespace answered `""`** while the written text, read
+  back, put it in that namespace. `Add` and `Insert` give it the namespace now (and what is
+  under it); and `SetNamespace` searches the ancestors in a detached tree too, where it
+  used to declare the parent's namespace again on every child.
+
+Indentation was measured and left alone: the canonical shape costs 59 % more bytes
+uncompressed and 5.5 % inside a zip.
 
 **Parsed with no DTD, no entities, no schema and no network** — `XML_PARSE_NONET`
 and not `NOENT`/`DTDLOAD`/`HUGE` — so an external entity and a billion laughs

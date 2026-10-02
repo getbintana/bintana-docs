@@ -332,7 +332,7 @@ A **document** answers `Root` (→ element, or `null`). An **element** answers:
 | | |
 |---|---|
 | `Name`, `Prefix`, `Namespace` | the local name, the prefix, the URI — `""` when there is none |
-| `Text` | all the character data under an element; assigning replaces the children |
+| `Text` | all the character data under an element; assigning replaces the children. **Text XML cannot carry is refused**, naming the character: a NUL, a control character other than tab, newline and return, U+FFFE/FFFF or half a surrogate pair -- written, each was a document `Xml.Parse` could not read back, and a NUL cut the text short in silence |
 | `Attr(name)` | the value of an attribute **with no namespace**, `""` for one that is present and empty, `null` for one that is not |
 | `SetAttr(name, value)`, `RemoveAttr(name)` | both as text |
 | `AttrNS(uri, name)`, `SetAttrNS(uri, name, value)`, `RemoveAttrNS(uri, name)` | the same for an attribute in a namespace — `xml:lang` is `AttrNS("http://www.w3.org/XML/1998/namespace", "lang")`, since an unprefixed name means no namespace at all. `SetAttrNS` refuses a namespace not declared in scope |
@@ -342,7 +342,8 @@ A **document** answers `Root` (→ element, or `null`). An **element** answers:
 | `Add(child)`, `Insert(index, child)`, `Remove()` | see below |
 | `Parent` | the parent element, or `null` for a root or a detached node |
 | `Copy()` | a detached subtree of its own |
-| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach |
+| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach -- in a detached tree too, where it used to declare it again |
+| `DeclareNamespace(uri, prefix)` | binds `prefix` to `uri` on this element, for its attributes and what is under it, **without putting the element in that namespace** -- what `SetAttrNS` then finds, as OOXML's `xmlns:r` on a workbook and `r:id` on each sheet. A prefix is required (a default namespace is `SetNamespace`'s); one already bound to the same URI in scope writes nothing, and one bound to another URI here or above is refused |
 
 **A node from another tree is copied in, and `Add` answers the node that is in
 *this* tree.** Within one tree `Add` moves, as a DOM does; across trees it
@@ -353,6 +354,14 @@ node out and *that* wrapper stops answering — `Copy()` first to keep it; anoth
 wrapper of the same element still answers, detached, and can `Add` it back.
 `SetNamespace` twice with one URI is one declaration; another URI for a prefix
 the element already declares throws, naming the one it has.
+`DeclareNamespace(uri, prefix)` binds a prefix without moving the element, which is
+how `r:id` is written (`book.DeclareNamespace(RELS, "r")`, then `SetAttrNS(RELS, "id",
+…)` on a sheet); one bound to another URI in scope is refused. **An element added
+under a default namespace takes it**, with what is under it -- the tree says what the
+text will. **What `Xml` writes, `Xml` reads**: `Text`, `SetAttr` and `SetAttrNS` refuse a
+NUL, a control character other than tab/newline/return, U+FFFE/FFFF and half a
+surrogate pair, naming it -- each used to be written into a document `Xml.Parse`
+refused, and a NUL cut the text short in silence.
 A broken name (`Add("a b")`) throws rather than writing a document no parser can
 read.
 

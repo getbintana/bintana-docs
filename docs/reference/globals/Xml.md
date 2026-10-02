@@ -24,7 +24,8 @@ is where that design is argued.
 | `Name` (ro) | the local name, the prefix, the URI — `""` when there is none | [names and namespaces](#names-and-namespaces) |
 | `Prefix` (ro) | the prefix, `""` when there is none | [names and namespaces](#names-and-namespaces) |
 | `Namespace` (ro) | the URI, `""` when there is none | [names and namespaces](#names-and-namespaces) |
-| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach | [names and namespaces](#names-and-namespaces) |
+| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach -- in a detached tree too, where it used to declare it again | [names and namespaces](#names-and-namespaces) |
+| `DeclareNamespace(uri, prefix)` | binds `prefix` to `uri` on this element, for its attributes and what is under it, **without putting the element in that namespace** -- what `SetAttrNS` then finds, as OOXML's `xmlns:r` on a workbook and `r:id` on each sheet | [names and namespaces](#names-and-namespaces) |
 | `Text` | all the character data under an element; assigning replaces the children | [reading](#reading) |
 | `Attr(name)` | the value of an attribute **with no namespace**, `""` for one that is present and empty, `null` for one that is not | [attributes](#attributes) |
 | `SetAttr(name, value)` | both as text; creates or replaces | [attributes](#attributes) |
@@ -51,7 +52,7 @@ is where that design is argued.
 | `Parse(text)` | the document, or a `SyntaxError` naming línea and columna |
 | `ParseBytes(bytes)` | the same, and the declaration's encoding is honoured — what `File.LoadXml` uses |
 | `Root` (ro) | the root element of a document, or `null` |
-| `Text` | all the character data under an element; assigning replaces the children |
+| `Text` | all the character data under an element; assigning replaces the children. **Text XML cannot carry is refused**, naming the character: a NUL, a control character other than tab, newline and return, U+FFFE/FFFF or half a surrogate pair -- written, each was a document `Xml.Parse` could not read back, and a NUL cut the text short in silence |
 
 ```js
 const doc   = File.LoadXml("plan.xml");       // the error names the file
@@ -90,10 +91,10 @@ walk is a loop, not a path language.
 | | |
 |---|---|
 | `Attr(name)` | the value of an attribute **with no namespace**, `""` for one that is present and empty, `null` for one that is not |
-| `SetAttr(name, value)` | both as text; creates or replaces |
+| `SetAttr(name, value)` | both as text; creates or replaces. A value XML cannot carry is refused, as `Text` refuses one |
 | `RemoveAttr(name)` | takes the attribute with no namespace away; one that is not there is not an error |
 | `AttrNS(uri, name)` | the same for an attribute in a namespace — `xml:lang` is `AttrNS("http://www.w3.org/XML/1998/namespace", "lang")`, since an unprefixed name means no namespace at all. `SetAttrNS` refuses a namespace not declared in scope |
-| `SetAttrNS(uri, name, value)` | writes one |
+| `SetAttrNS(uri, name, value)` | writes one. The namespace has to have a prefix in scope -- declared on this element or an ancestor, by `DeclareNamespace` or by a parsed document |
 | `RemoveAttrNS(uri, name)` | takes away the attribute in that namespace; one that is not there -- or only a DTD's default -- is not an error |
 | `AttributeNames()` | the local names, sorted as the file had them |
 
@@ -111,12 +112,13 @@ el.AttrNS(XMLNS, "lang");              // "es"
 el.Attr("lang");                       // null -- a different attribute
 ```
 
-The namespace has to be **declared in scope** for `SetAttrNS`; the XML one is
-built into every document (a detached element too) and always works, and any
-other is refused by URI with a sentence, because an invented declaration is a
-prefix on an element that never asked for it. An attribute namespace cannot be a
-default one, so `SetNamespace` -- which puts the *element* in a namespace -- is
-not the way to declare one.
+The namespace has to have **a prefix in scope** for `SetAttrNS` -- declared on the
+element or an ancestor; the XML one is built into every document (a detached
+element too) and always works, and any other is refused by URI with a sentence,
+because an invented declaration is a prefix on an element that never asked for
+it. An attribute namespace cannot be a default one, so `SetNamespace` -- which
+puts the *element* in a namespace -- is not the way to declare one:
+`DeclareNamespace(uri, prefix)` is, below.
 
 `AttributeNames()` lists the **local** name of every attribute, namespaced ones
 included, so a record mapping a file reports `xml:lang` as unmodelled rather
@@ -133,7 +135,35 @@ An `xmlns` declaration is not in `AttributeNames()` and cannot be read with
 | `Name` (ro) | the local name, the prefix, the URI — `""` when there is none |
 | `Prefix` (ro) | the prefix, `""` when there is none |
 | `Namespace` (ro) | the URI, `""` when there is none |
-| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach |
+| `SetNamespace(uri, [prefix])` | puts the element in that namespace, reusing a declaration already in reach -- in a detached tree too, where it used to declare it again |
+| `DeclareNamespace(uri, prefix)` | binds `prefix` to `uri` on this element, for its attributes and what is under it, **without putting the element in that namespace** -- what `SetAttrNS` then finds, as OOXML's `xmlns:r` on a workbook and `r:id` on each sheet. A prefix is required (a default namespace is `SetNamespace`'s); one already bound to the same URI in scope writes nothing, and one bound to another URI here or above is refused |
+
+```js
+const book = Xml.Element("workbook");
+book.SetNamespace(MAIN);                       // the element is in MAIN
+book.DeclareNamespace(RELS, "r");              // r: is bound here, the element stays in MAIN
+book.Add("sheets").Add("sheet").SetAttrNS(RELS, "id", "rId1");
+// <workbook xmlns="…main" xmlns:r="…relationships"><sheets><sheet r:id="rId1"/>…
+```
+
+**`DeclareNamespace` is how a format with prefixed attributes is written**, and it
+was missing: OOXML declares `xmlns:r` on a workbook and writes `r:id` on each sheet,
+and the only way to bind `r` was to move an element into that namespace and back,
+which left a declaration on every sheet. A prefix is **required** -- a default
+namespace declared on an element applies to that element itself, so that is
+`SetNamespace`'s. A prefix already bound to the same URI in scope writes nothing;
+one bound to *another* URI here or above is refused, because shadowing it would
+change what the elements already using it mean. `xml` and `xmlns` are XML's own.
+
+**An element added under a default namespace takes it**, and so does whatever is
+under it with no namespace of its own -- because that is what the written text
+says: a bare `<row>` under `<worksheet xmlns="…">` is in that namespace to every
+reader. The tree used to answer `""` for it while the same document, written and
+read back, answered the URI. So `SetNamespace` on the root of a part is the whole
+of it, and nothing below repeats the declaration -- in a detached tree too, where
+`SetNamespace` on a child used to declare the parent's namespace again. What is
+given up is a child *meant* to have no namespace under a default one, which would
+need `xmlns=""`; this API does not write that.
 
 Asking twice for the same namespace is one declaration. A *different* URI for a
 prefix (or a default namespace) the element already declares throws, naming the
@@ -148,7 +178,7 @@ A name that is not one — with a space in it, say — is refused at `Add` and
 | | |
 |---|---|
 | `Element(name)` | a detached element; its own tree, not in any document |
-| `Add(child)` | a node or an element name |
+| `Add(child)` | a node or an element name. An element with no namespace added under a default namespace **takes it** -- and so does what is under it with none -- because that is what the written text says; the tree used to answer `""` for it while the text, read back, answered the URI |
 | `Insert(index, child)` | before the element child at `index`, or at the end |
 | `Remove()` | takes the node out for good |
 | `Copy()` | a detached subtree of its own |
@@ -179,6 +209,15 @@ assignment, which detaches the children without silencing anybody.
 |---|---|
 | `Stringify(node)` | the canonical text: declaration, indented by two, one trailing newline. A detached element is written with a document of its own |
 
+**What `Xml` writes, `Xml` reads.** `Text`, `SetAttr` and `SetAttrNS` refuse text XML
+cannot carry, naming the character and where it is: a NUL, a control character other
+than tab, newline and return, U+FFFE/U+FFFF, and half of a surrogate pair. Each of
+those used to be written -- and `Xml.Parse` refused the result (*PCDATA invalid Char
+value 1*), the API writing documents it could not read; a NUL cut the text short with
+nothing said. Whether such a character should be dropped instead is the program's
+decision, not the runtime's: [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients)' `Excel.js` drops them
+from a cell, since a stray character pasted into a name should not stop an export.
+
 `File.SaveXml` writes exactly that, by the atomic [`File.Save`](File.md). So a
 parsed document comes back with different whitespace and attribute order — both
 insignificant to XML, and one shape is worth more than byte fidelity. Comments
@@ -198,6 +237,12 @@ package. The class is installed in a worker too, so a big file can be parsed
 off the main thread.
 
 ## What goes wrong
+
+- **`Text` refused a value naming a character.** The text holds something XML cannot
+  carry -- often a control character pasted from somewhere, or half an emoji cut by a
+  `slice`. Take it out before assigning; the sentence says where it is.
+- **`SetAttrNS` says no prefix is declared.** Declare one with `DeclareNamespace(uri,
+  prefix)` on the element or an ancestor.
 
 - **`Parse` threw naming a line and a column.** A malformed document is not an
   empty one. Catch it, or `File.Exists` first for the file road.
