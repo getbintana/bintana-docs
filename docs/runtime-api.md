@@ -700,6 +700,27 @@ not be able to delete anything.
 
 With no display (or before the application is up) they print to stderr.
 
+## Notification
+
+`Notification.Send(title, [body], [options])` and `Withdraw(id)`, in
+`bta_notification.c`, through `g_application_send_notification` so that a packaged
+program reaches the desktop by its portal and not by a hole in the sandbox. Three
+things were measured on a private bus watched with `dbus-monitor`:
+
+- **Without an application `id` it sends nothing and tells nobody.** GLib's
+  answer is a `CRITICAL` assertion; five calls produced zero `Notify` on the bus.
+  The verb refuses, naming the key.
+- **`High` is `Normal` on a freedesktop daemon**: the `urgency` hint is a byte of
+  0, 1 or 2, and GLib sends 1 for both. Only `"Urgent"` is critical.
+- **The tests must never reach the user's desktop**, and a bare `dbus-run-session`
+  does not guarantee it: it activated the system's real services on the private bus
+  — the portal, `xfconfd` and `xfce4-notifyd` — because they are in the default
+  service directories. A configuration naming none is what makes the private bus
+  empty; `dbus-monitor` still sees the call whether or not anyone answers it.
+
+There is no click that calls back, deliberately: it would be a tenth hand-rolled
+async job shape, held by something the desktop owns past the window that sent it.
+
 ## File
 
 | | |

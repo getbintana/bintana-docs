@@ -133,6 +133,42 @@ Message.Error("Cannot open {0}: {1}", path, e.message);
 
 A question that needs an answer is a form: [forms.md](forms.md#a-dialog-that-asks-something).
 
+## Notification
+
+A desktop notification: for when the window is **not what the user is looking
+at** — a long job that ended while they were somewhere else. [`Message`](#message)
+is the other way to say something, and it is modal, so it takes the window.
+
+```js
+Notification.Send(Locale.Text("Backup finished"), Locale.Text("{0} files", n))
+const id = Notification.Send("Disk almost full", "3% left",
+                             { Urgency: "Urgent", Icon: "drive-harddisk-symbolic" })
+Notification.Withdraw(id)
+```
+
+| | |
+|---|---|
+| `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name; sending again with the same `Id` **replaces** what is showing. The title and body are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from |
+| `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error |
+
+**The project has to declare an `id`** in `project.json`: a notification is sent in
+the name of an application, and without one GLib fails an assertion and sends
+nothing — so this refuses, saying what to declare. **A project with a `main` has no
+application at all** and refuses too; a tool says it is done on stdout.
+
+The options are `Id` (sending again with the same one **replaces** what is
+showing), `Urgency` — `"Low"`, `"Normal"` (the default), `"High"`, `"Urgent"` — and
+`Icon`, a theme icon name. With no body the second argument may be the options. An
+option that is not one of these is refused, so `{ Urgancy: "High" }` is an error
+and not a quiet normal one. **On a freedesktop desktop `High` and `Normal` look the
+same**: the daemon knows low, normal and critical, and only `"Urgent"` is critical.
+
+**The title and body are not looked up in a catalogue here.** Wrap them in
+`Locale.Text` at the call site, which is where the extractor looks and where `{0}`
+interpolates. **There is no click that calls back**, no buttons, sound or image: a
+callback held by a notification the desktop owns outlives the window that sent it,
+and nothing needs one yet.
+
 ## Locale
 
 | | |
