@@ -1853,6 +1853,14 @@ The design, the measurements and what was refused are in
 | `Ctrl+F8` | pause a program that is running |
 | `F8` / `Shift+F8` / `Ctrl+Shift+F8` | step into, over, out |
 
+**And the same commands are buttons over the Debug page** -- Debug/Continue,
+Pause, the three steps and Stop -- because whoever comes from a debugger with a
+toolbar looks for them there before looking in a menu. They are `Action`s, so
+the menu item, the key and the button are one command each and grey out
+together: a step is offered in all three places exactly while the program is
+stopped. Stop is the toolbar's own Stop, the same command, since there is one
+child to end whichever button started it.
+
 *Debug → Stop where something is thrown* is a switch, and it is **every** throw
 and not only the uncaught ones: whether something above will catch it is not a
 question the engine can answer at the moment it is raised. Which is what one
