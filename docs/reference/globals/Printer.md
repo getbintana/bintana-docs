@@ -56,7 +56,7 @@ the middle of hung the suite.
 
 ```js
 Sheet_DrawPage(p, page, w, h) {
-    p.Text(40, 60, Locale.Text("Page {0} of {1}", page, this.total));
+    p.Text(Locale.Text("Page {0} of {1}", page, this.total), 40, 60);
 }
 ```
 

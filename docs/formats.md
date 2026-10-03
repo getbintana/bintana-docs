@@ -202,6 +202,12 @@ answer normally. A tool that asks what icons exist has to
 read the themes off the disk, which is what it wanted anyway (see
 [testing.md](https://github.com/getbintana/bintana/blob/main/docs/testing.md)).
 
+**No widget is not no drawing.** [`Drawing`](llm/library.md#drawing) hands a
+`Painter` over a PNG or a PDF with no control behind it, so a nightly job writes
+its report with `lib/report`'s `ReportDocument` and its charts with
+`lib/charts`' `ChartDocument` — the same pages and the same pictures the controls
+show, in black ink, with no display.
+
 A missing `project.json` is not fatal: the IDE will open the directory and say the
 project cannot run. Neither is a broken one: the IDE reads it as a `Record` (see
 [ide.md](ide.md#projectjson-as-a-record)), reports everything wrong with it in the

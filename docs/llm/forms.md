@@ -50,7 +50,10 @@ symlink. See [validation.md](https://github.com/getbintana/bintana-llm/blob/main
 `main` names a function, called once with no arguments after the sources load.
 **GTK is never initialised**: no display is needed, which is what makes this the
 right shape for something run over ssh, from a hook, or in CI. `new Form()` in
-such a project is an error.
+such a project is an error. **It can still draw a document**: no widget, but
+[`Drawing`](library.md#drawing) writes a PNG or a PDF with a painter of its own,
+and `ReportDocument` and `ChartDocument` (in `report` and `charts`) draw through
+it.
 
 The program ends when nothing is owed an answer — no child running, no timer
 armed, no file watched. `Application.Quit(code)` ends it with a status.

@@ -87,6 +87,12 @@ the verbs live on a theme of their own: `Printer.Send(area)` opens the dialog
 and `Printer.ToFile(area, path)` writes a PDF without one. What the handler
 paints is the same either way, and on paper it is `DrawPage` that paints it.
 
+**With no control there is [`Drawing`](../globals/Drawing.md)**: the same three
+verbs with the drawing passed in place of the control — `Drawing.Save(path, w, h,
+draw)`, `Drawing.ToPng(w, h, draw)`, `Drawing.SavePdf(path, w, h, pages, draw)` —
+so a `main` project, which never has a display, can write a picture or a
+document. Its painter has no theme: the ink is black, which is what paper wants.
+
 ## Testing a drawing
 
 | | |
@@ -115,6 +121,10 @@ leaves a dump with no closing `Pop`.
   allocated: pass a size.
 - **The drawing is invisible on a dark theme.** It is painting the theme's ink on
   the theme's ground, or a colour chosen for one of them: ask `Dark`.
+- **A saved PNG has white text on a white page.** A control in no window takes
+  its ink from the application's first window, and a dark theme's ink is light.
+  For paper, pin the colours or draw through [`Drawing`](../globals/Drawing.md),
+  whose ink is black.
 
 ## What it does not do
 
@@ -128,6 +138,7 @@ leaves a dump with no closing `Pop`.
 
 ## See also
 
-[`Painter`](../../llm/controls.md#painter) · [`charts`](../../llm/charts.md) ·
+[`Painter`](../../llm/controls.md#painter) · [`Drawing`](../globals/Drawing.md) ·
+[`charts`](../../llm/charts.md) ·
 [`report`](../../llm/report.md) · [`markdown`](../../llm/markdown.md) ·
 [`examples/drawing`](https://github.com/getbintana/bintana/tree/main/examples/drawing)

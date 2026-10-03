@@ -415,6 +415,36 @@ do not answer an empty list. Ask `File.IsDir(path)` first. What *is* forgiven is
 directory the walk finds and cannot read: that one is skipped rather than ending
 the walk.
 
+## Probe
+
+What a file *is*, read from its header **without decoding it** — no widget, no
+display, no pixels in memory.
+
+```js
+Probe.Image("logo.png")          // { Width: 640, Height: 200 }
+Probe.Image("notes.txt")         // null
+```
+
+| | |
+|---|---|
+| `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
+
+The size is in pixels; a vector picture answers the size it declares (an SVG's
+`viewBox`). **It reads exactly the files a [`Picture`](controls.md#picture)
+shows**, because both go through the machine's image loaders — so which formats
+answer is the machine's, not the runtime's: an SVG is measured where an SVG
+loader is installed (Fedora reads one through glycin) and is `null` where none is,
+and `null` from here means a `Picture` would have shown nothing. `null` is also
+the answer for a file that is not there, as `File.Info` gives; a path that is not
+text is **refused**, so `Probe.Image(undefined)` never probes `./undefined`.
+
+**It is not `File.ImageSize`**, on purpose: `File` is for working *on* a file —
+loading, saving, hashing, watching — and `File.Info` already answers a `Type`, so
+a second question about the same file under `File` would be a second answer for
+one word. A probe is what `ffprobe`, `exiftool` and `identify` call reading a
+header, and the namespace grows by the *kind* of thing (`Image` now). A worker
+has it: a report sizing a logo on a thread is what it was for.
+
 ## Exec
 
 ```js
@@ -681,7 +711,7 @@ wrote. A page whose handler throws stops the run, and on the file road leaves
 
 ```js
 Sheet_DrawPage(p, page, w, h) {
-    p.Text(40, 60, Locale.Text("Page {0} of {1}", page, this.total));
+    p.Text(Locale.Text("Page {0} of {1}", page, this.total), 40, 60);
 }
 
 BtnPrint_Click() {
@@ -710,6 +740,45 @@ const printers = Printer.Names;
 if (printers === null)      … // this build cannot say
 else if (!printers.length)  … // it can, and there are none
 ```
+
+## Drawing
+
+A [`Painter`](controls.md#painter) over a PNG or a PDF **with no control and no
+display** — what a `main` project draws a document with, since it cannot make a
+widget at all. `DrawingArea`'s three ways out, with the drawing passed where the
+control was:
+
+```js
+Drawing.Save("load.png", 800, 400, (p, w, h) => chart.Paint(p, w, h));
+const png = Drawing.ToPng(800, 400, (p, w, h) => { p.Text("Nightly", 10, 10); });
+Drawing.SavePdf("report.pdf", 595, 842, pages, (p, page, w, h) => report.Paint(p, page, w, h));
+```
+
+| | |
+|---|---|
+| `Save(path, width, height, draw)` | `draw(painter, width, height)` against an image of that size, written as a PNG — `DrawingArea.Save` with the handler passed in place of the control, so it needs **no widget and no display**. Ink black, the font `Text` measures with. A `draw` that throws writes no file, and the throw is this call's |
+| `ToPng(width, height, draw)` | the same picture as `Save`, answered as `Bytes` instead of written |
+| `SavePdf(path, width, height, pages, draw)` | `draw(painter, page, width, height)` once per page into one **PDF** — `DrawingArea.SavePdf` with the drawing passed in place of the control, and `DrawPage`'s own arguments. The size is in **points**, 72 to the inch (A4 is 595×842); `pages` may be `undefined` for one. What a `main` project prints with: **no widget and no display**. A page that throws leaves **no file** |
+
+`draw` is called the way a handler is: `(painter, width, height)` for a picture —
+`Draw`'s arguments — and `(painter, page, width, height)` once per page of a PDF,
+1-based — `DrawPage`'s. So a drawing written for a control is the drawing for
+this, and `lib/report`'s `ReportDocument` and `lib/charts`' `ChartDocument` draw
+through it.
+
+**What the painter has with no control behind it**: **black** ink and a line one
+wide — a control's ink is its theme's, and a document has none, so a chart drawn
+here is readable on white paper whatever the desktop is — and the font
+[`Text`](#text) measures with, at the resolution it measures at, so a page laid
+out with `Text.Size` is drawn at the size it was measured. A new painter per
+call, valid only while `draw` runs: one kept past it refuses every call.
+
+**A throw from `draw` is this call's throw**, unlike a control's handler (an
+event, reported as one): the caller is on the stack. It **leaves no file** — a
+PDF is written as it is drawn, and a half-written one is removed. The sizes,
+the pages and the refusals are `DrawingArea`'s: a picture up to 16384 a side, a
+page in **points** up to PDF's 200 inches, 1 to 10000 pages, and `pages` may be
+`undefined` for one. Not in a `Task`: a worker installs no painter.
 
 ## Settings
 
@@ -1062,7 +1131,7 @@ Text.Font                                            // "Cantarell 11"
 | `Bounds(text, from, to, [font], [options])` | the rectangles covering those characters: `{ X, Y, Width, Height }`, one per line the range crosses and more than one on a line that changes direction |
 | `LineOf(text, index)` | the line an index falls on, 1-based and clamped — `index` is the number a **search** gave, so it is counted in UTF-16 units |
 | `OffsetAt(text, line, [column])` | the **character** offset of that line and column, clamped the way an editor's `Select` clamps |
-| `Font` (ro) | the desktop's UI font, which is what a control draws with unless CSS says otherwise. `""` where there is no display to ask |
+| `Font` (ro) | the desktop's UI font, which is what a control draws with unless CSS says otherwise. Where there is no desktop to ask — a `main` project — GTK's own default, `"Sans 10"`, which is what `Drawing` draws in |
 
 `font` is a Pango description (`"Cantarell Bold 10"`); `""` or nothing means
 `Text.Font`. `options` is `{ Width, Markup, Align }`, the same three
@@ -1120,6 +1189,10 @@ Before this existed the only measurement in the runtime was on a painter, and a
 painter is valid only inside the `Draw` it came from — so nothing could size
 itself to its own words before drawing them, and a band's height had to be
 declared and hoped for.
+
+**And what is measured here with no display is drawn with no display by
+[`Drawing`](#drawing)**, whose painter takes the same font at the same
+resolution — which is how `ReportDocument` writes a PDF from a `main` project.
 
 ## Screen
 
@@ -1579,6 +1652,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `UserAgent` | sent as-is; `""` sends none — and some servers answer the nameless with an error |
 | `Log` | `"none"` unless told: `"minimal"`, `"headers"` or `"body"` sends the traffic through `Logger` at `Debug` — so `Logger.Level = "Debug"` shows it and a `Handler` takes it; a `Wait`'s never reaches a `Handler`, since its context is private and its caller is blocked |
 | `Cookies` | `false` unless told: `true` keeps a jar of the session's own, so a login answers the next request |
+| `Tls` | `{ Ca, Cert }`, or nothing. `Ca` is a **certificate to verify the server's against** — the company's own CA on an internal network, or the server's own file when it is self-signed, which is exactly the case the system store cannot reach and a per-program file can. `Cert` is **the server's certificate, pinned**: it must be byte for byte that one. Either accepts; `null` when none is set. Both files are read where they are assigned, so a wrong path is a mistake on the next line rather than on the first internal request. **The system's store is still trusted**, and a server it already accepts never reaches the check at all — this is a second opinion, not a replacement |
 | `new Multipart()` | a file upload as a value: `Field(name, value)` and `File(name, filename, body, [contentType])` (body is text or `Bytes`, `application/octet-stream` unless told), both answering the upload for chaining; `Length` counts the parts. Sent as the body of a `Post`/`Put`/`Patch`, which sets its own `Content-Type` with soup's boundary — an explicit one beside it is refused |
 | `Part(index)` | one part read back: `{ Name, Filename, Type, Data }`, `Data` as `Bytes`. Past the end is refused |
 | `Server([opts])` | a listener of its own, for a static file server, a local API, a callback endpoint. Everything about it is on [`HttpServer`](../reference/globals/HttpServer.md) |
@@ -1599,6 +1673,20 @@ them, `Set-Cookie` included, which is what `Cookies: true` is for. A `Query`
 value of `undefined` or `null` is not sent, and a header or query value that
 cannot become text is refused by the call — not skipped with the conversion's
 error left pending.
+
+**`Tls` is for a server the system's store does not trust** — an internal one
+signed by the company's own CA, or a self-signed device — and it is a client
+option (`Http.Client({ Tls: { Ca: "certs/company-ca.pem" } })`) and a property,
+never a per-request one. `Ca` is a certificate the server's chain must reach,
+**with the host name checked against what was dialled**; `Cert` pins the server's
+own certificate, byte for byte. Either may be given, or both, and either accepts.
+Both files are read where they are assigned, so a wrong path throws on that line.
+It only ever *widens* trust by a file the program named: a server the store
+already accepts never reaches the check, and there is no accept-anything spelling.
+**A client with a `Tls` resumes no TLS session** — a resumed handshake presents
+no certificate, so nothing would be verified, and a server one client accepted
+would then be reachable by every other client in the process. A refused handshake
+is `onError` with `Kind: "Tls"`.
 
 **`Stream` reads before EOF**, which is the difference: the other verbs answer
 once, when the response is complete, and a feed that never completes is

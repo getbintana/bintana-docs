@@ -942,6 +942,22 @@ parent is a loop. A symlink to a *file* is an ordinary file: icon themes are
 largely built out of those, and skipping them would answer a question nobody
 asked.
 
+## Probe
+
+`Probe.Image(path) -> { Width, Height }` or `null`, in `bta_probe.c`: a
+picture's size from its header (`gdk_pixbuf_get_file_info`), with no decode, no
+widget and no display — so a report can size a logo while it is still measuring,
+and a `main` project can ask at all. It reads the same files a `Picture` shows,
+because `gdk_texture_new_from_filename` is built on the same loaders; which
+formats that is is the machine's (an SVG answers its declared size where a loader
+reads SVG — glycin's does on Fedora 44 — and `null` where none does). `null` for
+a missing file too; a path that is not text is refused through `bta_file_path`.
+
+**Not `File.ImageSize`**: `File` works *on* files, and `File.Info` already answers
+a `Type`, so a second answer about the same file under the same owner is the
+ambiguity the name avoids. The namespace grows by the kind of thing, and there is
+no `Probe.File`. Installed in a worker too: a header read and a dictionary.
+
 ## Exec
 
 ```js
@@ -1971,7 +1987,7 @@ Text.Font                                       // the desktop's UI font
 | `Height(text, [font], [options])` | how tall: one line, or the whole block when it wraps |
 | `Size(text, [font], [options])` | `{ Width, Height, Lines }` from one layout |
 | `Lines(text, [font], [options])` | the lines it breaks into |
-| `Font` (ro) | the desktop's UI font; `""` with no display to ask |
+| `Font` (ro) | the desktop's UI font; with no desktop to ask, GTK's own default, `"Sans 10"` |
 
 `font` is a Pango description and defaults to `Text.Font`; `options` is
 `{ Width }`, the width to wrap to. A word too long for that width is **broken**
@@ -2750,7 +2766,7 @@ refused rather than breaking the framing silently:
 
 | | |
 |---|---|
-| `Client([opts])` | the options are an object -- a bare URL is refused, since reading it as "none given" configures nothing while looking like it worked. `BaseUrl` (ours; absolute URL wins; `/a/`+`/b`=`/a/b`), `Headers` (defaults, request merges and wins), `Timeout` ms (our guard+cancel; soup `timeout` stays 60s), `FollowRedirects: true` (→ inverted `NO_REDIRECT`), `Language` (→ `Accept-Language`), `Proxy: "default"` (system resolver) \| `null` (direct, no proxy) \| `"http(s)://..."` (one of your own), `Auth: { User, Password }` (Basic, preemptive; reads back `null` when none is set, like `Proxy`), `Cookies: false` (`true` keeps a jar of the session's own), `UserAgent` (sent as-is; `""` sends none), `Log: "none"` (`"minimal"`/`"headers"`/`"body"` send the traffic through `Logger` at `Debug`), `IdleTimeout` (ms idle before soup closes a pooled connection, `0` is soup's own 60 s), `MaxConns`/`MaxPerHost` (`10`/`2`; constructor-only, assigning later throws) |
+| `Client([opts])` | the options are an object -- a bare URL is refused, since reading it as "none given" configures nothing while looking like it worked. `BaseUrl` (ours; absolute URL wins; `/a/`+`/b`=`/a/b`), `Headers` (defaults, request merges and wins), `Timeout` ms (our guard+cancel; soup `timeout` stays 60s), `FollowRedirects: true` (→ inverted `NO_REDIRECT`), `Language` (→ `Accept-Language`), `Proxy: "default"` (system resolver) \| `null` (direct, no proxy) \| `"http(s)://..."` (one of your own), `Auth: { User, Password }` (Basic, preemptive; reads back `null` when none is set, like `Proxy`), `Cookies: false` (`true` keeps a jar of the session's own), `UserAgent` (sent as-is; `""` sends none), `Log: "none"` (`"minimal"`/`"headers"`/`"body"` send the traffic through `Logger` at `Debug`), `IdleTimeout` (ms idle before soup closes a pooled connection, `0` is soup's own 60 s), `MaxConns`/`MaxPerHost` (`10`/`2`; constructor-only, assigning later throws), `Tls: { Ca, Cert }` (a CA file the server's chain must reach, with the host name checked, and/or the server's own certificate pinned; either accepts — see below) |
 | `Request(method, url, [body], [opts], onDone, [onError])` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`; anything else is refused naming what it accepts |
 | `Get(url, [opts], onDone, [onError])` | no body |
 | `Post(url, body, [opts], onDone, [onError])` | with body |
@@ -2823,6 +2839,31 @@ default, and what a login flow turns on. libsoup is optional at build time
 (a window on JokeAPI: async on a form, cancelled on close) and
 `examples/session` (auth plus cookies against httpbingo: login, prove the jar,
 every verb) are the whole of it running.
+
+### `Tls`: a server the system's store does not trust
+
+`Tls` is the client's, as an option and a property, and never a request's. Both
+files are read with `g_tls_certificate_new_from_file` where they are assigned, so
+a wrong path throws on that line, and a refused one leaves the client's trust as
+it was. Nothing is connected for a client that names none, so the road a program
+that never mentions TLS takes is the one it always took. For one that does,
+`SoupMessage::accept-certificate` asks the trust — **it only fires for a
+certificate the system's store already refused**, so this adds a file and widens
+nothing else: `Cert` is `g_tls_certificate_is_same`, checked first; `Ca` is
+`g_tls_certificate_verify` against the host that was dialled, so a certificate
+for another name signed by the same CA is refused (`BAD_IDENTITY`). A refusal is
+soup's own failure, `Kind: "Tls"`.
+
+**And such a client resumes no session.** glib-networking keeps the TLS sessions
+of a process in one cache keyed by server, and a resumed handshake presents no
+certificate, so `accept-certificate` never fires: a server one client accepted
+with its `Ca` was reachable afterwards by **every other client in the process**,
+a bare `Http.Client()` included. Measured against a server issuing TLS 1.3
+tickets, and gone against one issuing none — which is why `Http.Server`, which
+issues none, could not show it. `session-resumption-enabled` is turned off on the
+connections of a client with a `Tls`, from `network-event` at
+`TLS_HANDSHAKING`; the property is glib-networking's (2.72 and later) and is
+looked up before it is set.
 
 ## Http Server
 
@@ -2927,6 +2968,33 @@ own; a build without it answers **`null`** -- a third value, because `[]` cannot
 be told apart from a machine with no printer and a throw would make a capability
 question something a program has to catch. Printing itself is core GTK and works
 either way.
+
+## Drawing
+
+`Drawing.Save(path, width, height, draw)`, `Drawing.ToPng(width, height, draw)`
+and `Drawing.SavePdf(path, width, height, pages, draw)`, in `bta_paint.c`: a
+`Painter` over a cairo image or PDF surface **with no control behind it**, so a
+`main` project — which never initialises GTK and cannot make a widget — can draw
+a document. Before it every way out of a painter went through a
+`DrawingArea`, and a report that had to leave from a timer was run under
+`xvfb-run` to put a window nobody sees on a display nobody has.
+
+They are `DrawingArea`'s three verbs with the same refusals and **the drawing
+passed where the control was**: `draw(painter, width, height)` for a picture —
+`Draw`'s arguments — and `draw(painter, page, width, height)` per page of a PDF,
+`DrawPage`'s. One frame function serves both the control and this, so the size
+limits, the page limits and the *no file when a page throws* rule are one
+implementation.
+
+**The painter has no widget, and three things follow.** Its ink is **black**
+(`painter_ink` answers black with no widget, so `Foreground` is black and a
+`ChartDocument` drawn here has black text on paper whatever the theme); its line
+is one wide; and its layout takes the font and the resolution `Text` measures
+with (`metrics_default_font`, `gtk-xft-dpi`), so a page measured by `Text` is
+drawn at the size it was measured. A new painter per call, and it refuses once
+`draw` has returned. **A throw from `draw` is the call's throw**, not an event's:
+the caller passed the function and is on the stack. A worker does not install it
+— cairo and pango are drawing, and a worker installs no painter.
 
 ## AudioPlayer
 

@@ -35,6 +35,7 @@ It is a [`Component`](../widgets/Component.md), so everything on
 | | | |
 |---|---|---|
 | `Data` | the rows: an array of plain objects | [the data](#the-data) |
+| `Document` (ro) | the report itself — a `ReportDocument`, which is what draws | [the document](#the-document) |
 | `Margins` | the gutter around the content, in points: one number for all four edges, or `{ Top, Right, Bottom, Left }` | [the paper](#the-paper) |
 | `Orientation` | `Portrait` `Landscape` | [the paper](#the-paper) |
 | `Page` | the current page, **one-based** | [turning the pages](#turning-the-pages) |
@@ -106,6 +107,15 @@ row, or `@Page`/`@Pages`), `Total` (`Sum` `Count` `Min` `Max` `Avg`), `Line`,
 the scope, which is why there is nothing to disagree with it. The whole grammar
 is in [llm/report.md](../../llm/report.md).
 
+**A row can look like what it holds.** Any element takes `When` — `true`,
+`false`, `"@Odd"`, `"@Even"`, `"@First"`, `"@Last"`, `{ Field, Is }` or
+`{ Field, IsNot }` — and is drawn only where it holds; `Color` and `Font` may be
+`{ Field: "Name" }`, read off the row; and a `Box` may be `Width: "Band"` (the
+content area) and `Height: "Band"` (the band itself), which is how a stripe
+covers a row that wrapped. The stripe counts rows across the whole run, not per
+page, and every spelling is refused where it was written. See
+[llm/report.md](../../llm/report.md#elements).
+
 ## Turning the pages
 
 | | |
@@ -122,7 +132,7 @@ which of them to paint.
 
 | | |
 |---|---|
-| `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text; the pages are the ones the last measure worked out. This is what a report is for — `Save` is for when one page is going into something else |
+| `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text; the pages are the ones the last measure worked out. This is what a report is for — `Save` is for when one page is going into something else. With no display, `Document.SavePdf` is the same file |
 | `Send([setup], cb)` | **every page, to paper**, through [`Printer`](../../llm/library.md#printer): this fills in how many pages there are and the paper and orientation the report was laid out for, and `{ Copies, From, To }` say the job. **A paper chosen in the dialog scales the page rather than re-flowing it**, and the page count does not move — a report's bands are declared in its own points, so it declares no `Paginate` (a `Markdown` does). **Async**, like every dialog here: `cb({ Copies, From, To })` is what was actually sent, and is **not called** when the dialog was cancelled. **To a file it is `SavePdf`**: a PDF is not a printer with a `Copies` of 3 |
 | `Save(path, [page], [scale])` | one page to a PNG. `page` defaults to the current one, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). The export runs the same `Draw` at the exact paper size, clamps the page the way `Page` does, and **does not move the report** |
 
@@ -133,6 +143,47 @@ no `Fit`: a preview that fits is the one state that is never clipped.
 **The page is white and the ink is black, not the theme's** — a report is a
 document that will be printed, and the theme's ink on white paper is the
 invisible drawing.
+
+## The document
+
+| | |
+|---|---|
+| `Document` (ro) | the report itself — a `ReportDocument`, which is what draws. Everything below that is not about the screen is a property of it |
+
+**A report is a `ReportDocument`, and the control shows one.** The paper, the
+bands, the rows, the pages and the drawing of each page are the document's; the
+`Report` adds what a screen has — `Page`, the two events and `Send`. Every
+property above but `Page` is the document's too, under the same name, and
+assigning one on the control assigns it there.
+
+A `ReportDocument` is made with `new` and is not a widget, so it is what a `main`
+project writes a report with — the nightly job, the report run from a timer —
+since such a project never has a display. It raises no events and has no `Page`;
+what it adds is a painter-level verb, and its `Refresh` answers:
+
+| | |
+|---|---|
+| `ReportDocument.PageCount` (ro) | how many pages the data and the sections make. Measures when it has to, so it is answerable before anything has been drawn. An empty report is one blank page, not none |
+| `ReportDocument.Refresh()` | measures again now and answers the new `PageCount`. Call it when you changed the rows **in place**; assigning `Data` or `Sections` already throws the old pages away |
+| `ReportDocument.Paint(p, page, width, height)` | draws page `page` (one-based, clamped) with `p`, scaled to fit `width`×`height` and centred — for a painter something else opened: a `DrawPage` of your own, or a `Drawing` that puts this page beside other things. Black on white, whatever the theme |
+| `ReportDocument.Save(path, [page], [scale])` | one page to a PNG. `page` defaults to `1`, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). **No widget and no display**: it draws through `Drawing` |
+| `ReportDocument.SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text. **No widget and no display**: it draws through `Drawing`, which is what lets a `main` project — a report run from a timer — write one. A page that throws leaves no file |
+
+```js
+// project.json: { "main": "Main", "uses": ["report"] }
+function Main() {
+    const d = new ReportDocument();
+    d.Sections = sections();               // a function of your own, shared with a form
+    d.Data     = rows;
+    d.SavePdf("statement.pdf");
+}
+```
+
+`Save` and `SavePdf` draw through [`Drawing`](../globals/Drawing.md), which is
+the control's `Draw` with nothing on a screen: the same pages, the same black
+ink, and an element with no font drawn in the font `Text` measured it with. A
+page that throws leaves no file. Not in a [`Task`](../globals/Task.md): a worker
+installs no painter and no `Drawing`.
 
 ## What it does not do
 

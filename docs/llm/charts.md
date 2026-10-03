@@ -39,7 +39,7 @@ declare any of them.
 | Member | |
 |---|---|
 | `Type` | `Bar` `Line` `Area` `Pie` `Doughnut`. Defaults to `"Bar"`. |
-| `Series` | the data: `[{ Name, Values, Color, Axis }]` — see below. Defaults to `[]`. Assigning it redraws |
+| `Series` | the data: `[{ Name, Values, Color, Colors, Axis }]` — see below. Defaults to `[]`. Assigning it redraws |
 | `Labels` | the category axis, as strings. As many as there are values is a label per bar; **fewer** is marks spread evenly across the plot; a pie names its slices from them. Defaults to `[]`. |
 | `Marks` | `[{ At, Text }]`, `At` being an index into the values — a **real** time axis, where the caller says where each label goes. Replaces `Labels` on the x axis while it is set. Defaults to `[]`. |
 | `Legend` | `None` `Top` `Bottom`. It wraps to at most **three** rows and whatever did not fit is not drawn: a legend of thirty series is the wrong control, and eating the plot to hold one is worse. Defaults to `"Bottom"`. |
@@ -58,6 +58,7 @@ declare any of them.
 | `Zoomable` | lets the wheel zoom and a drag pan — see [what the pointer does](../reference/libraries/Chart.md#what-the-pointer-does). Off by default, so a chart of four bars never steals a scroll from the `Scroller` around it. Defaults to `false`. |
 | `Refresh()` | redraws now. **Assigning any property already does**, so this is for the case where the numbers changed **in place** |
 | `Save(path, width, height)` | the same drawing to a PNG of any size — a chart in a report, or in a bug report |
+| `Document` (ro) | the chart itself — a `ChartDocument`, which is what draws. Every property below that is not about the pointer is a property of it |
 | **event** `Select(series, at, value)` | a click on a bar, a point or a slice. `at` is the index into that series' `Values` |
 | **event** `Hover(series, at, value)` | the pointer passing over one, **which is not a selection**: a chart that reported a click as a hover could not have a tooltip. On a line or an area it is the first series; on a **stacked** `Area` it is the band the pointer is inside (the top one above them all), `value` is that series' own value, and the mark is drawn at the top of its band |
 | **event** `Range(from, count)` | the window changed — the wheel, a drag, or the double click that resets it |
@@ -73,9 +74,10 @@ chart.Series = [
 
 | | |
 |---|---|
-| `Name` | how the form reaches it — `this.BtnSave` — and the prefix its handlers carry: `BtnSave_Click`. A valid JavaScript identifier, unique on the form |
+| the series' `Name` | what the legend and a hover call it; `Series 1`, `Series 2`… when omitted |
 | `Values` | the numbers. A number or numeric text is a value; **anything else — `null`, `undefined`, `NaN`, `""`, a word — is a gap**: a line or an area stops there and starts again at the next value, a bar is not drawn, and the pointer over it reports nothing. A gap is never a zero |
 | `Color` | any CSS colour; omitted, it takes the next of the library's eight, chosen to hold up on a light theme and a dark one |
+| `Colors` | **a colour per value**, for the charts where a value is a shape of its own: each slice of a `Pie` or a `Doughnut` and its legend entry, and each bar of a `Bar`. A list; an entry that is missing or `""` is the colour the chart would have chosen. What the colour means — a severity, a status — is the caller's: `Colors: ["#e45959", "#ffa059", "#97aab3"]`. A string is refused, since one colour for the whole series is `Color` |
 | `Axis` | `"Left"` or `"Right"`. `"Right"` gives that series **its own** range, ticks and margin — two series in different units on one scale is the classic chart that lies |
 
 Assigning `Series` replaces the lot; it is a value, not a handle, so mutating the
@@ -86,6 +88,50 @@ A **pie or doughnut reads the first series only** and names its slices from
 are slices, and **each keeps its own index** — a zero between two slices leaves
 its label, its colour and its `Select`/`Hover` index where they were, and the
 legend still names it.
+
+## ChartDocument
+
+**The chart with no control.** Everything a chart *is* — the type, the data, the
+axes and the drawing of them — lives in a `ChartDocument`, and the `Chart` above
+holds one as `Document` and adds what a screen has: the pointer, the wheel, a
+drag and the three events. Every property in the table above that is not about
+the pointer is the document's, under the same name and with the same default, so
+a `.form` that declares `Type` on a `Chart` goes on doing so.
+
+It exists because a control needs a display, and a `main` project — a report run
+from a timer, a tool over ssh — never has one. A document needs nothing: it draws
+through [`Drawing`](library.md#drawing), so a console program has charts too.
+
+```json
+{ "name": "nightly", "main": "Main", "uses": ["charts"] }
+```
+
+```js
+function Main() {
+    const c = new ChartDocument();
+    c.Type   = "Line";
+    c.Title  = "Load";
+    c.Labels = hours;
+    c.Series = [{ Name: "web-1", Values: load }];
+    c.Save("/var/reports/load.png", 800, 400);
+}
+```
+
+| Member | |
+|---|---|
+| `Paint(p, width, height)` | draws the chart with `p` into `width`×`height` — for a painter something else opened: a `Drawing`, a report's page, a `DrawPage` of your own. The ink is the painter's `Foreground`, so on paper it is black |
+| `Save(path, width, height)` | the drawing to a PNG of any size. **No widget and no display**: it draws through `Drawing`, so a `main` project has charts too |
+| `ToPng(width, height)` | the same drawing as `Save`, answered as `Bytes` — a chart to attach or put in a reply, with nothing on disk |
+
+**On paper the ink is black.** A document drawn through `Drawing` has a painter
+with no control behind it, and such a painter's `Foreground` is black — so the
+title, the axes and the legend come out readable on a white page whatever the
+desktop's theme. A `Chart`'s own `Save` runs its canvas instead, and takes the
+theme's ink; on a dark desktop that is light text on a transparent ground, which
+is the one to avoid for a page. `Paint` draws with whatever painter it is handed,
+which is how a chart goes onto a page of a `Drawing.SavePdf` beside other things,
+or into a `Draw` or `DrawPage` of your own. A `Task` cannot draw one: a worker
+installs no painter and no `Drawing`.
 
 ## What the pointer does
 

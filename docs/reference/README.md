@@ -151,6 +151,7 @@ members, twice — once in its summary and once where it is explained.
 | [Dialog](globals/Dialog.md) | asking the user for a file, a folder or a colour — with the desktop's own |
 | [Dictionary](globals/Dictionary.md) | what a bag of data holds |
 | [Directory](globals/Directory.md) | what is in a folder, and making and removing them |
+| [Drawing](globals/Drawing.md) | a painter over a PNG or a PDF, with no control and no display |
 | [Environment](globals/Environment.md) | the context the program was started in |
 | [Exec](globals/Exec.md) | running another program, and reading what it prints |
 | [File](globals/File.md) | reading and writing files, and the names of the paths they live at |
@@ -164,6 +165,7 @@ members, twice — once in its summary and once where it is explained.
 | [Message](globals/Message.md) | telling the user something, with no question attached |
 | [Notification](globals/Notification.md) | telling the user something while they are looking at another window |
 | [Printer](globals/Printer.md) | what this machine can print on, and how a drawing gets there |
+| [Probe](globals/Probe.md) | what a file is, read from its header — a picture's size, with nothing decoded |
 | [Random](globals/Random.md) | numbers a program cannot predict, from the operating system |
 | [Record](globals/Record.md) | the shape data has, declared once |
 | [Regex](globals/Regex.md) | a pattern, with nothing remembered between questions |

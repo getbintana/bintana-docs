@@ -23,9 +23,12 @@ whole thing out as one PDF.
 
 ## Report
 
-One class. A report is a stack of **bands** laid out over **pages** of a fixed
+The control. A report is a stack of **bands** laid out over **pages** of a fixed
 paper size. Every property redraws when it is assigned, and every one is
-designable and serialised.
+designable and serialised. What it draws is its `Document`, a
+[`ReportDocument`](#reportdocument): the paper, the bands, the rows and the pages
+are that object's, and the control adds a page you can turn, the two events and
+the print dialog. Assigning `Data` on the control assigns it there.
 
 | Member | |
 |---|---|
@@ -37,9 +40,10 @@ designable and serialised.
 | `Data` | the rows: an array of plain objects. `Field` elements read a key off the current row; the group bands read the keys named by each group's `.On`. Defaults to `[]`. |
 | `Sections` | the band definitions — the whole of what a report is besides the numbers. See below. Defaults to `{}`. |
 | `Refresh()` | re-measures, redraws and emits `Prepared`. Call it when you changed the rows **in place**; assigning `Data` or `Sections` already does |
-| `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text; the pages are the ones the last measure worked out. This is what a report is for — `Save` is for when one page is going into something else |
+| `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text; the pages are the ones the last measure worked out. This is what a report is for — `Save` is for when one page is going into something else. With no display, `Document.SavePdf` is the same file |
 | `Send([setup], cb)` | **every page, to paper**, through [`Printer`](library.md#printer): this fills in how many pages there are and the paper and orientation the report was laid out for, and `{ Copies, From, To }` say the job. **A paper chosen in the dialog scales the page rather than re-flowing it**, and the page count does not move — a report's bands are declared in its own points, so it declares no `Paginate` (a `Markdown` does). **Async**, like every dialog here: `cb({ Copies, From, To })` is what was actually sent, and is **not called** when the dialog was cancelled. **To a file it is `SavePdf`**: a PDF is not a printer with a `Copies` of 3 |
 | `Save(path, [page], [scale])` | one page to a PNG. `page` defaults to the current one, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). The export runs the same `Draw` at the exact paper size, clamps the page the way `Page` does, and **does not move the report** |
+| `Document` (ro) | the report itself — a `ReportDocument`, which is what draws. Everything below that is not about the screen is a property of it |
 | **event** `Prepared(count)` | the pages were computed: `Data`, `Sections` or `Refresh()`. `count` is the new `PageCount`. Changing the paper, the orientation or the margins re-measures **silently** — read `PageCount` back on the next line — because those can be written in a `.form`, and an event raised while a form is loading arrives before the form's other controls exist |
 | **event** `Page(page)` | the data moved the current page: `Data`, `Sections` or `Refresh()` left fewer pages than `Page`, and it was pulled back inside the new count. `page` is one-based. **Assigning `Page` raises nothing** — a property setter must not, since a `.form` declaring it would raise it before the host's other controls exist — so the code that turns a page updates its own display. The paper, the orientation and the margins pull the page back silently too |
 
@@ -117,7 +121,7 @@ top-left) and a `Kind`:
 | `Field` | a value off the current row. `Field` names the key; in a group band, naming that group's `On` resolves to the group's value. `"@Page"` and `"@Pages"` name the page number and the page count |
 | `Total` | an aggregate the engine computed. `Field` names the key, `Op` the operation (`Sum` `Count` `Min` `Max` `Avg`) |
 | `Line` | a rule. `X1` `Y1` `X2` `Y2`, `Thickness` (default 1) and `Color`. It is drawn from the band's own corner, so `X`/`Y` mean nothing to it |
-| `Box` | a rectangle. `X` `Y` `Width` `Height`, `Fill` for a filled one, `Color` for its colour |
+| `Box` | a rectangle. `X` `Y` `Width` `Height`, `Fill` for a filled one, `Color` for its colour. **`Width: "Band"` is the content area's width and `Height: "Band"` the band's own height** — what a row's shade is, since a box with a height of its own cannot cover a row that wrapped to two lines, and a width written as a number is right until the paper or the margins move. A `"Band"` box adds nothing to an `Auto` band's measure: it *is* the band |
 | `Image` | a picture. `File` is the path — **relative to the project** (`Application.Directory`), or absolute — and `X` `Y` place it. One of `Width`/`Height` is enough: the other follows the file's proportions. A file that is missing or is not an image throws where it is drawn, rather than leaving a blank where a masthead goes |
 
 Shared by `Text`, `Field` and `Total`: `Width` (what `Align` and `Wrap` measure
@@ -130,6 +134,34 @@ there; under `Height: "Auto"` the band is as tall as the run instead.
 `Format` — `""` (as it stands), `Number`, `Money`, `Date`, `Percent` — and
 `Decimals` (defaulting to `2` for money, `0` for numbers, `1` for per cent).
 Formatting goes through `Locale`, so the separators and the date are the user's.
+
+**A row can look like what it holds.** Three things every report writer has
+(Crystal's conditional formatting and *Suppress*, Jasper's `printWhenExpression`)
+are data here, because `Sections` is written in code:
+
+| On any element | |
+|---|---|
+| `When` | whether it is drawn at all: `true`, `false`, `"@Odd"` / `"@Even"` (the row's position in the detail run, one-based), `"@First"` / `"@Last"`, `{ Field, Is: v }` (the row's `Field` **is** `v`) or `{ Field, IsNot: v }`. Compared with `===` and nothing else, so a row of `Ack: false` is `Is: false`, not `Is: "No"` |
+| `Color`, `Font` | either may be `{ Field: "Name" }`: the colour or the font read **off the row** — a key the caller computed (`Ink: r.Sev === "bad" ? "#c00000" : "#202020"`). A row without it takes the element's default: black, and the font the report draws in. An object with any key but `Field` is refused |
+
+```js
+Detail: { Height: "Auto", Elements: [
+    { Kind: "Box", X: 0, Y: 0, Width: "Band", Height: "Band",
+      Fill: true, Color: "rgba(0,0,0,0.04)", When: "@Odd" },          // the stripe
+    { Kind: "Field", Field: "Name", X: 4, Y: 3, Color: { Field: "Ink" } },
+    { Kind: "Text", Text: "!", X: 300, Y: 3, When: { Field: "Sev", Is: "bad" } },
+] }
+```
+
+**The stripe is continuous across pages**: the position is the row's index in the
+whole run, so a page that starts on an even row starts unshaded. A band with no
+row — a page header, a footer — has no position, and the four `@` names are false
+there. **A hidden element is not measured**, so an `Auto` band is as tall as what
+it shows. Every spelling is checked when `Sections` is assigned: a `When` that is
+not one of these, both `Is` and `IsNot`, a `Color` object with a key other than
+`Field`, or a `Box` size that is neither a number nor `"Band"` is refused where it
+was written — a misspelt condition would otherwise be the shade that never
+appears.
 
 **`Width` is what `Align` measures against and not a box the text is kept
 inside.** A right-aligned run wider than its `Width` grows to the *left*, over
@@ -155,6 +187,57 @@ which is why there is nothing to disagree with it. The operations:
   desktop's order. The value answered is the row's own, not a conversion of it.
 - `Avg` is always a plain number: an average has no exact decimal text, and how
   many places to round it to is the caller's decision.
+
+## ReportDocument
+
+**The report with no control.** Everything a report *is* — the paper, the bands,
+the rows, the pages they make and the drawing of each one — with nothing on a
+screen. It is made with `new`, it is not a widget, and it draws through
+[`Drawing`](library.md#drawing): so a `main` project, which never has a display
+and cannot make a widget, writes a report's PDF with it. A report that goes out
+from a timer at six in the morning is this.
+
+| Member | |
+|---|---|
+| `Paper`, `Orientation`, `Margins`, `Data`, `Sections` | the control's, with the same defaults and the same refusals |
+| `PageCount` (ro) | how many pages the data and the sections make. Measures when it has to, so it is answerable before anything has been drawn. An empty report is one blank page, not none |
+| `Refresh()` | measures again now and answers the new `PageCount`. Call it when you changed the rows **in place**; assigning `Data` or `Sections` already throws the old pages away |
+| `Paint(p, page, width, height)` | draws page `page` (one-based, clamped) with `p`, scaled to fit `width`×`height` and centred — for a painter something else opened: a `DrawPage` of your own, or a `Drawing` that puts this page beside other things. Black on white, whatever the theme |
+| `Save(path, [page], [scale])` | one page to a PNG. `page` defaults to `1`, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). **No widget and no display**: it draws through `Drawing` |
+| `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text. **No widget and no display**: it draws through `Drawing`, which is what lets a `main` project — a report run from a timer — write one. A page that throws leaves no file |
+
+No events: nothing here is on a screen, so nothing is raised while a `.form`
+loads and nothing has to be told. `Refresh()` **answers** the count instead.
+
+```json
+{ "name": "nightly", "main": "Main", "uses": ["report"] }
+```
+
+```js
+function Main() {
+    const d = new ReportDocument();
+    d.Paper    = "A4";
+    d.Sections = {
+        PageHeader: { Height: 30, Elements: [
+            { Kind: "Text", Text: "Open incidents", X: 0, Y: 0, Font: "Sans Bold 14" } ] },
+        Detail: { Height: "Auto", Elements: [
+            { Kind: "Field", Field: "Host", X: 0, Y: 0, Width: 120 },
+            { Kind: "Field", Field: "Problem", X: 130, Y: 0, Width: 380, Wrap: true } ] },
+        PageFooter: { Height: 16, Elements: [
+            { Kind: "Field", Field: "@Page", X: 0, Y: 0 } ] },
+    };
+    d.Data = rows;
+    d.SavePdf(File.Join(Environment.Get("HOME"), "incidents.pdf"));
+}
+```
+
+**What the file holds is what the control's preview shows**: the control *is* one
+of these, `Report.SavePdf` and `ReportDocument.SavePdf` paint the same pages, and
+the ink is black either way — a report pins its own colours, because the theme's
+ink on white paper is the invisible drawing. An element that names no font is
+drawn in `Text.Font`, which is what the measure used, so a band measured in a
+console program is drawn at the size it was measured at. **Not in a `Task`**: a worker
+installs no painter and no `Drawing`.
 
 ## The two passes
 

@@ -115,7 +115,7 @@ view is this one.
 
 | | |
 |---|---|
-| `Font` (ro) | the desktop's UI font, which is what a control draws with unless CSS says otherwise. `""` where there is no display to ask |
+| `Font` (ro) | the desktop's UI font, which is what a control draws with unless CSS says otherwise. Where there is no desktop to ask — a `main` project — GTK's own default, `"Sans 10"`, which is what `Drawing` draws in |
 
 ## What goes wrong
 
@@ -124,11 +124,15 @@ view is this one.
 - **`Lines` threw on markup.** By design; see above.
 - **A PDF's text is a pixel off what was measured.** Hinting is off on a vector
   surface.
-- **Everything measured as 0.** There is no display — in a console project
-  `Font` is `""` and there is nothing to lay out against.
+- **A console project has no desktop font.** There is no desktop to ask, so
+  `Font` is GTK's own default, `"Sans 10"`, and a [`Drawing`](Drawing.md)
+  painter draws in the same one, so what was measured is what is drawn. It used
+  to be `""`, which is Pango's default — a serif — and a chart came out in Times
+  beside a report in a sans. Name the font when its face or size matters.
 
 ## See also
 
 [`Painter`](../../llm/controls.md#painter) ·
-[`DrawingArea`](../widgets/DrawingArea.md) ·
+[`DrawingArea`](../widgets/DrawingArea.md) · [`Drawing`](Drawing.md), which draws
+what this measured with no display ·
 [`markdown`](../../llm/markdown.md), the library these two calls were added for

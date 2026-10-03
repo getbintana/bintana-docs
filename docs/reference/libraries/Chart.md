@@ -77,6 +77,7 @@ It is a [`Component`](../widgets/Component.md), so everything on
 |---|---|---|
 | `Refresh()` | redraws now | [the data](#the-data) |
 | `Save(path, width, height)` | the same drawing to a PNG of any size — a chart in a report, or in a bug report | [off the screen](#off-the-screen) |
+| `Document` (ro) | the chart itself — a `ChartDocument`, which is what draws | [the document](#the-document) |
 | **event** `Select(series, at, value)` | a click on a bar, a point or a slice | [what the pointer does](#what-the-pointer-does) |
 | **event** `Hover(series, at, value)` | the pointer passing over one, **which is not a selection**: a chart that reported a click as a hover could not have a tooltip | [what the pointer does](#what-the-pointer-does) |
 | **event** `Range(from, count)` | the window changed — the wheel, a drag, or the double click that resets it | [what the pointer does](#what-the-pointer-does) |
@@ -93,14 +94,15 @@ It is a [`Component`](../widgets/Component.md), so everything on
 
 | | |
 |---|---|
-| `Series` | the data: `[{ Name, Values, Color, Axis }]` — see below. Defaults to `[]`. Assigning it redraws |
+| `Series` | the data: `[{ Name, Values, Color, Colors, Axis }]` — see below. Defaults to `[]`. Assigning it redraws |
 | `Refresh()` | redraws now. **Assigning any property already does**, so this is for the case where the numbers changed **in place** |
 
 | On a series | |
 |---|---|
-| `Name` | how the form reaches it — `this.BtnSave` — and the prefix its handlers carry: `BtnSave_Click`. A valid JavaScript identifier, unique on the form |
+| the series' `Name` | what the legend and a hover call it; `Series 1`, `Series 2`… when omitted |
 | `Values` | the numbers. A number or numeric text is a value; **anything else — `null`, `undefined`, `NaN`, `""`, a word — is a gap**: a line or an area stops there and starts again at the next value, a bar is not drawn, and the pointer over it reports nothing. A gap is never a zero |
 | `Color` | any CSS colour; omitted, it takes the next of the library's eight, chosen to hold up on a light theme and a dark one |
+| `Colors` | **a colour per value**, for the charts where a value is a shape of its own: each slice of a `Pie` or a `Doughnut` and its legend entry, and each bar of a `Bar`. A list; an entry that is missing or `""` is the colour the chart would have chosen. What the colour means — a severity, a status — is the caller's: `Colors: ["#e45959", "#ffa059", "#97aab3"]`. A string is refused, since one colour for the whole series is `Color` |
 | `Axis` | `"Left"` or `"Right"`. **`"Right"` gives that series its own range, ticks and margin** — two series in different units on one scale is the classic chart that lies |
 
 ## The axes
@@ -164,6 +166,58 @@ carry the index into the **whole** series — never the position on screen.
 | | |
 |---|---|
 | `Save(path, width, height)` | the same drawing to a PNG of any size — a chart in a report, or in a bug report |
+
+The control's `Save` runs its own canvas, so it needs the control — and a control
+needs a display. With no display, or for a page, it is the document's.
+
+## The document
+
+| | |
+|---|---|
+| `Document` (ro) | the chart itself — a `ChartDocument`, which is what draws. Every property below that is not about the pointer is a property of it |
+
+**A chart is a `ChartDocument`, and the control shows one.** The type, the
+series, the axes and the drawing of them are the document's; what the `Chart`
+adds is a screen — the pointer, the wheel, a drag and `Select`, `Hover` and
+`Range`. Every property above that is not about the pointer is the document's
+too, under the same name and with the same default, and assigning one on the
+control assigns it there: `chart.Type = "Line"` and `chart.Document.Type` are one
+value.
+
+A `ChartDocument` is made with `new` and is not a widget, so it is what a `main`
+project draws charts with — a nightly job, a tool run over ssh. (Not a
+[`Task`](../globals/Task.md): a worker installs no painter and no `Drawing`.) It
+has every property above except `Zoomable`, and three verbs of its own:
+
+| | |
+|---|---|
+| `ChartDocument.Paint(p, width, height)` | draws the chart with `p` into `width`×`height` — for a painter something else opened: a `Drawing`, a report's page, a `DrawPage` of your own. The ink is the painter's `Foreground`, so on paper it is black |
+| `ChartDocument.Save(path, width, height)` | the drawing to a PNG of any size. **No widget and no display**: it draws through `Drawing`, so a `main` project has charts too |
+| `ChartDocument.ToPng(width, height)` | the same drawing as `Save`, answered as `Bytes` — a chart to attach or put in a reply, with nothing on disk |
+
+```js
+// project.json: { "main": "Main", "uses": ["charts"] }
+function Main() {
+    const c = new ChartDocument();
+    c.Type   = "Bar";
+    c.Title  = "Tickets by week";
+    c.Labels = weeks;
+    c.Series = [{ Name: "Opened", Values: opened }, { Name: "Closed", Values: closed }];
+    c.Save("tickets.png", 900, 420);
+    const png = c.ToPng(900, 420);         // the same picture as Bytes, nothing on disk
+}
+```
+
+`Save` and `ToPng` draw through [`Drawing`](../globals/Drawing.md), whose painter
+has no control behind it and **black ink** — so the title, the axes and the
+legend are readable on a white page whatever the desktop's theme. The control's
+`Save` is the opposite case: its canvas takes the theme's ink, which on a dark
+desktop is light text on a transparent ground. **For paper, draw the document.**
+
+`Paint` is the drawing on a painter somebody else opened: a `Drawing.SavePdf`
+that puts a chart on a page beside other things, or a `Draw` or `DrawPage` of
+your own. The ink is that painter's `Foreground`, so it
+is black under `Drawing` and the theme's on a control.
 
 ## What it does not do
 

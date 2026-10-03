@@ -1021,6 +1021,10 @@ writes a PDF without one, and on paper the frame goes to `DrawPage` rather than
 still open: a form with real widgets on it has no path to paper except drawing
 it by hand.
 
+**With no control at all, it is [`Drawing`](library.md#drawing)** — the same
+three verbs with the drawing passed in place of the control, so a `main` project,
+which cannot make a widget, can still write a PNG or a PDF.
+
 ## Painter
 
 What a `Draw` hands over: a drawing context with names. **It is valid only inside
@@ -1028,7 +1032,9 @@ the `Draw` it came from** — every call on one whose frame is over throws, beca
 keeping it and drawing from a timer later is a write into memory GTK has freed.
 
 It arrives with the theme's ink as `Color`, a line one wide, no dashes, and the
-widget's own font.
+widget's own font. A painter [`Drawing`](library.md#drawing) hands over has no
+widget: its ink is **black** and its font the one [`Text`](library.md#text)
+measures with.
 
 | Member | |
 |---|---|
@@ -1093,6 +1099,14 @@ ground is — the supported way to paint one is the widget's own CSS — so
 `Background` stays the control's ordinary property and a drawing simply does not
 paint over it. `Foreground` and `Dark` are what the theme *can* answer, and they
 are enough to choose colours that work either way round.
+
+**The theme's ink is not paper's ink.** A control in no window — one built only
+to be saved — takes its ink from the application's first window, and on a dark
+desktop that is a light colour: a chart saved that way has white words on a
+transparent ground, which on a white page is the drawing you cannot see. A
+drawing meant for paper pins its colours (`lib/report` draws in black whatever
+the theme), or is drawn through [`Drawing`](library.md#drawing), whose painter
+has no control and black ink. A console project has no theme to ask at all.
 
 **A path survives `Push`/`Pop`**, and `Arc` appends to it: that is cairo's model
 and it is what a pie slice wants. `Fill`, `Stroke` and `Text` all leave no path

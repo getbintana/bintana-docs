@@ -52,6 +52,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `Log` | `"none"` unless told | [the client](#the-client) |
 | `MaxConns` | how many connections at once, `10` unless told | [the client](#the-client) |
 | `MaxPerHost` | how many of those to one host, `2` unless told | [the client](#the-client) |
+| `Tls` | `{ Ca, Cert }`, or nothing | [a server the system does not trust](#a-server-the-system-does-not-trust) |
 | `UserAgent` | sent as-is | [the client](#the-client) |
 
 **Uploads and the server**
@@ -186,9 +187,53 @@ callback form and a [`Spinner`](../widgets/Spinner.md).
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one |
 | `MaxConns` | how many connections at once, `10` unless told. **Constructor-only**: soup takes it once, so assigning later throws |
 | `MaxPerHost` | how many of those to one host, `2` unless told. Likewise |
+| `Tls` | `{ Ca, Cert }`, or nothing. `Ca` is a **certificate to verify the server's against** — the company's own CA on an internal network, or the server's own file when it is self-signed, which is exactly the case the system store cannot reach and a per-program file can. `Cert` is **the server's certificate, pinned**: it must be byte for byte that one. Either accepts; `null` when none is set. Both files are read where they are assigned, so a wrong path is a mistake on the next line rather than on the first internal request. **The system's store is still trusted**, and a server it already accepts never reaches the check at all — this is a second opinion, not a replacement |
 
 A client per service — with its base URL, its headers and its auth — is the shape
 that keeps a program's requests one-liners.
+
+## A server the system does not trust
+
+| | |
+|---|---|
+| `Tls` | `{ Ca, Cert }`, or nothing. `Ca` is a **certificate to verify the server's against** — the company's own CA on an internal network, or the server's own file when it is self-signed, which is exactly the case the system store cannot reach and a per-program file can. `Cert` is **the server's certificate, pinned**: it must be byte for byte that one. Either accepts; `null` when none is set. Both files are read where they are assigned, so a wrong path is a mistake on the next line rather than on the first internal request. **The system's store is still trusted**, and a server it already accepts never reaches the check at all — this is a second opinion, not a replacement |
+
+An internal service signed by the company's own CA, a printer or a router with a
+self-signed certificate: the system's store refuses them, and the answer is not
+to turn verification off — there is no spelling for that — but to name the one
+file that makes this server trustworthy, for this client.
+
+```js
+const intranet = Http.Client({ BaseUrl: "https://erp.internal",
+                               Tls: { Ca: "certs/company-ca.pem" } });
+const device   = Http.Client({ BaseUrl: "https://192.168.1.20",
+                               Tls: { Cert: "certs/ups.pem" } });
+```
+
+- **`Ca`** is a certificate the server's chain has to reach, **and the host name
+  is checked** against what the client dialled — a certificate for another name
+  signed by the same CA is refused.
+- **`Cert`** pins the server's own certificate: it must be that one, byte for
+  byte. A pin is the stronger statement, so it is checked first.
+- Either may be given, or both, and **either accepts**. `{}`, `true` or nothing is
+  the system's store alone, and the property reads back `null`.
+
+Both files are read **where they are assigned** — in `Http.Client(…)` or by
+setting `client.Tls` — so a wrong path is an exception on that line rather than a
+failure on the first request. It is the client's and not a request's: there is no
+per-request `Tls`.
+
+**It only ever adds a file.** The system's store is still trusted, and a server
+it already accepts never reaches this check at all. A server neither accepts is
+refused exactly as it would be with no `Tls`: `onError` with `Kind: "Tls"`, or a
+throw from a `…Wait`.
+
+**A client with a `Tls` resumes no TLS session.** The TLS library keeps the
+sessions of a whole process in one cache, and a resumed handshake presents no
+certificate — so nothing is verified, and a server one client accepted with its
+`Ca` would have been reachable by every other client in the process, a bare
+`Http.Client()` included. Each connection such a client makes does a full
+handshake, which is the price of the check meaning something.
 
 ## Uploads
 
@@ -224,6 +269,8 @@ Sent as the body of a `Post`/`Put`/`Patch`, which sets **its own**
 - **A streamed `Body` was empty.** It already went out, line by line.
 - **A feed stopped after a minute.** The client's `Timeout`. A feed asks
   `Timeout: 0`.
+- **An internal server fails with `Kind: "Tls"`.** The system does not trust
+  it: give the client a `Tls` with its CA or its certificate.
 - **`Http` says a package is missing.** libsoup is optional at build time.
 
 ## See also
