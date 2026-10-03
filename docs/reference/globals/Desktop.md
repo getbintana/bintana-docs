@@ -21,14 +21,14 @@ Desktop.Entries.Installed()            // ["hello", "world"]
 | `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache` | [the directories](#the-directories) |
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config` | [the directories](#the-directories) |
 | `DataDirectory` | `$XDG_DATA_HOME`, or `~/.local/share` when the desktop has not moved it | [the directories](#the-directories) |
-| `Directory` | the user's applications directory | [where an entry lives](#where-an-entry-lives) |
+| `Directory` | `DataDirectory/applications`, created on first use | [where an entry lives](#where-an-entry-lives) |
 | `Entries` | the module below | [desktop entries](#desktop-entries) |
-| `Exec(argv)` | the `Exec=` value for a command | [the command line](#the-command-line) |
-| `Install(id, entry)` | writes one, atomically | [installing](#installing) |
-| `Write(path, entry)` | writes one at a path you name | [installing](#installing) |
-| `Installed()` | the ids this user has | [what is installed](#what-is-installed) |
-| `Read(id)` | one entry as data, or `null` | [reading](#reading) |
-| `Uninstall(id)` | removes one | [installing](#installing) |
+| `Exec(argv)` | the value for the `Exec` key: the arguments as an array — the shape `Exec` and `Terminal.Run` already take — quoted and escaped the format's way | [the command line](#the-command-line) |
+| `Install(id, entry)` | writes `Directory/<id>.desktop` and answers the path | [installing](#installing) |
+| `Write(path, entry)` | the same entry and the same checks at a path the caller names, **making the directory** when it is not there | [installing](#installing) |
+| `Installed()` | the ids in `Directory`, sorted, `.desktop` removed | [what is installed](#what-is-installed) |
+| `Read(id)` | one entry as data, exactly what `Install` takes, or `null` when there is no such file | [reading](#reading) |
+| `Uninstall(id)` | removes it, answering whether there was one | [installing](#installing) |
 
 ## The directories
 

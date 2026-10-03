@@ -79,13 +79,13 @@ of them.
 
 | | |
 |---|---|
-| `Directory` | `$XDG_DATA_HOME/applications`, created |
-| `Exec(argv)` | the `Exec=` value for that command — the format's quoting, not the shell's |
-| `Installed()` | the ids of the entries this user has, sorted |
-| `Read(id)` | one entry as data, or `null` when there is none |
-| `Install(id, entry)` | writes `Directory/<id>.desktop`, **atomically**; answers the path |
-| `Write(path, entry)` | the same entry at a path you name, making the directory; for a package, which is not this user's menu |
-| `Uninstall(id)` | removes it; answers whether there was one |
+| `Directory` | `DataDirectory/applications`, created on first use. Write an entry there and the desktop's menu offers it; there is nothing to register and no index to update |
+| `Exec(argv)` | the value for the `Exec` key: the arguments as an array — the shape `Exec` and `Terminal.Run` already take — quoted and escaped the format's way |
+| `Installed()` | the ids in `Directory`, sorted, `.desktop` removed. Only this user's: a system entry is never listed, and asking whether an entry is installed is one `includes` on this |
+| `Read(id)` | one entry as data, exactly what `Install` takes, or `null` when there is no such file |
+| `Install(id, entry)` | writes `Directory/<id>.desktop` and answers the path. Atomic — a temporary beside it, renamed over — so a failure leaves whatever was there |
+| `Write(path, entry)` | the same entry and the same checks at a path the caller names, **making the directory** when it is not there. For the entry a package installs, which is not one this user's menu has; answers nothing |
+| `Uninstall(id)` | removes it, answering whether there was one. A file that is there and cannot be removed throws |
 
 An id is the file's name without `.desktop` — letters, digits, `-`, `_` and `.`
 — and an entry is the file as data, group by group:
@@ -1773,24 +1773,24 @@ cue.Play();
 | | |
 |---|---|
 | `new AudioPlayer()` | a player of its own. Takes no arguments; everything below is assigned |
-| `Uri` | what to play: a URI (`file://`, `http(s)://`, `rtsp://`) or a plain local path, which is turned into one |
+| `Uri` | what to play: a URI (`file://`, `http(s)://`, `rtsp://`) **or a plain local path**, which is turned into one. One property for both, so there is nothing to disagree. Setting it stops whatever was playing |
 | `User` | RTSP digest identity, applied to the source the playbin builds. `""` for none |
-| `Password` | the secret beside it. **Write-only**: reads back `""`, so it is never written down anywhere |
+| `Password` | the secret beside it. **Write-only**: it reads back `""` and is never serialised, so no `.form` carries it in clear text |
 | `Latency` | ms the RTSP jitterbuffer may hold. Default `2000`, the source's own. Read when the source is built, so a change lands on the next `Play` from a stopped player |
 | `Volume` | `0`…`1`. Default `1` |
-| `Muted` | silence without touching `Volume` |
+| `Muted` | silence without touching `Volume`, so unmuting comes back to where it was |
 | `Loop` | reseek instead of ending. A live stream cannot seek, so it ends anyway |
-| `Buffering` (ro) | how full the buffer is, `0`…`100`; `100` is nothing to wait for, less is a stream refilling |
+| `Buffering` (ro) | how full the buffer is, `0`…`100`. `100` is nothing to wait for — a local file never says otherwise — and less is a stream refilling, which **holds the sound while `Playing` stays true**. It is [`ProgressBar.Value`](../reference/widgets/ProgressBar.md)'s range, since that is where a form puts it |
 | `Position` (ro) | seconds in, `0` when unknown — which includes playing live |
 | `Duration` (ro) | seconds long, `-1` while unknown — which is always, on a live stream |
-| `Playing` (ro) | whether it is going: what `Play` asked for, until `Pause`, `Stop`, the end or an error |
-| `Seekable` (ro) | whether `Seek` has anything to work on |
-| `OnEnded` | assign `() => …`; `null` takes it off. Anything else is refused where assigned, not silently never called |
-| `OnError` | assign `(message, kind) => …`. `message` names the player and the clip; `kind` is one of `NotFound`, `NotAuthorized`, `Unreachable`, `Decode`, `Error` |
-| `Play()` | plays; replays from the top after the end. Refused with no `Uri` |
+| `Playing` (ro) | whether it is going — what `Play` asked for, until `Pause`, `Stop`, the end or an error. **Not a sample of the pipeline**, which reads as stopped mid-loop and mid-rebuffer |
+| `Seekable` (ro) | whether `Seek` has anything to work on. Answered once the stream is known, not when playing starts |
+| `OnEnded` | assign `() => …`, called when it plays to the end; `null` takes it off. **Anything else is refused where it is assigned**, rather than silently never called |
+| `OnError` | assign `(message, kind) => …`; the same rule. `kind` is `NotFound`, `NotAuthorized`, `Unreachable`, `Decode` or `Error`, as a `Video`'s is |
+| `Play()` | plays, and replays from the top after it ended. **Refused with no `Uri`** |
 | `Pause()` | holds the position |
-| `Stop()` | parks it: back to no state, position forgotten |
-| `Seek(seconds)` | jumps there. Refused on a stream that cannot seek |
+| `Stop()` | parks it: back to no state, the position forgotten |
+| `Seek(seconds)` | jumps there. **Refused on a stream that cannot seek**, naming it |
 
 **A cue nobody keeps is still heard.** A playing player holds itself up, so
 the shape a confirmation sound actually has works:

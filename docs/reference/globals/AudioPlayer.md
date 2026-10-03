@@ -19,33 +19,33 @@ cue.Play();
 |---|---|---|
 | `new AudioPlayer()` | a player of its own; takes no arguments | [playing](#playing) |
 | `Buffering` (ro) | how full the buffer is, `0`…`100` | [streams](#streams) |
-| `Duration` (ro) | seconds long, `-1` while unknown | [where it is](#where-it-is) |
-| `Latency` | ms the RTSP jitterbuffer may hold. Default `2000` | [streams](#streams) |
+| `Duration` (ro) | seconds long, `-1` while unknown — which is always, on a live stream | [where it is](#where-it-is) |
+| `Latency` | ms the RTSP jitterbuffer may hold | [streams](#streams) |
 | `Loop` | reseek instead of ending | [playing](#playing) |
-| `Muted` | silence without touching `Volume` | [sound](#sound) |
-| `OnEnded` | assign `() => …`; `null` takes it off | [when it ends or fails](#when-it-ends-or-fails) |
-| `OnError` | assign `(message, kind) => …` | [when it ends or fails](#when-it-ends-or-fails) |
-| `Password` | the RTSP secret. **Write-only** | [streams](#streams) |
+| `Muted` | silence without touching `Volume`, so unmuting comes back to where it was | [sound](#sound) |
+| `OnEnded` | assign `() => …`, called when it plays to the end | [when it ends or fails](#when-it-ends-or-fails) |
+| `OnError` | assign `(message, kind) => …`; the same rule | [when it ends or fails](#when-it-ends-or-fails) |
+| `Password` | the secret beside it | [streams](#streams) |
 | `Pause()` | holds the position | [playing](#playing) |
-| `Play()` | plays | [playing](#playing) |
-| `Playing` (ro) | whether it is going | [playing](#playing) |
-| `Position` (ro) | seconds in, `0` when unknown | [where it is](#where-it-is) |
+| `Play()` | plays, and replays from the top after it ended | [playing](#playing) |
+| `Playing` (ro) | whether it is going — what `Play` asked for, until `Pause`, `Stop`, the end or an error | [playing](#playing) |
+| `Position` (ro) | seconds in, `0` when unknown — which includes playing live | [where it is](#where-it-is) |
 | `Seek(seconds)` | jumps there | [where it is](#where-it-is) |
 | `Seekable` (ro) | whether `Seek` has anything to work on | [where it is](#where-it-is) |
-| `Stop()` | parks it | [playing](#playing) |
-| `Uri` | what to play | [playing](#playing) |
-| `User` | RTSP digest identity | [streams](#streams) |
-| `Volume` | `0`…`1`. Default `1` | [sound](#sound) |
+| `Stop()` | parks it: back to no state, the position forgotten | [playing](#playing) |
+| `Uri` | what to play: a URI (`file://`, `http(s)://`, `rtsp://`) **or a plain local path**, which is turned into one | [playing](#playing) |
+| `User` | RTSP digest identity, applied to the source the playbin builds | [streams](#streams) |
+| `Volume` | `0`…`1` | [sound](#sound) |
 
 ## Playing
 
 | | |
 |---|---|
-| `Uri` | a URI (`file://`, `http(s)://`, `rtsp://`) **or a plain local path**, which is turned into one |
-| `Play()` | plays; replays from the top after it ended |
+| `Uri` | what to play: a URI (`file://`, `http(s)://`, `rtsp://`) **or a plain local path**, which is turned into one. One property for both, so there is nothing to disagree. Setting it stops whatever was playing |
+| `Play()` | plays, and replays from the top after it ended. **Refused with no `Uri`** |
 | `Pause()` | holds the position |
-| `Stop()` | parks it: no state, the position forgotten |
-| `Playing` (ro) | what `Play` asked for, until `Pause`, `Stop`, the end or an error — **not a sample of the pipeline** |
+| `Stop()` | parks it: back to no state, the position forgotten |
+| `Playing` (ro) | whether it is going — what `Play` asked for, until `Pause`, `Stop`, the end or an error. **Not a sample of the pipeline**, which reads as stopped mid-loop and mid-rebuffer |
 | `Loop` | reseek instead of ending. A live stream cannot seek, so it ends anyway |
 
 **A cue is a player you keep**, not one you make per sound: making one per beep
@@ -65,8 +65,8 @@ music under an alarm, two streams compared.
 |---|---|
 | `Position` (ro) | seconds in, `0` when unknown — which includes playing live |
 | `Duration` (ro) | seconds long, `-1` while unknown — which is always, on a live stream |
-| `Seekable` (ro) | whether `Seek` has anything to work on |
-| `Seek(seconds)` | jumps there; refused where there is nowhere to go |
+| `Seekable` (ro) | whether `Seek` has anything to work on. Answered once the stream is known, not when playing starts |
+| `Seek(seconds)` | jumps there. **Refused on a stream that cannot seek**, naming it |
 
 A position bar is a [`Timer`](Timer.md) reading `Position`, as it is for a video.
 
@@ -74,17 +74,17 @@ A position bar is a [`Timer`](Timer.md) reading `Position`, as it is for a video
 
 | | |
 |---|---|
-| `Buffering` (ro) | how full the buffer is, `0`…`100`; `100` is nothing to wait for, less is a stream refilling |
-| `Latency` | ms the RTSP jitterbuffer may hold. Default `2000`. Read when the source is built, so a change lands on the next `Play` from a stopped player |
-| `User` | RTSP digest identity; `""` for none |
-| `Password` | the secret beside it. **Write-only**: it reads back `""`, so it is never written down anywhere |
+| `Buffering` (ro) | how full the buffer is, `0`…`100`. `100` is nothing to wait for — a local file never says otherwise — and less is a stream refilling, which **holds the sound while `Playing` stays true**. It is [`ProgressBar.Value`](../widgets/ProgressBar.md)'s range, since that is where a form puts it |
+| `Latency` | ms the RTSP jitterbuffer may hold. Default `2000`, the source's own. Read when the source is built, so a change lands on the next `Play` from a stopped player |
+| `User` | RTSP digest identity, applied to the source the playbin builds. `""` for none |
+| `Password` | the secret beside it. **Write-only**: it reads back `""` and is never serialised, so no `.form` carries it in clear text |
 
 ## When it ends or fails
 
 | | |
 |---|---|
-| `OnEnded` | assign `() => …`; `null` takes it off. **Anything else is refused where it is assigned**, rather than silently never called |
-| `OnError` | assign `(message, kind) => …`; the same rule. `kind` is `NotFound`, `NotAuthorized`, `Unreachable`, `Decode` or `Error`, as a [`Video`](../widgets/Video.md)'s is |
+| `OnEnded` | assign `() => …`, called when it plays to the end; `null` takes it off. **Anything else is refused where it is assigned**, rather than silently never called |
+| `OnError` | assign `(message, kind) => …`; the same rule. `kind` is `NotFound`, `NotAuthorized`, `Unreachable`, `Decode` or `Error`, as a `Video`'s is |
 
 Handlers here are **assigned properties and not events**, because a player is not
 a widget: it has no name on a form for an event to be dispatched to.

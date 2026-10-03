@@ -531,7 +531,7 @@ this.ActDelete.Enabled = hasSelection;                   // and all of them foll
 |---|---|
 | `Name`, `Text`, `Icon` (ro) | what the `.form` declared. The label goes through the catalogue **once**, however many places show it |
 | `Enabled` | the whole reason this exists: one assignment, and every button, menu item and accelerator naming the command follows |
-| `Click()` | pressed from code, the way a menu item can be |
+| `Click()` | invoked from code, the way a menu item can be |
 | `PropertyNames()`, `EventNames()` | what this class has, asked of it the way a control is asked. A command is not a widget, so nothing else can make one to ask |
 | **event** `Click()` | the command was invoked — by a button, a menu item or its key |
 
