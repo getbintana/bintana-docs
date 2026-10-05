@@ -865,6 +865,17 @@ without it every verb refuses with a sentence. An element answers `Name`,
 `Children`, `Find`/`FindAll`, `Add`/`Insert`/`Remove`, `Parent`, `Copy`,
 `SetNamespace` and `DeclareNamespace`; a document answers `Root`.
 
+**`Xml.Schema(text|document|element)` compiles an XSD once and
+`Schema.Validate(document|element)` answers what a file got wrong** — a list of
+`{ Message, Line, Column }`, empty when valid, so a program rejects a bad file
+before reading it. It never writes to the document (a schema's default stays out
+of the tree, which is what keeps `SaveXml`'s promise), a schema that includes or
+imports another document is refused because compiling it would fetch one, and a
+detached element cannot be validated because libxml2 needs a document. The
+compile is 70-90 ms for the official MSPDI schema and the check is ~2.9 µs a
+task; [`Xml`](reference/globals/Xml.md#validating) has the example, and the
+namespace remap the real files need is the caller's two lines.
+
 **Building `examples/clients`' `Excel.js` with `Xml` found three things it got wrong**,
 all fixed in the runtime rather than worked around in the program:
 
@@ -884,12 +895,13 @@ all fixed in the runtime rather than worked around in the program:
 Indentation was measured and left alone: the canonical shape costs 59 % more bytes
 uncompressed and 5.5 % inside a zip.
 
-**Parsed with no DTD, no entities, no schema and no network** — `XML_PARSE_NONET`
-and not `NOENT`/`DTDLOAD`/`HUGE` — so an external entity and a billion laughs
-are negatives rather than configurations, and a malformed document throws with
-its line and column instead of printing to stderr. HTML is not XML and is not
-this. XPath, XSD validation and streaming are deferred with their triggers
-named in the plan.
+**Parsed with no DTD, no entities and no network** — `XML_PARSE_NONET` and not
+`NOENT`/`DTDLOAD`/`HUGE` — so an external entity and a billion laughs are
+negatives rather than configurations, and a malformed document throws with its
+line and column instead of printing to stderr. Validation is the caller's
+`Xml.Schema`, and it is held to the same negatives: a schema that would fetch
+another document is refused. HTML is not XML and is not this. XPath and
+streaming are deferred with their triggers named in the plan.
 
 ## Directory
 

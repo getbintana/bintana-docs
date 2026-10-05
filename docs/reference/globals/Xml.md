@@ -19,6 +19,8 @@ is where that design is argued.
 | `ParseBytes(bytes)` | the same, and the declaration's encoding is honoured — what `File.LoadXml` uses | [reading](#reading) |
 | `Element(name)` | a detached element; its own tree, not in any document | [building](#building) |
 | `Stringify(node)` | the canonical text: declaration, indented by two, one trailing newline | [writing](#writing) |
+| `Schema(source)` | compiles an XSD **once** -- from its text, a document or an element in one -- so a file can be checked as often as it arrives | [validating](#validating) |
+| `Validate(source)` | a document, or an element in one, against that schema: `[]` is valid | [validating](#validating) |
 | `Available` (ro) | whether this build has libxml2; the verbs refuse with a sentence when it does not | [availability](#availability) |
 | `Root` (ro) | the root element of a document, or `null` | [reading](#reading) |
 | `Name` (ro) | the local name, the prefix, the URI — `""` when there is none | [names and namespaces](#names-and-namespaces) |
@@ -35,6 +37,8 @@ is where that design is argued.
 | `RemoveAttrNS(uri, name)` | takes away the attribute in that namespace; one that is not there -- or only a DTD's default -- is not an error | [attributes](#attributes) |
 | `AttributeNames()` | the local names, sorted as the file had them | [attributes](#attributes) |
 | `Children` (ro) | its element children, in order | [children](#children) |
+| `IsEmpty` (ro) | whether the element has nothing inside at all: no element, no text, no comment, no processing instruction | [children](#children) |
+| `Comments` (ro) | the text of the comments directly under this element, in order -- what `Text` cannot carry, so a change to one can be reported | [children](#children) |
 | `Find(name)` | the first direct child element with that local name, or `null` | [children](#children) |
 | `FindAll(name)` | every direct child element with it | [children](#children) |
 | `Add(child)` | a node or an element name | [building](#building) |
@@ -75,6 +79,8 @@ sentence; there is no partial answer to check for.
 | | |
 |---|---|
 | `Children` (ro) | its element children, in order |
+| `IsEmpty` (ro) | whether the element has nothing inside at all: no element, no text, no comment, no processing instruction. Attributes do not count. **The one question `Children` and `Text` cannot answer together** -- an element holding only a comment reads as both empty on them |
+| `Comments` (ro) | the text of the comments directly under this element, in order -- what `Text` cannot carry, so a change to one can be reported |
 | `Find(name)` | the first direct child element with that local name, or `null` |
 | `FindAll(name)` | every direct child element with it |
 | `Parent` (ro) | the parent element, or `null` for a root or a detached node |
@@ -85,6 +91,22 @@ they are not what a data walk is for; the same goes for text nodes, which an
 element's `Text` collects. `Find` and `FindAll` look at direct children and
 match the local name — a namespace is asked about with `Namespace`, and a deeper
 walk is a loop, not a path language.
+
+**`IsEmpty` is the question `Children` and `Text` cannot answer together.** An
+element holding only a comment reads as no children and no text on them, so a
+walk that calls that a leaf reports the value `""` and a mapper that empties a
+list deletes the comment with it. `IsEmpty` counts every kind of child;
+attributes do not count, so `<r a="1"/>` is empty and `<r>  </r>` is not.
+`Comments` is the other half: the text of the direct comment children, which is
+what lets a walk report a change to one.
+
+```js
+const r = Xml.Parse("<r><!-- keep --></r>").Root;
+
+r.IsEmpty      // false
+r.Comments     // [" keep "]
+r.Text         // ""
+```
 
 ## Attributes
 
@@ -178,9 +200,9 @@ A name that is not one — with a space in it, say — is refused at `Add` and
 | | |
 |---|---|
 | `Element(name)` | a detached element; its own tree, not in any document |
-| `Add(child)` | a node or an element name. An element with no namespace added under a default namespace **takes it** -- and so does what is under it with none -- because that is what the written text says; the tree used to answer `""` for it while the text, read back, answered the URI |
+| `Add(child)` | a node or an element name. An element with no namespace added under a default namespace **takes it** -- and so does what is under it with none -- because that is what the written text says; the tree used to answer `""` for it while the text, read back, answered the URI. A second argument is refused: the value goes on what it answers -- `parent.Add(Xml.Element("Name")).Text = text` |
 | `Insert(index, child)` | before the element child at `index`, or at the end |
-| `Remove()` | takes the node out for good |
+| `Remove()` | takes the node out for good. **An argument is refused** -- it is *this* node that goes, so `child.Remove()` and not `parent.Remove(child)`, which took the parent out |
 | `Copy()` | a detached subtree of its own |
 
 ```js
@@ -202,6 +224,13 @@ wrapper is not the node — two `Find`s of one element are two wrappers — so
 another one taken before the `Remove()` still answers, about a node that is now
 detached, and can `Add` it back. So can a child kept across a `Text`
 assignment, which detaches the children without silencing anybody.
+
+**`Remove()` takes no argument and `Add` takes one.** `parent.Remove(child)` is
+the call a DOM reads as *take this child out*, and here it took the **parent**
+out — on a document's root the body was gone and the next `File.SaveXml` wrote
+a two-line file where the plan was — so it throws now; `Add(name, text)` wrote
+an element and dropped the value, and it throws too. `Add` answers the node,
+and the value goes on what it answers.
 
 ## Writing
 
@@ -235,6 +264,60 @@ XML is optional at build time, like `Database.Sqlite`: without libxml2,
 `Available` is `false` and every verb refuses with a sentence naming the
 package. The class is installed in a worker too, so a big file can be parsed
 off the main thread.
+
+## Validating
+
+| | |
+|---|---|
+| `Schema(source)` | compiles an XSD **once** -- from its text, a document or an element in one -- so a file can be checked as often as it arrives. A schema that includes or imports another document is refused, because compiling it would fetch a file or an URL from inside what is meant to be a check; `Validate` is the question and it never writes to the document |
+| `Validate(source)` | checks a document, or an element in one, against its schema. An empty array means valid; each problem is `{ Message, Line, Column }` and `Column` is always `0`, because libxml2 reports the element and not a column for a schema error. **Nothing is written into the document**, so a default the schema declares stays out of the tree and out of the next save |
+
+Rejecting a file before anything reads it is the reason this exists, and the
+compile is separate from the check because it is the expensive half: measured on
+libxml2 2.12.10 with the official 240 KB MSPDI schema, `Schema` is 70-90 ms and
+`Validate` is ~2.9 µs a task (23 ms for eight thousand).
+
+```js
+const xsd = File.Load("mspdi_pj12.xsd")
+                .split("http://schemas.microsoft.com/project/2007")
+                .join("http://schemas.microsoft.com/project");
+const schema = Xml.Schema(xsd);
+
+const plan = File.LoadXml("plan.xml");
+
+for (const p of schema.Validate(plan))
+    print(`${p.Line}: ${p.Message}`);
+```
+
+The replacement above is the caller's, and it is not an accident of this
+example: the official schema declares `http://schemas.microsoft.com/project/2007`
+and MS Project's own files write `http://schemas.microsoft.com/project`, so a
+document that is valid as Project means it fails the schema as Microsoft wrote
+it until one of the two URIs is rewritten. Rewriting the schema text is the
+smaller half — and it is what the `xmllint` harness around this format already
+does. Two schemas compiled with two URI lists are also the honest way to accept
+both generations of a format.
+
+A problem is data and not an exception, so a program decides what to do with it:
+
+```js
+const problems = schema.Validate(plan);
+
+if (problems.length) {
+    Message.Error(Locale.Text("The plan has {0} problems", problems.length));
+    return;
+}
+Mspdi.Load(plan);        // it is safe to read now
+```
+
+Three things are refused rather than half-done. A **detached element** cannot be
+validated — libxml2 answers *no instance to validate* — so validate a parsed
+document or an element in one. A schema that **includes or imports another
+document** is refused before the compiler sees it, because libxml2 would load
+the location (a local path or an URL) and a failed remote import is only a
+warning: the compile succeeds and validates against something incomplete in
+silence. And an **invalid schema** throws where it is compiled, naming the line:
+that is a mistake in the program, not a fact about the file.
 
 ## What goes wrong
 

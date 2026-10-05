@@ -202,6 +202,13 @@ Locale.Compare("Ñanculeo", "Ortiz")
 Locale.Matches("Echeverría", "ver")   // true
 ```
 
+**In a `Task`, `Locale` is the facts and not the catalogue**: `Number`, `Date`,
+`Currency`, `Parse`, `Compare`, `Matches` and `DecimalPoint` are there, because
+they read the process locale that every thread inherits, while `Text`, `Plural`,
+`Context`, `Current`, `Available` and `Read`/`Write` are not, because they read
+a table the main thread fills and reloads. Ordering ten thousand names is the
+work a worker is started for; translating one is not.
+
 **The options object is the same one a `DecimalBox` keeps as its format** —
 `{ Decimals, Group, Prefix, Suffix, Symbol, Before, Space, Currency }` — so a
 label, a report and a field spell an amount the same way, and `Locale.Parse` is
@@ -325,6 +332,8 @@ go in a plain object. So `Xml.Parse` answers a tree, and a
 | `Xml.ParseBytes(bytes)` | the same, and the declaration's encoding is honoured — what `File.LoadXml` uses |
 | `Xml.Stringify(node)` | the canonical text: declaration, indented by two, one trailing newline. A detached element is written with a document of its own |
 | `Xml.Element(name)` | a detached element; its own tree, not in any document |
+| `Xml.Schema(source)` | compiles an XSD **once** -- from its text, a document or an element in one -- so a file can be checked as often as it arrives. A schema that includes or imports another document is refused, because compiling it would fetch a file or an URL from inside what is meant to be a check; `Validate` is the question and it never writes to the document |
+| `XmlSchema.Validate(source)` | checks a document, or an element in one, against this schema. An empty array means valid; each problem carries the line it is on -- libxml2 reports the element and not a column, so `Column` is `0`. **Nothing is written into the document**, so a schema's default stays out of the tree and out of the next save |
 | `Xml.Available` | whether this build has libxml2; the verbs refuse with a sentence when it does not |
 
 A **document** answers `Root` (→ element, or `null`). An **element** answers:
@@ -338,6 +347,8 @@ A **document** answers `Root` (→ element, or `null`). An **element** answers:
 | `AttrNS(uri, name)`, `SetAttrNS(uri, name, value)`, `RemoveAttrNS(uri, name)` | the same for an attribute in a namespace — `xml:lang` is `AttrNS("http://www.w3.org/XML/1998/namespace", "lang")`, since an unprefixed name means no namespace at all. `SetAttrNS` refuses a namespace not declared in scope |
 | `AttributeNames()` | the local names, sorted as the file had them |
 | `Children` | its element children, in order |
+| `IsEmpty` | whether the element has nothing inside at all: no element, no text, no comment, no processing instruction. Attributes do not count. **The one question `Children` and `Text` cannot answer together** -- an element holding only a comment reads as both empty on them |
+| `Comments` | the text of the comments directly under this element, in order -- what `Text` cannot carry, so a change to one can be reported |
 | `Find(name)`, `FindAll(name)` | direct children by local name — `Find` answers `null` |
 | `Add(child)`, `Insert(index, child)`, `Remove()` | see below |
 | `Parent` | the parent element, or `null` for a root or a detached node |
@@ -374,14 +385,37 @@ that is present but empty is *not* something the canonical writer can promise:
 an empty text is what a field starts from, which is the record mapper's
 business and not the DOM's.
 
+**A document can be checked against its schema before anything reads it.**
+`Xml.Schema` compiles the XSD once — 70-90 ms for the 240 KB MSPDI schema — and
+`Validate` is the cheap question (`~2.9 us` a task, 23 ms for eight thousand).
+An empty array is valid; a problem is data, with the line and a sentence, not an
+exception. The schema has to be **self-contained**: an `xs:include`, an
+`xs:redefine` or an `xs:import` with a `schemaLocation` is refused, because
+compiling it would fetch a file or an URL from inside what is meant to be a
+check. Validation never writes to the document.
+
+```js
+const xsd = File.Load("mspdi_pj12.xsd")
+                .split("http://schemas.microsoft.com/project/2007")
+                .join("http://schemas.microsoft.com/project");
+const schema = Xml.Schema(xsd);
+const plan   = File.LoadXml("plan.xml");
+
+for (const p of schema.Validate(plan))
+    print(`${p.Line}: ${p.Message}`);
+```
+
+That replacement is the caller's, and it is there because the official schema
+declares a namespace the files do not write — see `docs/plans/xml-plan.md`.
+
 **Nothing here reads a DTD, an entity, a schema or the network.** Parsed with
 `XML_PARSE_NONET` and without entity substitution or DTD loading, so an external
 entity, a billion laughs and a 2 GB text node are negatives rather than
 configurations to get right; a document that is not well formed throws with its
 position, and nothing goes to stderr. HTML is not XML and is not this.
-`XPath`, XSD validation and a streaming reader are deliberately absent — each is
-a language or a contract of its own, and `docs/plans/xml-plan.md` names the
-trigger that would bring each back.
+`XPath` and a streaming reader are deliberately absent — each is a language or
+a contract of its own, and `docs/plans/xml-plan.md` names the trigger that would
+bring each back.
 
 XML is **optional at build time**, like `Database.Sqlite`: without libxml2,
 `Xml.Available` is `false` and every verb refuses naming the package. The class
@@ -585,7 +619,12 @@ answers facts.
 writes. Gone: every widget and `Dialog`/`Message`/`Clipboard`/`Screen` (GTK
 off the main thread is a crash), `Exec`, `File.Watch`, `Timer` and async
 `Http` (the source would fire on the main thread holding this context), and
-`Settings`/`Locale` (process state the main thread owns).
+`Settings` (process state the main thread owns). **`Locale` is there with its
+facts and not its catalogue**: `Compare`, `Matches`, `Number`, `Date`,
+`Currency`, `Parse` and `DecimalPoint` read the process locale, which every
+thread inherits, while `Text`/`Plural`/`Context`/`Current`/`Available` read a
+table the main thread fills and reloads — so a worker orders ten thousand
+names, which is what it was started for, and cannot translate one.
 
 **And the debugger does not reach in here.** `bintana --debug` installs its hook
 on the program's own runtime; a worker's is a second `JSRuntime` on a second

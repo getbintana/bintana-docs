@@ -245,7 +245,7 @@ const GLOBAL_SECTIONS = [
     ["Desktop.Entries",   "Desktop.Entries"],
     ["Locale",            "Locale"],
     ["File",              "File"],
-    ["Xml",               "Xml", "XmlDocument", "XmlNode"],
+    ["Xml",               "Xml", "XmlDocument", "XmlNode", "XmlSchema"],
     ["Directory",         "Directory"],
     ["Probe",             "Probe"],
     ["Task",              "Task"],
@@ -463,7 +463,7 @@ const GLOBAL_PAGE_OWNERS = {
     Lock:        ["Lock"],
     Text:        ["Text"],
     Time:        ["Time"],
-    Xml:         ["Xml", "XmlDocument", "XmlNode"],
+    Xml:         ["Xml", "XmlDocument", "XmlNode", "XmlSchema"],
     Zip:         ["Zip", "ZipArchive", "ZipWriter"],
 };
 

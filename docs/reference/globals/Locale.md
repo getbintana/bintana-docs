@@ -115,6 +115,12 @@ never had one.
 rows.sort((a, b) => Locale.Compare(a.Name, b.Name));
 ```
 
+**A [`Task`](Task.md) gets this half and not the catalogue**: `Compare`,
+`Matches`, `Number`, `Date`, `Currency`, `Parse` and `DecimalPoint` read the
+process locale, which every thread inherits, while `Text`, `Plural`, `Context`,
+`Current`, `Available` and `Read`/`Write` read the table the main thread fills
+and reloads. So a worker sorts ten thousand names and does not translate one.
+
 ## What goes wrong
 
 - **A sort put the accented names at the end.** A plain `<`, or a bare `sort()`
