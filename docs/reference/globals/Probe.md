@@ -24,7 +24,7 @@ display and cannot make a [`Picture`](../widgets/Picture.md) to ask.
 
 | | |
 |---|---|
-| `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
+| `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **A file's header and nothing else**: the size of a picture already in memory is the handle's to answer, off the decode it already did. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
 
 `{ Width, Height }` in pixels, or `null`. A vector picture has no pixels of its
 own, so an SVG answers the size it declares — `{ Width: 300, Height: 100 }` for a

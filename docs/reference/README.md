@@ -144,6 +144,7 @@ members, twice — once in its summary and once where it is explained.
 | [AudioPlayer](globals/AudioPlayer.md) | sound with no window |
 | [Bytes](globals/Bytes.md) | a file's contents, when they are not text |
 | [Clipboard](globals/Clipboard.md) | copy and paste, which are not symmetrical |
+| [Csv](globals/Csv.md) | rows of text, the way spreadsheets and other programs exchange them |
 | [Database](globals/Database.md) | a [`Record`](globals/Record.md) over a table |
 | [Day](globals/Day.md) | the calendar date, which is the value JavaScript does not have |
 | [Decimal](globals/Decimal.md) | exact base-10 arithmetic, with the ordinary operators. **This is what money is.** |

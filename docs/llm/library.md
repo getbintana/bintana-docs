@@ -427,7 +427,7 @@ Probe.Image("notes.txt")         // null
 
 | | |
 |---|---|
-| `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
+| `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **A file's header and nothing else**: the size of a picture already in memory is the handle's to answer, off the decode it already did. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
 
 The size is in pixels; a vector picture answers the size it declares (an SVG's
 `viewBox`). **It reads exactly the files a [`Picture`](controls.md#picture)
@@ -949,6 +949,44 @@ About 50 MB a second to compress and 500 to decompress: a big one belongs in a
 `Bytes`, and `ToText()` is the way back to a string. There is no zlib framing,
 raw deflate or zip here; the name goes out when something needs it.
 [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) is the file verbs in use, with every copy read back.
+
+## Keyring
+
+The system's secret store, through the freedesktop Secret Service: a token, a
+password or a key kept where the desktop keeps them, instead of in a file.
+
+```js
+Keyring.Available
+Keyring.Store(Application.Id, "https://zbx.lan/zabbix", token, (ok) => { … })
+Keyring.Lookup(Application.Id, "https://zbx.lan/zabbix", (value) => { … })
+Keyring.Delete(Application.Id, "https://zbx.lan/zabbix", (ok) => { … })
+```
+
+| | |
+|---|---|
+| `Available` | whether this build has libsecret. It says nothing about whether the machine is running a secret service -- a headless session has none -- so a caller treats a failed `Lookup` like an empty vault |
+| `Store(service, key, value, cb)` | puts `value` in the system's keyring under `service` and `key`, and calls `cb(ok)` when the vault answers -- `false` when it could not store it, which is what a machine with no secret service says. The label a keyring browser shows is made of the two names |
+| `Lookup(service, key, cb)` | reads what `Store` saved, and calls `cb(value)` -- the text, or `null` when nothing is stored **or** the vault cannot be asked |
+| `Delete(service, key, cb)` | forgets it, and calls `cb(ok)`: `false` when there was nothing under those names or the vault could not be asked. Deleting what is not there is not an error |
+
+**The calls are asynchronous, and they have to be.** The vault is a service on
+the session bus, and it may be locked: a synchronous lookup would freeze every
+window and every timer until the user answered a prompt. So each verb takes a
+callback and returns at once, and the answer arrives on the loop. A callback
+takes **one value** — whether it worked, or the secret — so an error is folded
+into that value.
+
+**`service` names the program and `key` the thing within it**, so one
+application holds one secret per server: a Zabbix token is
+`Keyring.Store(Application.Id, url, token, cb)`. The label is data and not
+prose: nothing here goes through a catalogue.
+
+**Optional at build time**: without libsecret `Keyring` exists, `Available` is
+`false` and every verb refuses naming the package. A desktop with no service
+running is the same answer at run time, which `Available` cannot see — a caller
+treats a failed `Lookup` like an empty vault and keeps its own fallback. A
+`main` project can use it and the console loop waits for the answer; a `Task`
+cannot, because the callback belongs to the main loop.
 
 ## Zip
 
