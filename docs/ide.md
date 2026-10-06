@@ -725,6 +725,30 @@ Two things it says out loud rather than silently:
   the label when the two differ. A list that silently stops reads exactly like a
   project with nothing else in it.
 
+**And it replaces.** The same window, because a search whose results one cannot
+act on sends one to each file by hand. Two buttons, and the difference is what
+they act on: *Replace* writes the one occurrence the selected row stands on, and
+*Replace all* writes every one in the files the filter picked, **after asking
+with the count** -- it is the one edit here with no undo, since a file that is not
+open has no editor history to take it back with.
+
+Four things it is careful about, and each is a file it must not write:
+
+- **a `.form`** is a drawing and **a catalogue** has its own editor, so neither is
+  text this window edits -- `opensInTab` is the table that already says so;
+- **a file that is not UTF-8** opens read-only everywhere in the IDE, and this
+  road is no exception;
+- **the match is re-found in the text it is about to write**, not trusted by
+  offset: a file that changed since the search is left alone rather than edited a
+  line off;
+- and with *Regular expression* off the replacement is **literal**, `$` included,
+  which is a function replacer rather than a string -- `Regex`'s own expansion
+  reads `$1` and `$$`. With it on, the expansion is the runtime's and `$1` is a
+  group.
+
+Writing goes through `TabSet.rewriteSource`, so the file on disk and the tab that
+has it open move together, as they do for a rename the IDE performs itself.
+
 ## F12, and where a name is declared
 
 The gesture every environment in this family has — Shift+F2 in Visual Basic,
@@ -796,6 +820,20 @@ Which methods there are is `Navigator.symbols`, which asks the runtime's parser,
 so there is one answer to *what is a declaration* and `SymbolForm` does no
 parsing: it is handed a list and hands back a line. The permanent version of this
 is [the outline](#the-outline-beside-the-code).
+
+**And `Ctrl+T` asks the same question of the whole project.** *Edit → Go to
+symbol in project...* lists every class, top-level function and method the
+project declares -- the three kinds a name can be -- with the file and line each
+is at, in load order and in the order they are written. Typing matches the name
+and the path, so two `greet`s are told apart by where they live. It is the only
+way to reach a name in a file nobody has open, which is exactly what the outline
+and `Ctrl+Shift+O` cannot do.
+
+It is the same `SymbolForm` in a mode of its own, and only one thing differs: the
+line-number half is off, because a number names a place in *a* file and here the
+file is the question. What feeds it is `Navigator.projectSymbols`, the parser
+over every `.js` of the listing, once per press and never kept -- the bargain F12
+makes and for the same reason.
 
 **Nothing is cached**, and that is deliberate. An index of the project's classes
 would have to be thrown away whenever a class is renamed, a file is added or a tab
@@ -1852,14 +1890,32 @@ The design, the measurements and what was refused are in
 | `Ctrl+F9` | **Debug**, and **Continue** once it is stopped |
 | `Ctrl+F8` | pause a program that is running |
 | `F8` / `Shift+F8` / `Ctrl+Shift+F8` | step into, over, out |
+| `Ctrl+F10` | run to the cursor, from a stop |
 
 **And the same commands are buttons over the Debug page** -- Debug/Continue,
-Pause, the three steps and Stop -- because whoever comes from a debugger with a
-toolbar looks for them there before looking in a menu. They are `Action`s, so
-the menu item, the key and the button are one command each and grey out
-together: a step is offered in all three places exactly while the program is
-stopped. Stop is the toolbar's own Stop, the same command, since there is one
-child to end whichever button started it.
+Pause, the three steps, Run to cursor and Stop -- because whoever comes from a
+debugger with a toolbar looks for them there before looking in a menu. They are
+`Action`s, so the menu item, the key and the button are one command each and
+grey out together: a step is offered in all three places exactly while the
+program is stopped. Stop is the toolbar's own Stop, the same command, since
+there is one child to end whichever button started it.
+
+**A condition or a log message is one dialog, on the breakpoint under the
+caret.** *Debug → Breakpoint...* opens it; `Clear` is a third answer -- neither,
+and the breakpoint stays. The runtime's `when` has evaluated in the frame since
+conditions were built, and what the IDE owed it was the way in; the same dialog
+writes a **logpoint**'s message, which the runtime evaluates the way a watch is,
+sends as a line of the run and **does not stop on** -- so a breakpoint inside a
+loop records every turn and holds none. Both settings travel with the
+breakpoint when the runtime moves it to a line that can stop, and both are read
+back from the mark's tooltip, since one mark kind is one picture.
+
+**Run to cursor is a one-shot breakpoint.** It is armed on the caret's line and
+takes itself out when it is reached, which is what makes a loop below it stop
+once rather than every pass; a second one replaces the first, because a second
+one means the caret moved. It is offered while a session is on -- stopped or
+running freely, both -- because there has to be a program for the line to be
+reached by.
 
 *Debug → Stop where something is thrown* is a switch, and it is **every** throw
 and not only the uncaught ones: whether something above will catch it is not a
@@ -1932,7 +1988,16 @@ own values: the panel and the box cannot disagree about what is in scope.
 **A breakpoint can carry a condition**, evaluated in the frame before the stop
 is reported -- so a breakpoint inside a loop stops on the turn that matters
 instead of on all of them. One whose condition is broken does **not** stop: that
-is a line in the log, not a stop on every pass.
+is a line in the log, not a stop on every pass. The dialog writes it, the arm
+command carries it, and a setting changed on a running program is taken to the
+runtime as a fresh breakpoint, since the protocol has no *change a breakpoint*.
+
+**And one can carry a message instead of stopping.** A logpoint's text is an
+expression, evaluated where the program is standing, printed as
+`file:line: value` in the output pane and not answered with a stop -- the
+program is still going, so it is a line of the run and not a row of the values
+panel. An expression that throws records its message and carries on, the same
+rule a broken condition follows.
 
 **One Stop for both.** Whichever of *Run* and *Debug* started a child, the Stop
 button is what ends it -- a second button for *stop the one being debugged*
@@ -1940,11 +2005,6 @@ would be a second answer to a question that has one.
 
 ### What it cannot do yet
 
-- **A breakpoint that only logs**, which every environment in this family also
-  has: it would be a condition that never holds plus a message, and the channel
-  already carries both halves.
-- **Run to cursor**, which is a temporary breakpoint and the one piece of stage
-  2 that was not built.
 - **The hook costs what it costs.** A branch per opcode is +12 to +16 % with the
   debugger off, measured; the fix is stage 5 of the plan -- patching the
   bytecode where a breakpoint is armed, which costs nothing while none is.
