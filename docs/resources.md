@@ -496,9 +496,10 @@ short** of the edge while the buttons sat **85px** left of the corner.
 Two changes in `runtime/src/bta_fixed.c`, and the second is not optional given the
 first:
 
-- **A form's declared size is the anchor origin**, and the first allocation is
-  only the fallback. Only a form's, because a `Width` inside a box is a minimum
-  rather than a size.
+- **The declared size is the anchor origin on every surface**, and the first
+  allocation is only the fallback for one that declared nothing — a `Width`
+  inside a box is a *minimum* as a request, and still the origin its children's
+  coordinates were written against.
 - **The floor is applied after the anchor, growing away from the anchored edge.**
   Otherwise a control that outgrew its declared width takes its own growth *and*
   the whole slack, and ends up past the edge it is anchored to.

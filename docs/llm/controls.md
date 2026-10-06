@@ -1274,10 +1274,10 @@ position that still shows something rather than the content's own height.
 
 **`Arrangement` is what makes a scroller *fill* as well as scroll**, and without
 it the content is only ever as big as it needs to be. The default slot is a
-`Fixed`, which is what lets `X`/`Y` mean something inside a scroller — and a
-`Fixed` has no design size for an anchor to keep a gap against, so `HAlign:
-"Fill"` on the content has nothing to fill: a panel in a 900-wide view is as
-wide as what is in it. Arranged `Horizontal` or `Vertical`, the slot is a box,
+`Fixed`, which is what lets `X`/`Y` mean something inside a scroller — and the
+slot is an internal surface with no declaration of its own, sized to its content,
+so `HAlign: "Fill"` on the content has no slack to fill: a panel in a 900-wide
+view is as wide as what is in it. Arranged `Horizontal` or `Vertical`, the slot is a box,
 and then a child with `HExpand`/`VExpand` is **stretched across the view and
 free to grow past it along the view**, which is fill and scroll in one
 declaration:

@@ -1886,8 +1886,9 @@ and the same grid in an unarranged scroller is **180x130** for the one tile and
 reported as a missing container before anybody tried the property.
 
 The `Fixed` slot cannot do it, and the reason is worth keeping: an anchor keeps the gap a control was *drawn* with, against a design
-size that only a **form** has (see the anchoring notes above), so `HAlign: Fill`
-on a scroller's content has nothing to fill.
+size (see the anchoring notes above), and the slot is an internal surface with
+no declaration of its own — it is sized to its content — so `HAlign: Fill` on
+what a scroller holds has no slack to fill.
 
 **What decides whether it scrolls or grows the window is `Scrollbars`, and not a
 floor.** An axis that may not scroll has to be given its content's minimum and
@@ -2740,13 +2741,15 @@ homogeneous grid is a chessboard, and one axis of it is a thing nobody has asked
 for by that name.
 
 **And a `Fixed` is the wrong container for a shape that is merely rectangular.**
-It latches its design size from its first allocation, so one that is first shown
-at a size other than the one it was drawn at anchors from the wrong origin — a
-hidden `Switcher` page is exactly that, and enlarging the IDE on its welcome page
-before opening a project left the whole workspace laid out at the old size. Three
-panels of the IDE were `Fixed` when each was a *column*: a label over a tree, a
-toolbar over a split, every child `Fill` at the full width, and coordinates that
-never meant anything. A box has no design size to get wrong.
+A surface that declares no size latches its design from its first allocation, so
+one that is first shown at a size other than the one it was drawn at anchors from
+the wrong origin — a hidden `Switcher` page is exactly that, and enlarging the
+IDE on its welcome page before opening a project left the whole workspace laid
+out at the old size. A declaration is the way out (a `.form`'s `Width`/`Height`
+is latched whatever the allocation order); three panels of the IDE were `Fixed`
+when each was a *column*: a label over a tree, a toolbar over a split, every
+child `Fill` at the full width, and coordinates that never meant anything. A box
+has no design size to get wrong.
 
 **A grid on a `Fixed` surface still cannot negotiate**, which is worth knowing
 before reaching for one: its neighbours are placed by coordinate and have no say,
@@ -2812,11 +2815,20 @@ whole window.
 ### What an anchor is measured from
 
 The gap a control keeps is the one it was **drawn** with, so a surface has to
-know the size the coordinates were written against. For a **form** that is what
-it declared: `Width: 380` in a `.form` is the number every coordinate in that
-file was measured from. Anything else takes its first real allocation, because it
-has no declaration worth trusting — a `Width` inside a box is a *minimum*, not a
-size, and the designer's canvas is sized by the IDE.
+know the size the coordinates were written against. **The declared
+`Width`/`Height` is that size on every surface, not only on a form**: `Width:
+380` in a `.form` is the number every coordinate in that file was measured from,
+and a `Panel` or a component root a box stretches keeps its own as the origin
+too — so a `Fill` child follows the room its host gives the panel and not the
+size it was drawn at. A `Width` inside a box is still a *minimum* as a
+*request*; as the origin of its children's coordinates it is the design. A
+surface that declared nothing — no `.form`, no `Resize` — falls back to its
+first real allocation, and the designer's canvas, which the IDE sizes, is
+`Anchored: false` instead.
+
+A `Panel`'s `Margin` is not part of this: GTK shifts the box inside its cell and
+keeps its size, so a 100x100 panel with `Margin: 5` is a 100x100 box at (5,5)
+and its children's coordinates are relative to that box.
 
 **The file's number and not the window's current one**, which are two different
 things the moment an application restores a remembered size: `Resize` writes what
