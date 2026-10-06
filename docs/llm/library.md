@@ -875,11 +875,13 @@ Installed in every run and **inert unless a profiler is listening**: with no
 `--profile` and not under Sysprof, `Active` is `false` and the verbs do nothing.
 
 `Active` (whether marks are going anywhere), `Begin(name)`, `End(name)`,
-`Mark(name)`. `Begin`/`End` is one span of the stretch between them — what a
-sampled profile cannot say, since QuickJS interprets and a native stack never
-names the `.js` function that was running. `End` closes the innermost `Begin`
-and refuses a name that does not match, since the wrong order would put one
-span's time on another's. `Mark` is one instant. See
+`Mark(name)`, `Counter(name, value)`. `Begin`/`End` is one span of the stretch
+between them — what a sampled profile cannot say, since QuickJS interprets and
+a native stack never names the `.js` function that was running. `End` closes
+the innermost `Begin` and refuses a name that does not match, since the wrong
+order would put one span's time on another's. `Mark` is one instant.
+`Counter` is one number on a track of its own — rows loaded, a queue's depth —
+defined the first time the name is seen and updated after. See
 [Profiling](https://github.com/getbintana/bintana/blob/main/docs/installing.md#profiling).
 
 ## Dictionary

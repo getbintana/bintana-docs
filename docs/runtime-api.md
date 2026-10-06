@@ -1478,6 +1478,7 @@ print(Profile.Active);      // false in an ordinary run, true under a capture
 
 Profile.Begin("Load");
 loadEverything();
+Profile.Counter("Rows", rows.length);   // a graph of its own
 Profile.End("Load");        // one mark of the whole stretch
 
 Profile.Mark("Ready");      // one instant
@@ -1487,6 +1488,7 @@ Profile.Mark("Ready");      // one instant
 |---|---|
 | `Active` | whether the marks are going anywhere |
 | `Begin(name)` | opens a span |
+| `Counter(name, value)` | one number on a track of its own, defined the first time and updated after; 31 characters of the name reach the capture |
 | `End(name)` | closes the innermost `Begin`, which has to be the same name |
 | `Mark(name)` | one instant, no duration |
 

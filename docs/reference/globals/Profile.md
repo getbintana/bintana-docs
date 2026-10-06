@@ -6,11 +6,11 @@ A sampled profile of this runtime is a stack of `JS_CallInternal`: QuickJS
 interprets, so no native stack names the `.js` function that was running. The
 marks are the other half — the runtime raises them where the time goes (opening
 the program, loading a script, building a form, drawing a frame, running a
-[`Task`](Task.md), an event's handler), and `Begin`/`End`/`Mark` are how an
-application adds its own.
+[`Task`](Task.md), an event's handler), and `Begin`/`End`/`Mark`/`Counter` are
+how an application adds its own.
 
 **Installed in every run, and inert unless a profiler is listening.** With no
-`--profile` and not under Sysprof, `Active` is `false` and the three verbs do
+`--profile` and not under Sysprof, `Active` is `false` and the verbs do
 nothing at all — not even `End`'s mismatch refusal — so a program instrumented
 for a capture runs unchanged without one. The two ways in, and what the capture
 looks like, are under
@@ -19,6 +19,7 @@ looks like, are under
 ```js
 Profile.Begin("Load");
 const clients = Database.Sqlite(path).Table(Client).All();
+Profile.Counter("Clients", clients.length);
 Profile.End("Load");
 
 Profile.Mark("Ready");
@@ -30,6 +31,7 @@ Profile.Mark("Ready");
 |---|---|---|
 | `Active` | whether the marks are going anywhere: true while this run is under Sysprof or was started with `--profile` | [the marks](#the-marks) |
 | `Begin(name)` | opens a span on the timeline | [the marks](#the-marks) |
+| `Counter(name, value)` | one number on a track of its own — rows loaded, items in a cache, a queue's depth — defined the first time the name is seen and updated after, so a capture shows it as a graph beside the marks | [the marks](#the-marks) |
 | `End(name)` | closes the innermost `Begin`, which has to be the same name | [the marks](#the-marks) |
 | `Mark(name)` | one instant on the timeline with no duration — a point in the program rather than a stretch | [the marks](#the-marks) |
 
@@ -39,6 +41,7 @@ Profile.Mark("Ready");
 |---|---|
 | `Active` | whether the marks are going anywhere: true while this run is under Sysprof or was started with `--profile`. False in an ordinary run, where `Begin`/`End`/`Mark` do nothing at all |
 | `Begin(name)` | opens a span on the timeline. `End(name)` closes it and the pair becomes one mark of the whole stretch — what an application uses around its own work (loading, computing, laying out), since a sampled profile cannot say which of its functions was running. Inert when `Active` is false |
+| `Counter(name, value)` | one number on a track of its own — rows loaded, items in a cache, a queue's depth — defined the first time the name is seen and updated after, so a capture shows it as a graph beside the marks. The capture keeps 31 characters of the name; the value is a number, and one that is not finite is refused even with nobody listening, because a typo should not wait for a capture. Inert when `Active` is false |
 | `End(name)` | closes the innermost `Begin`, which has to be the same name. A `name` that does not match is refused naming both, since a span closed in the wrong order would put one name's time on another's. Inert when `Active` is false |
 | `Mark(name)` | one instant on the timeline with no duration — a point in the program rather than a stretch. Inert when `Active` is false |
 
