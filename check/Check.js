@@ -271,6 +271,7 @@ const GLOBAL_SECTIONS = [
     ["Http",              "Http", "HttpClient", "Multipart"],
     ["Http Server",       "HttpServer", "HttpRequest"],
     ["AudioPlayer",       "AudioPlayer"],
+    ["Profile",           "Profile"],
 ];
 
 function checkGlobals(root, index, problems) {
@@ -457,6 +458,7 @@ const GLOBAL_PAGE_OWNERS = {
     Logger:      ["Logger"],
     Printer:     ["Printer"],
     Probe:       ["Probe"],
+    Profile:     ["Profile"],
     Random:      ["Random"],
     Screen:      ["Screen"],
     Task:        ["Task"],

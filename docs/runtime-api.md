@@ -1469,6 +1469,42 @@ the same number; and the colons and leading zeros of `2:15:00,05` are the same i
 every language. The one part that is not is the mark before the hundredths, which
 is `Locale.DecimalPoint`.
 
+## Profile
+
+Marks on a Sysprof timeline, and the runtime's own measurement of itself.
+
+```js
+print(Profile.Active);      // false in an ordinary run, true under a capture
+
+Profile.Begin("Load");
+loadEverything();
+Profile.End("Load");        // one mark of the whole stretch
+
+Profile.Mark("Ready");      // one instant
+```
+
+| | |
+|---|---|
+| `Active` | whether the marks are going anywhere |
+| `Begin(name)` | opens a span |
+| `End(name)` | closes the innermost `Begin`, which has to be the same name |
+| `Mark(name)` | one instant, no duration |
+
+**This exists because a sampled profile cannot name a JavaScript function.**
+QuickJS interprets, so every native frame under a running `.js` file is
+`JS_CallInternal`; the marks are what put a name and a duration on the timeline,
+and the runtime raises its own for `Startup`, each loaded file, each form built,
+each frame drawn, each `Task` body and each event whose handler ran. A capture
+under [Sysprof](https://apps.gnome.org/Sysprof/) carries those beside the
+samples and GTK's frame marks; `--profile <file>` writes the marks alone to a
+file, with no profiler installed, to open later.
+
+**Inert with nobody listening.** An ordinary run has `Active === false`, and
+`Begin`/`End`/`Mark` are no-ops — no allocation, no timing, not even `End`'s
+refusal — so instrumenting a program costs it nothing in production.
+[`Stopwatch`](#stopwatch) is the other question: a measurement the program reads
+back, not one a profiler does.
+
 ## Dictionary
 
 What a bag of data holds.

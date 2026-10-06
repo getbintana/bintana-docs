@@ -868,6 +868,20 @@ wrong or negative.
 **A tick decides when to repaint; what is painted comes from `Elapsed`.** Adding
 100 per 100 ms tick falls behind and never catches up.
 
+## Profile
+
+What a Sysprof capture carries, and how an application marks its own work.
+Installed in every run and **inert unless a profiler is listening**: with no
+`--profile` and not under Sysprof, `Active` is `false` and the verbs do nothing.
+
+`Active` (whether marks are going anywhere), `Begin(name)`, `End(name)`,
+`Mark(name)`. `Begin`/`End` is one span of the stretch between them — what a
+sampled profile cannot say, since QuickJS interprets and a native stack never
+names the `.js` function that was running. `End` closes the innermost `Begin`
+and refuses a name that does not match, since the wrong order would put one
+span's time on another's. `Mark` is one instant. See
+[Profiling](https://github.com/getbintana/bintana/blob/main/docs/installing.md#profiling).
+
 ## Dictionary
 
 What a bag of data holds. `for...in` recites, `Dictionary` counts.
