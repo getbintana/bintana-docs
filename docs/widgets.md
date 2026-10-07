@@ -2666,6 +2666,35 @@ of stopping at 280. And a `Button`'s natural width is its label and nothing else
 so a row of them wants a declared `Width` even in a box; that is a size and not a
 position, which is the distinction that matters.
 
+### Spacing: a suggestion
+
+Bintana enforces no spacing, and a form with any is valid. If you want a number
+to start from, this is the one the IDE and the examples use, taken from the
+guidelines that publish one:
+
+| | Suggested | Where it comes from |
+|---|---|---|
+| Window edge to the nearest control | **12** | [elementary HIG](https://docs.elementary.io/hig/widgets/creating-layouts): *"12px (minimum) space between any widgets and the window's border"*; the older GNOME HIG leaves the same 12-pixel border |
+| Between buttons in a row | **6** or more | elementary HIG: *"Horizontal spacing between buttons is 6px"* |
+| A toolbar strip | **6** | libadwaita's `.toolbar` class ensures *"6px margins and spacing between widgets"* |
+
+12 is a floor in elementary's wording and not a target, so a roomier dialog is
+not wrong; the IDE draws 12 everywhere because 16 added nothing it could see.
+The current [GNOME HIG](https://developer.gnome.org/hig/) and libadwaita's
+documentation publish no other pixel value, so the 6/12/18/24 scale sometimes
+quoted for them is a habit and not something to cite.
+
+How to get there depends on the model above:
+
+- **A `Fixed` form**: draw the controls 12 from each edge. Moving a form's content
+  means changing its declared `Width`/`Height` by the same amount, or the anchors
+  keep the old gaps.
+- **A box form**: `Margin: 12` on the root, or on each child that touches the
+  edge. The margins of two neighbours add, so `12` on both is 24 between them;
+  put the gap in `Spacing` instead when you want less.
+- **A list, a split or an editor that runs to the edge** needs none: that is a
+  surface and not a control sitting in a window.
+
 ### A form's declared size and its own `Padding`
 
 A form's `Width`/`Height` include its own `Padding` and `Border`, but GTK lays the
