@@ -284,12 +284,19 @@ really are interactive.
 **Uncaught errors.** A handler that throws does not stop the application, and
 until it was reported that meant a button that silently stopped working. Every
 uncaught error now goes to stderr *and* to the user: `Application.OnError` if the
-application set one, otherwise a dialog with the message and the stack.
+application set one, otherwise a window of Bintana's own -- the message in a
+header, the stack apart in a monospace box, **Copy** (message and stack to the
+clipboard; the window stays up) beside **Close**, which is also Escape. It is
+written in the language, out of the controls an application uses, and the words
+in it are not translated: the runtime owns that prose and has no catalogue to
+put it in.
 
-One at a time: the dialog is raised with `choose()` so the runtime is told when it
-is dismissed, which is what keeps a handler that throws on every timer tick from
-stacking dialogs forever. An error raised *inside* `OnError` only reaches the
-terminal — the guard is still up, so it cannot come back around.
+One at a time, kept in JavaScript: a handler that throws on every timer tick
+would otherwise stack a window per tick. An error that stops a program before the
+window's own code has run -- a load error -- and one thrown by the window itself
+fall back to a plain two-button alert, so there is always something to show it
+in. An error raised *inside* `OnError` only reaches the terminal -- the guard is
+still up, so it cannot come back around.
 
 **What the handler gets is two strings, and not the `Error`.** That is worth
 saying because the obvious guess is the other one: the name is gone, so a

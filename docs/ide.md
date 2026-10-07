@@ -186,6 +186,11 @@ Split                   HAlign/VAlign Fill: the whole window below the toolbar
                                           WidgetTree) with DesignBar under it
                         OutlineBox (Panel)    a .js tab: LblOutline over
                                               OutlineList, the methods it declares
+                        Every page carries a `heading` title: Toolbox and
+                        Structure above their lists, Inspector (PropTitle,
+                        which names the selection: `Button1 (Button)`, or
+                        `Form1 (Form)`) above Properties and Events, and
+                        the outline's own.
     ConsoleBox (Notebook) the bottom panel: three declared pages, all Fill
                             "Output"    LogView, a read-only TextEditor
                             "Debug"     DebugPage, the stack and the values
@@ -1428,6 +1433,11 @@ needs none, because **the `.form` is the type declaration**.
 
 ## The outline, beside the code
 
+The editor and the outline share `EditSplit`. Its divider starts at the room the tabs
+have less 260 -- the outline gets a column of its own width -- and not at the
+editor's width, which left the outline wider than the code and almost empty. A
+divider the person dragged still wins (`Session.divider`).
+
 `Ide.Outline`: the methods the file on screen declares, in the side panel, for
 the tabs that never had one.
 
@@ -2056,7 +2066,7 @@ line that mentioned it. What the user sees is the tab, and the tab says Terminal
 
 Two shapes of failure, and one entry point each. A **load error** -- a syntax error,
 a class that will not compile -- prints and exits non-zero, and that is the jump. An
-**uncaught error in a handler** shows its dialog and the program keeps running, so
+**uncaught error in a handler** shows its error window and the program keeps running, so
 there is no exit to notice: that one is the click.
 
 ## Renaming, which is refactoring
@@ -2712,6 +2722,33 @@ so it assigns `0..n-1` — **only when the list really moved**, and under a sing
 `pushUndo()`. Opening it and pressing OK leaves the `.form` exactly as it was,
 which is what *an edit that changes nothing is not an edit* asks of every editor.
 
+## The surface wears the form's own look
+
+`buildSurface()` applies the form's `Arrangement` and then `FORM_LOOK` (in
+`Designer.js`): `Spacing`, `Margin`, `Padding`, `Border`, `Font`, `Radius`, the
+colours and the rest of what changes how the inside is laid out or drawn. Before
+this a form declared `Horizontal` with `Spacing: 12` was drawn with no gap -- the
+grid said 12, the canvas showed 0 and the running form was right. `applyFormLook`
+runs on every rebuild (a key the form no longer has goes back to a fresh control's
+value, so undoing a colour takes it off the board) and `setFormProperty` runs it
+for a later edit. `Style` is deliberately not in the list, since the surface's own
+`Style` is `background`. **A new form property that changes layout wants a line in
+`FORM_LOOK`.**
+
+`Margin` and `Padding` are one padding here, on the surface and on `Glass`: the
+runtime puts both inside the window, and `Bounds()` is the content box, so a surface
+padded alone put every outline padding-pixels off its control. `Border` insets too,
+and its width is part of the inset: the surface wears the border, `Glass` wears the
+whole inset as padding and no border, so the same border is not drawn twice. A sum
+past the 1000 a `Padding` carries is clamped, and the form still opens.
+
+**A control stays inside the content box.** `keepInside` is the one place that
+knows the room, and all five roads that move or size a control ask it: dragging,
+the handles, dropping from the palette, dropping a moved control into a container
+and the arrow keys. Near edges hold at 0 and far edges at the content box, so with
+a `Padding` nothing can be put where the running form would clip it. A container not
+laid out yet (0x0) is no limit, and a control bigger than the room stays at 0.
+
 ## Selection and chrome
 
 Four thin bars for the outline and eight squares for the handles, created once and
@@ -3025,8 +3062,11 @@ grid's `Width` row uses, so the grid, the surface, the shading and the status ba
 all follow as it moves. The snapshot taken on mouse-down is pushed on release,
 and only if the size really changed — a click on a grip is not an edit.
 
-A grip is painted in a darker blue than a control's selection, so the two are
-told apart at a glance when a control sits against the form's edge.
+A grip is **grey while a control is the selection and the selection's blue when the
+form is**, so the form does not read as selected beside a selected control. No line
+is drawn along the form's edge, which got in the way of seeing the application as it
+will look. The grips are drawn on a tab just opened too: the glass has no allocation
+yet, and the layout asks again until it has one.
 
 **The children follow, and their coordinates are rewritten.** They have to be:
 an anchor is measured against the form's *declared* size, so the moment that
@@ -3346,8 +3386,9 @@ the widget rather than assumed — `Lines` is Pango's cap on a *wrapped* caption
 size the zoom makes it.
 
 The pair that matters most is the one the **parent** decides. On a fixed surface
-a control keeps the place and size it was given and the alignment properties are
-inert; inside a box the box places it and `X`/`Y` are. Each half is off in the
+a control keeps the place and size it was given: the three `Expand` properties are
+inert, while `HAlign` and `VAlign` are the anchor rule itself and `Fill` is the only
+way a control there follows its window; inside a box the box places it and `X`/`Y` are. Each half is off in the
 other's world, and this is measured rather than assumed: a `Button` given
 `HExpand`, `Expand` and `HAlign = Fill` on a fixed surface is allocated exactly
 the rectangle it had without them (`tests/widgets`).

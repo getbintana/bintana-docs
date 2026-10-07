@@ -2666,6 +2666,14 @@ of stopping at 280. And a `Button`'s natural width is its label and nothing else
 so a row of them wants a declared `Width` even in a box; that is a size and not a
 position, which is the distinction that matters.
 
+### A form's declared size and its own `Padding`
+
+A form's `Width`/`Height` include its own `Padding` and `Border`, but GTK lays the
+surface out in the content box inside them: 412x276 with `Padding: 6` is laid out in
+400x264. The anchors are measured against the content box, so a `Fill` child drawn
+flush with the padding stays flush at run time, as it was drawn. This is forms only:
+a `Panel`'s declared size is the box its children were drawn in.
+
 ### Split
 
 **Neither half may be squeezed below what it needs**, which is not GTK's default
