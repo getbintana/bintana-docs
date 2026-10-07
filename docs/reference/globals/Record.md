@@ -165,7 +165,7 @@ interchange file needs:
 
 - unknown elements, foreign namespaces and comments stay exactly where they
   were, and a missing modelled element is inserted in declaration order among
-  the modelled ones;
+  the modelled ones, or by `Order` when the shape declares one;
 - a list is reconciled — an item is matched to an element by the record's
   `key` — key text for key text, a key at its starting value included, because
   `<UID>0</UID>` is a UID — or by position, unmatched elements are removed, new
@@ -178,6 +178,17 @@ interchange file needs:
 
 `Table`'s *an int key of 0 is a row never saved* (`Save` inserts) is the
 database's rule and does not reach XML: there is no INSERT here to assign one.
+
+**A type the shape models only partly is a sequence with anchors.** MSPDI's
+task is an `xsd:sequence` with elements this shape will never read, and a new
+`<PredecessorLink>` has to land before `IsPublished` among children the shape
+does not model. `static Xml.Order` is that declaration: the element names in
+the schema's order — the unread ones included — and it has to name **every
+element the shape writes**, or the first write refuses with the one left out.
+A missing element is then inserted before the first sibling the sequence puts
+after it, modelled or not, and `ToXml` writes in that order. Without `Order`
+the order is the fields' declaration order, and an element whose successors
+are all unmodelled is appended past elements the schema puts later.
 
 **LoadXml is lenient, like `Load`**, and reports what the shape does not model:
 an unknown element or attribute goes on `Problems` with its path, a bad value

@@ -2574,7 +2574,8 @@ so in `Problems`.
 writes into the element it is handed and touches **only** what the shape models:
 unknown elements, foreign namespaces and comments stay exactly where they were,
 a missing modelled element is inserted in declaration order among the modelled
-ones, a field back at its starting value has its element removed — **except a
+ones — or by `Order` when the shape declares one — a field back at its
+starting value has its element removed — **except a
 `key`, which is identity and is written whatever it holds**, so the project
 summary task keeps its `UID 0` and an element it matches keeps the children the
 shape does not model — and a list is reconciled, matched by the record's `key`
@@ -2584,6 +2585,18 @@ ones added, the array's order the element order afterwards. `Table`'s *an int
 key of 0 is a row never saved* is the database's rule and does not reach XML.
 Writing into the wrong root is a **throw** and not a `Problems` line: the
 lenient road is `LoadXml`.
+
+**A shape that models only part of an `xsd:sequence` declares `Order`.** The
+option is the type's element names in the schema's order: **every element the
+shape writes has to be in it** — the first write refuses naming the one left
+out — and the names the shape never reads are there as the anchors a new
+element has to be placed against. A missing `<PredecessorLink>` then lands
+before `IsPublished` even though nothing in the shape describes `IsPublished`,
+and `ToXml` writes in that order rather than in the fields' order. Without it
+the order is the declaration order, which can only place an element among the
+modelled siblings: one whose successors are all unmodelled is appended past
+elements the schema puts later, and the file stops validating with nothing
+said.
 
 **What is not modelled is reported, never silently written.** There is no bag of
 raw nodes: re-emitting an unknown element at the end of an `xsd:sequence` is a

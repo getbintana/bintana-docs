@@ -1498,6 +1498,8 @@ conversion: `static Xml` names the element, and the fields name their own with
 the `as`/`Naming` pair a column already uses. Three options cover what a plain
 object has nowhere to keep — `attribute` for a value kept as one, `in` for the
 wrapper a list lives under, and `element` for the item name of a list of values.
+`static Xml` also takes **`Order`**, the type's element sequence, for a shape
+that models only part of an `xsd:sequence`.
 
 ```js
 class Task extends Record {
@@ -1545,6 +1547,15 @@ const fresh = p.ToXml(true);                              // a new element, ever
   unmodelled children of the element it matched stay with it. `Table`'s *an int
   key of 0 is a row never saved* (`Save` inserts) is the database's rule and
   does not reach XML.
+- **A shape that models only part of an `xsd:sequence` declares `Order`**: the
+  type's element names in the schema's order — the ones the shape never reads
+  included, they are the anchors — and **every element the shape writes has to
+  be in it**, or the first write refuses naming the one left out. A new element
+  then lands before the first sibling the sequence puts after it, modelled or
+  not, and `ToXml` writes in that order. Without it the order is the fields'
+  declaration order, which can only place an element among the modelled
+  siblings: one whose successors are all unmodelled is appended past elements
+  the schema puts later, and the document stops validating with nothing said.
 - **`namespace` is a string or a list**: the first is written, all are accepted
   on read, and a root in neither is a `Problems` line rather than a refusal.
   An official schema and the files it describes can disagree about the URI and
