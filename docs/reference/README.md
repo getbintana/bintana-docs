@@ -115,7 +115,6 @@ members, twice — once in its summary and once where it is explained.
 | [Overlay](widgets/Overlay.md) | stacked: the first child fills, the rest float on top |
 | [Panel](widgets/Panel.md) | the plain container: a box, a group, a toolbar, a region of a window |
 | [Picture](widgets/Picture.md) | a photograph, which is not an icon |
-| [Popover](widgets/Popover.md) | a surface that floats over a control instead of taking room |
 | [ProgressBar](widgets/ProgressBar.md) | work with an end in sight |
 | [RowList](widgets/RowList.md) | one row per child, and **each row is a widget you built** |
 | [Scroller](widgets/Scroller.md) | content whose size is not its parent's business |
@@ -166,6 +165,7 @@ members, twice — once in its summary and once where it is explained.
 | [Message](globals/Message.md) | telling the user something, with no question attached |
 | [Notification](globals/Notification.md) | telling the user something while they are looking at another window |
 | [Printer](globals/Printer.md) | what this machine can print on, and how a drawing gets there |
+| [Popover](globals/Popover.md) | a control floated over another, opened by a verb and in no form's tree |
 | [Probe](globals/Probe.md) | what a file is, read from its header — a picture's size, with nothing decoded |
 | [Random](globals/Random.md) | numbers a program cannot predict, from the operating system |
 | [Record](globals/Record.md) | the shape data has, declared once |

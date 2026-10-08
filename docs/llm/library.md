@@ -449,6 +449,60 @@ do not answer an empty list. Ask `File.IsDir(path)` first. What *is* forgiven is
 directory the walk finds and cannot read: that one is skipped rather than ending
 the walk.
 
+## Popover
+
+A control floated over another — the list of suggestions under a field, the rows
+a button drops, a small form that belongs to whatever it points at — **opened by
+a verb and in no form's tree**.
+
+```js
+class Suggestions extends Component { /* Suggestions.form: a Panel with a RowList */ }
+
+Txt_Change() {
+    this.sug ??= new Suggestions();
+    this.sug.Fill(this.matches(this.Txt.Text));
+    Popover.Show(this.sug, this.Txt, { Autohide: false });
+}
+Txt_KeyPress(key) {
+    if (key === "Escape") { Popover.Close(this.sug); return true; }
+    return false;
+}
+```
+
+| | |
+|---|---|
+| `Show(content, anchor, [{ Rect, Position, Arrow, Autohide, Closed }])` | opens `content` — any control, usually a component with a `.form` of its own — floating over `anchor`. **Not in the form's tree**: it takes no room, appears in no `Children`, and nothing in the form being drawn mentions it. A control that is in a container is taken out of it, as `Add` would; it comes back out, free-standing, when the popover closes, and can be shown again. The options: `Rect` (`{ X, Y, Width, Height }` in the anchor's own coordinates — what `Editor.CursorBounds()` answers — points at a place in it instead of the whole of it), `Position` (`Top`, `Bottom`, `Left` or `Right`, the side it **prefers**; default `"Bottom"`), `Arrow` (the tail pointing back at the anchor, default `true`; `false` for a list flush against a field), `Autohide` (a click outside or Escape closes it, default `true`) and `Closed` (a function called once when it went down, **by any road**, the window going included). A misspelt option is refused. Showing a control that is already open moves it, with the options given this time. The anchor must be on screen, which it cannot be before the window is shown. The point is taken once: an anchor that moves afterwards leaves the popover where it opened |
+| `Close(content)` | closes it. Nothing happens when it is not open; `Closed` is called once it is down |
+| `IsOpen(content) -> boolean` | whether `Show` opened it and it has not closed since |
+
+**The content is any control**, usually a [component](forms.md#components--a-form-that-is-not-a-window)
+with a `.form` of its own, drawn in its own tab like any other form; a `Label`
+built in code is as good. It is in nobody's `Children`, takes no room and appears
+in no `.form`. A control that is in a container is **taken out of it**, as `Add`
+would move it, and comes back out free-standing when the popover closes — so the
+same control can be shown again, or put somewhere else.
+
+**Options.** `Rect` is `{ X, Y, Width, Height }` in the anchor's own coordinates
+(`Editor.CursorBounds()` answers one) and points at a place inside it instead of
+at the whole of it. `Position` is the side it *prefers*, `"Bottom"` by default;
+`Arrow` draws the tail pointing back at the anchor, **on by default** — a list flush against a field wants `false`; `Autohide` — `true` by default — closes
+it on a click outside or Escape, and **takes the keyboard into the content** while
+it is open, which is what a menu wants and a suggestion list under a field does
+not. `Closed` is a function called once when it went down, **by any road**: `Close`,
+Escape, a click outside, the anchor leaving the screen, or its window closing. A
+misspelt option is refused by name.
+
+**`Show` on something already open moves it**, with the options given this time —
+a hint that follows the cursor calls it on every move.
+
+**The anchor must be on screen**, which it cannot be before the window is shown, nor
+inside a hidden page or a collapsed `Expander`; `Show` refuses with a sentence. The
+point is taken once. **An anchor that is deleted or hidden closes the popover**,
+and `Closed` is told. `Closed` arrives **a turn after** `Close()`, never from inside
+it: `IsOpen` is false at once and the function runs on the loop.
+
+A worker has none of it: it is a widget verb.
+
 ## Probe
 
 What a file *is*, read from its header **without decoding it** — no widget, no

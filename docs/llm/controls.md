@@ -43,7 +43,7 @@ Widget                            (abstract)
 │       └── SourceEditor    GtkSourceView: languages, gutter, search, marks
 └── Container  (abstract)
     ├── Panel  Frame  Expander  Grid  Flow  Scroller  RowList  Overlay  AspectFrame
-    ├── Split  Notebook  Switcher  Popover
+    ├── Split  Notebook  Switcher
     ├── Form
     └── Component
 ```
@@ -132,7 +132,7 @@ that declares none.
 
 **Controls:** [`Label`](#label) · [`Button`](#button) · [`ToggleButton`](#togglebutton) · [`CheckButton`](#checkbutton) · [`Switch`](#switch) · [`Spinner`](#spinner) · [`Separator`](#separator) · [`LinkButton`](#linkbutton) · [`Image`](#image) · [`Picture`](#picture) · [`Video`](#video) · [`TextBox`](#textbox) · [`SpinBox`](#spinbox) · [`DecimalBox`](#decimalbox) · [`Slider`](#slider) · [`ProgressBar`](#progressbar) · [`LevelBar`](#levelbar) · [`DatePicker`](#datepicker) · [`Calendar`](#calendar) · [`ColorButton`](#colorbutton) · [`FontButton`](#fontbutton) · [`ListBox`](#listbox) · [`ComboBox`](#combobox) · [`TreeView`](#treeview) · [`TableView`](#tableview) · [`TextEditor`](#texteditor) · [`SourceEditor`](#sourceeditor) · [`Terminal`](#terminal) · [`DrawingArea`](#drawingarea)
 
-**Containers:** [`Panel`](#panel) · [`Frame`](#frame) · [`Expander`](#expander) · [`Grid`](#grid) · [`Flow`](#flow) · [`Scroller`](#scroller) · [`RowList`](#rowlist) · [`Overlay`](#overlay) · [`AspectFrame`](#aspectframe) · [`Split`](#split) · [`Notebook`](#notebook) · [`Switcher`](#switcher) · [`Popover`](#popover) · [`Form`](#form) · [`Component`](#component)
+**Containers:** [`Panel`](#panel) · [`Frame`](#frame) · [`Expander`](#expander) · [`Grid`](#grid) · [`Flow`](#flow) · [`Scroller`](#scroller) · [`RowList`](#rowlist) · [`Overlay`](#overlay) · [`AspectFrame`](#aspectframe) · [`Split`](#split) · [`Notebook`](#notebook) · [`Switcher`](#switcher) · [`Form`](#form) · [`Component`](#component)
 
 ### Why there is a fifth verb
 
@@ -906,7 +906,7 @@ shape — a `GtkSourceView` *is* a `GtkTextView`.
 | `Append(text)` | at the end, **scrolling there**, whatever the cursor was doing — which is what a log pane wants and what makes a read-only editor the right control for one |
 | `Clear()` | empties it |
 | `GotoLine(line)` | puts the cursor there and scrolls to it |
-| `CursorBounds()` → `{ X, Y, Width, Height }` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Popup(editor, rect)` points at for a hint beside the cursor. Only once the control has been laid out; a cursor scrolled out of view answers a rectangle outside the control, which is the truth and the caller's to test. Read it once the control has a rectangle; before the window is up there is nothing to be drawn in |
+| `CursorBounds()` → `{ X, Y, Width, Height }` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Show(content, editor, { Rect })` points at for a hint beside the cursor. Only once the control has been laid out; a cursor scrolled out of view answers a rectangle outside the control, which is the truth and the caller's to test. Read it once the control has a rectangle; before the window is up there is nothing to be drawn in |
 | `PositionAt(x, y)` → `{ Line, Column, Index }` | which character is under that point of the control, in the coordinates `MouseMove` reports — `null` when the point is not over text, so a pointer past the end of a line has no answer to give |
 | `LineOf(index)` | the line a **search's index** falls on, 1-based and clamped — `index` is the number `Regex.Index` gives, and it counts UTF-16 units |
 | `OffsetAt(line, [column])` | the character offset of that position, clamped as `Select` clamps — the inverse read of `Offset` |
@@ -1406,62 +1406,6 @@ axis and the proportion on the other — and a child requesting nothing gives 0x
 `Placement` is `Single`: there is no coordinate to give the child and no order to
 put it in, so a second `Add` is refused rather than silently replacing the first.
 
-## Popover
-
-A surface that floats over a control instead of taking room in the layout: the
-list of suggestions under a field, the rows a button drops, a small form that
-belongs to whatever it points at.
-
-| Member | |
-|---|---|
-| `Position` | `Top`, `Bottom`, `Left` or `Right`: the side of the anchor it **prefers**, and GTK moves it when there is no room there. Default `"Bottom"` |
-| `Arrow` | draw the tail pointing back at the control. Default `false`, unlike GTK's own — a menu wants the tail and a list of suggestions flush against a field does not |
-| `Autohide` | `true` by default: a click outside or Escape closes it, and `Close` is raised |
-| `Visible` (ro) | the answer to *is it open* — and **read-only**, because it is a state and not a declaration. **Read-only**: opening has a verb, and this is the question half |
-| `Popup(anchor, [rect])` | opens it over that control — or, with `rect` (`{ X, Y, Width, Height }` in the anchor's own coordinates), pointed at that rectangle inside it, which is how a hint sits beside an editor's cursor (`Editor.CursorBounds()`). A field that is not a number is refused. The anchor **and the container the popover is in** must be on screen — a hidden panel, a collapsed `Expander` or a page not shown is refused with a sentence. The point is taken once: an anchor that moves, scrolls or is deleted afterwards leaves the popover where it opened. The anchor must have been laid out and the window must be up, because the popup is positioned against the anchor's rectangle. |
-| `Close()` | closes it, and does nothing when it is already closed |
-| `Show()` | refuses and names `Popup(anchor)`; the inherited one would build a popup surface before the window exists. The inherited verb would show a surface with nothing to point at |
-| **event** `Open()` | it came up — `Popup()`, or anything else that showed it |
-| **event** `Close()` | it went down: `Close()`, autohide, or the window going with it. **Not** when the popover itself is deleted or taken out while open — its handlers are unhooked before GTK takes it down |
-
-It is a child of a container like almost any other — the `.form` draws it beside what it
-belongs to, the loader adopts it, `Children` reaches its content and `Clear()`
-empties it — and it contributes **no measure**: a box holding a button and a
-popover as tall as a paragraph still asks for the button's 34 pixels, closed and
-open. What decides where it appears is `Popup`, not the slot, so a `Fixed`
-surface does not give it a rectangle and a box does not stretch it. `Placement`
-is `Single` for the same reason an `AspectFrame`'s is: one child, one place, and
-a gesture there is *land*.
-
-**It goes on a surface, a `Grid`, a `Flow` or a `RowList`, and nowhere else.** A
-`Split`, an `AspectFrame`, a `Notebook` or `Switcher` page, an `Overlay` and
-another `Popover` allocate their children themselves rather than through a
-layout, and GTK presents a popover only from a layout: opening one there was
-`pixman_region32_init_rect: Invalid rectangle`. `Add` refuses it and names the
-fix, which is a `Panel` in between. A `Default`/`Cancel` button inside a popover
-is found like one anywhere else in the form.
-
-```js
-/* A field that drops a list of matches. */
-Txt_Change() { this.Sug.Popup(this.Txt); }
-Txt_KeyPress(key) {
-    if (key === "Escape") { this.Sug.Close(); return true; }
-    return false;
-}
-Lst_Activate() { this.Txt.Text = this.Lst.Text; this.Sug.Close(); }
-```
-
-**`Visible` is the open state and not a design property**, which is the one
-place a class takes a property away from `Widget`: the loader assigns what a
-`.form` declares while the window is still being built, and
-`gtk_widget_set_visible(TRUE)` on a popover with no toplevel is a crash inside
-GTK — measured, not a warning. So `Widget.Member("Popover", "Visible")` answers
-`ReadOnly`, a `.form` that declares it is refused, the property grid does not
-offer it and the serialiser never writes it. **A closed popover is not a Tab
-stop** either: GTK leaves the surface's focus child pointing at it, so the walk
-that started there found nothing left, and `FocusNext()` answered `false` on a
-panel full of controls until it was left out.
-
 ## Split
 
 Two children with a draggable divider.
@@ -1576,6 +1520,14 @@ Do not file an issue for these; the argument is written down and settled.
 - **`ToolButton`** — a `Button` with `Icon` and `Style: "flat"`.
 - **`MenuButton`** — a `Button` with a `Menu` and
   `Btn_Click() { this.Btn.PopupMenu(0, 0); }`.
+- **`Popover` as a control in the tree.** It was one, and it is
+  [`Popover.Show(content, anchor)`](library.md#popover) now: a control that takes
+  no room cannot be drawn, picked or dropped into on the designer's canvas, it
+  could live only in a container that lays its children out through a layout
+  manager, and its open state had to be a read-only property. The content is an
+  ordinary control — usually a component with a `.form` of its own, drawn in its
+  own tab — and opening it is a verb, which is what the `MenuButton` above
+  already said about a menu.
 - **A mnemonic on a control** (`&Save` giving Alt+S, a label handing focus to
   the field beside it). Menus have mnemonics; controls have `Shortcut`. The
   reasoning is in [widgets.md](../widgets.md#known-limitations).

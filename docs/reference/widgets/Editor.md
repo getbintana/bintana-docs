@@ -29,7 +29,7 @@ everything here works the same in both.
 | `Wrap` | wrap long lines | [what is in it](#what-is-in-it) |
 | `Append(text)` | at the end, **scrolling there**, whatever the cursor was doing — which is what a log pane wants and what makes a read-only editor the right control for one | [what is in it](#what-is-in-it) |
 | `Clear()` | empties it | [what is in it](#what-is-in-it) |
-| `CursorBounds()` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Popup(editor, rect)` points at for a hint beside the cursor | [the cursor](#the-cursor) |
+| `CursorBounds()` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Show(content, editor, { Rect })` points at for a hint beside the cursor | [the cursor](#the-cursor) |
 | `GotoLine(line)` | puts the cursor there and scrolls to it | [the cursor](#the-cursor) |
 | `Insert(text)` | at the cursor | [what is in it](#what-is-in-it) |
 | `LineOf(index)` | the line a **search's index** falls on, 1-based and clamped — `index` is the number `Regex.Index` gives, and it counts UTF-16 units | [the cursor](#the-cursor) |
@@ -64,7 +64,7 @@ everything here works the same in both.
 | `Offset` (ro) | the cursor's position as a **character** offset — the same unit `Column` counts in, so an emoji is one |
 | `Selection` (ro) | the selected text, `""` for none |
 | `GotoLine(line)` | puts the cursor there and scrolls to it |
-| `CursorBounds()` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Popup(editor, rect)` points at for a hint beside the cursor. Only once the control has been laid out; a cursor scrolled out of view answers a rectangle outside the control, which is the truth and the caller's to test. Read it once the control has a rectangle; before the window is up there is nothing to be drawn in |
+| `CursorBounds()` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Show(content, editor, { Rect })` points at for a hint beside the cursor. Only once the control has been laid out; a cursor scrolled out of view answers a rectangle outside the control, which is the truth and the caller's to test. Read it once the control has a rectangle; before the window is up there is nothing to be drawn in |
 | `LineOf(index)` | the line a **search's index** falls on, 1-based and clamped — `index` is the number `Regex.Index` gives, and it counts UTF-16 units |
 | `Select(line, [column], [length])` | selects from there. A column past the end of the line is the end of the line |
 | `OffsetAt(line, [column])` | the character offset of that position, clamped as `Select` clamps — the inverse read of `Offset` |
