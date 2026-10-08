@@ -814,7 +814,7 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | Member | |
 |---|---|
 | `ColumnLines` | rules between the columns. Default `false` |
-| `Columns` | an array of `{ Text, Width, Alignment, Editable }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack; `Editable: true` makes a cell a field — clicked, typed and committed — and an editable column reads left-aligned, because a `GtkEditableLabel` is not a label |
+| `Columns` | an array of `{ Text, Width, Alignment, Editable, Link }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack; `Editable: true` makes a cell a field — clicked, typed and committed — and an editable column reads left-aligned, because a `GtkEditableLabel` is not a label. `Link: true` makes each cell a link — underlined, a pointer over it, a focus stop, Enter — whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **A column is a field or a link, never both** |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes. Built for each click, and every item's handler is told the column, last: `MnuHide_Click(column)`. Like `Menu`, refused on a table that is not in a form yet |
 | `Index` | the selected row, `-1` for none. Assigning selects it. Default `-1` |
@@ -844,6 +844,7 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
 | `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
+| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
 | `Select(index)`, `Deselect(index)` | move the selection from code. `Select` leaves the others alone where several are allowed |
 | `SelectAll()` | with `MultiSelect` |
 | `DeselectAll()` | selects nothing |
@@ -851,9 +852,10 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised |
 | **event** `Select()` | the selection moved — by the user or by an assignment. Ask `Index` for where it is and `Cell`/`Row` for what is there; `Key` when the table is a tree |
 | **event** `Activate()` | a double click on a row, or Enter on it. The gesture for *open this one* |
-| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon }` for a cell with a picture |
+| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri }` for a cell with a picture or an address of its own. In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
 | **event** `Sort(column, ascending)` | a sortable header was clicked. **The handler decides** — `SortBy` is what actually reorders |
 | **event** `CellEdit(row, column, text)` | an editable cell's edit ended — Enter, or the focus moving away. `row` is an index in a flat table and a key in a tree, as every verb here addresses one. **Returning `false` refuses it** and the cell goes back to what it said; anything else is taken and the text is written into the row. An on-demand table holds no cells, so there the handler stores it |
+| **event** `CellLink(row, column, uri)` | a `Link` cell was activated — a click, or Enter on it. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and nothing is opened, as in `CellEdit`; anything else lets the desktop open `uri` |
 | **event** `HeaderClick(column, button, ctrl, shift)` | a column heading was pressed — the one pointer event a heading raises, because GTK claims its press before the bubble phase. `button` is `1` primary, `2` middle, `3` secondary. **The return value is the menu of the secondary click**: an array replaces `HeaderMenu` for that click, anything else falls back to it. A primary click also raises `Sort` when `Sortable`, on the release |
 
 **The heading's menu is built for each click**, which is what lets an item act on the column it was opened over — and it is why the state a program sets on an item from code does not survive the next right-click. A menu that depends on the context answers it from `HeaderClick`, and a program that wants its own order turns `Sortable` off and orders in the handler.

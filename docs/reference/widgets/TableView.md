@@ -24,7 +24,7 @@ not repeated here.
 |---|---|---|
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand | [a tree](#a-tree) |
 | `ColumnLines` | rules between the columns | [the columns](#the-columns) |
-| `Columns` | an array of `{ Text, Width, Alignment, Editable }` | [the columns](#the-columns) |
+| `Columns` | an array of `{ Text, Width, Alignment, Editable, Link }` | [the columns](#the-columns) |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws | [the rows](#the-rows-it-holds), [on demand](#on-demand-a-table-that-holds-nothing) |
 | `HeaderHeight` (ro) | how tall the row of column headings is | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes | [the heading's menu](#the-headings-menu) |
@@ -64,6 +64,7 @@ not repeated here.
 | `SelectAll()` | with `MultiSelect` | [the selection](#the-selection) |
 | `SetCell(row, column, value)` | one cell, in place | [the rows](#the-rows-it-holds) |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text | [the rows](#the-rows-it-holds) |
+| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text | [the rows](#the-rows-it-holds) |
 | `SortBy(column, [ascending], [compare])` | actually reorders the rows it holds, **by the text the cells show**: natural order by default (`9` before `10`, the locale's collation otherwise), or `compare(a, b)` — the two cells' text, answering a number as `Array.sort`'s does — for what natural order reads wrongly: a minus sign, grouped thousands, a `d/m/Y` date | [sorting](#sorting) |
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised | [sorting](#sorting) |
 
@@ -171,7 +172,7 @@ scrollbar away from the rows, which is the opposite of what was wanted.
 
 | | |
 |---|---|
-| `Columns` | an array of `{ Text, Width, Alignment, Editable }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack; `Editable: true` makes a cell a field — clicked, typed and committed — and an editable column reads left-aligned, because a `GtkEditableLabel` is not a label |
+| `Columns` | an array of `{ Text, Width, Alignment, Editable, Link }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack; `Editable: true` makes a cell a field — clicked, typed and committed — and an editable column reads left-aligned, because a `GtkEditableLabel` is not a label. `Link: true` makes each cell a link — underlined, a pointer over it, a focus stop, Enter — whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **A column is a field or a link, never both** |
 | `ColumnLines` | rules between the columns. Default `false` |
 | `RowLines` | rules between the rows. Default `true` |
 
@@ -202,6 +203,7 @@ row shorter than there are columns simply reads blank in the rest.
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
 | `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
+| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
 | `RemoveRow(index)` | takes that row out. **Flat only** — a tree says `RemoveNode(key)`, and this one refuses with that sentence |
 | `RemoveNode(key)` | takes that node out, **and the subtree with it**. **Tree only** — a flat table says `RemoveRow(index)` |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one |
@@ -355,8 +357,9 @@ Set `Count` and answer `Data`:
 | | |
 |---|---|
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
-| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon }` for a cell with a picture |
+| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri }` for a cell with a picture or an address of its own. In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
 | **event** `CellEdit(row, column, text)` | an editable cell's edit ended — Enter, or the focus moving away. `row` is an index in a flat table and a key in a tree, as every verb here addresses one. **Returning `false` refuses it** and the cell goes back to what it said; anything else is taken and the text is written into the row. An on-demand table holds no cells, so there the handler stores it |
+| **event** `CellLink(row, column, uri)` | a `Link` cell was activated — a click, or Enter on it. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and nothing is opened, as in `CellEdit`; anything else lets the desktop open `uri` |
 
 ```js
 Form_Open()            { this.Big.Count = 100000; }
@@ -397,6 +400,24 @@ An editable column reads **left-aligned**: the cell is a `GtkEditableLabel` and
 not a `GtkLabel`, and `Alignment` is the label's property. A table that answers
 `Data` holds no cells to write, so there the handler stores the value and the
 cell asks again on the next bind.
+
+## A link in a cell
+
+A column declared `Link: true` draws each cell as a link: underlined, a pointer
+over it, a stop for the keyboard, and Enter or a click opens it. **The address is
+the cell's own text** unless `SetUri(row, column, uri)` (or `Uri` in what `Data`
+answers) says another, so a column of tickets can show `GLPI #4512` and open its
+page. `""` makes one cell not a link and `null` goes back to the text; a cell
+with no text is plain.
+
+`CellLink(row, column, uri)` is raised first and, as `CellEdit` does, **`false`
+refuses**: nothing is opened. Anything else lets the desktop open it. A column is
+a field or a link and never both — declaring both is refused.
+
+```js
+Tickets_Columns  = [{ Text: "Task" }, { Text: "Ticket", Link: true }];
+Tickets_CellLink = (row, column, uri) => uri.startsWith("https://");
+```
 
 ## A tree
 
