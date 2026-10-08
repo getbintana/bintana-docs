@@ -38,6 +38,7 @@ not repeated here.
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Selection` (ro) | every selected row, as an array of indices in order | [the selection](#the-selection) |
 | `Sortable` | makes the headers clickable | [sorting](#sorting) |
+| `Reorderable` | whether a column heading can be dragged to move its column | [reordering the columns](#reordering-the-columns) |
 
 **Methods**
 
@@ -67,6 +68,7 @@ not repeated here.
 | `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text | [the rows](#the-rows-it-holds) |
 | `SortBy(column, [ascending], [compare])` | actually reorders the rows it holds, **by the text the cells show**: natural order by default (`9` before `10`, the locale's collation otherwise), or `compare(a, b)` — the two cells' text, answering a number as `Array.sort`'s does — for what natural order reads wrongly: a minus sign, grouped thousands, a `d/m/Y` date | [sorting](#sorting) |
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised | [sorting](#sorting) |
+| `ReorderColumn(column, index)` | moves the column at `column` to `index` — the heading drag, from code, and the road a test can take because the gesture is a pointer one | [reordering the columns](#reordering-the-columns) |
 
 **Events**
 
@@ -77,6 +79,7 @@ not repeated here.
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
+| `Reordered(column, index)` | a heading was dragged, or `ReorderColumn` moved one: the column that was at `column` is now at `index` | [reordering the columns](#reordering-the-columns) |
 
 ## Which list is this one
 
@@ -183,15 +186,45 @@ give the short ones beside it a fixed width (a size, a date, an amount), and
 right-align the numbers.
 
 A width is where a column **starts**, not a cage: the user can drag the edge
-between two headings. What they cannot do is reorder the columns, because the
-order is the form's design and a layout the user rearranges is one the form
-cannot then reason about.
+between two headings, and drag the heading itself to move the column — see
+[reordering the columns](#reordering-the-columns).
 
 Re-declaring `Columns` rebuilds the headings and **keeps the rows**. A row holds
 the values it was given, not a copy cut to the columns that existed at the time:
 add `["a", "b", "c"]` to a table of two columns and the third value is there,
 unshown, and appears if a third column is declared later. The other way round, a
 row shorter than there are columns simply reads blank in the rest.
+
+## Reordering the columns
+
+| | |
+|---|---|
+| `Reorderable` | whether a column heading can be dragged to move its column. **The reorder changes `Columns`** — and the rows with it — and raises `Reordered(column, index)`; `false` locks the order, which is what a program whose `Data` maps the position onto its own data wants. Default `true` |
+| `ReorderColumn(column, index)` | moves the column at `column` to `index` — the heading drag, from code, and the road a test can take because the gesture is a pointer one. `Columns` is the new order afterwards, the rows moved with it, and `Reordered(column, index)` is raised. Moving one to where it already is does nothing |
+| **event** `Reordered(column, index)` | a heading was dragged, or `ReorderColumn` moved one: the column that was at `column` is now at `index`. `Columns` is the new order and the rows moved with it. **The columns the table answers with are the ones the user arranged**, which is why a program that maps the position onto its own data turns `Reorderable` off |
+
+A heading can be dragged along the row of headings, and **the order it lands in
+is the order the table then answers by**: `Columns` reads it, a save writes it,
+and `Cell(row, column)`, `SetIcon` and every event address a column by where it
+is now. The rows move with the columns, so a row given `["Ana", "10.50"]` reads
+`["10.50", "Ana"]` once those two are swapped — a position is what a column is.
+
+**A program that answers `Data` keeps its own mapping**, so it is the one that
+has to follow: map by position and rebuild the mapping in `Reordered`, or turn
+the drag off with `Reorderable = false` and keep the order the form declared.
+What a user rearranges on screen is saved as the new `Columns` when the form is
+serialised, which is the point of letting them.
+
+```js
+/* the program's own order follows the table's */
+Tickets_Reordered = (column, index) => {
+    const [moved] = this.fields.splice(column, 1);
+    this.fields.splice(index, 0, moved);
+};
+```
+
+In a tree, the disclosure and the indent live on the **first visible column**,
+so a reorder that puts another column first moves them there with it.
 
 ## The rows it holds
 

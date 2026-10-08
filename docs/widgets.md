@@ -1705,19 +1705,34 @@ what a cell needs to know: the row carries its own values and a column is a view
 of one of them. Rows are recycled, so a cell is a `GtkLabel` made once and
 re-bound, exactly as a `TreeView`'s rows are.
 
-**`Columns` is kept as it was declared**, and not read back out of GTK. A
-`GtkColumnViewColumn` cannot be walked back into a width and an alignment
-without losing which of them were defaulted — and a column that asked for no
-width must not come back asking for the one it happens to be drawn at, which is
-the trap `Width` on a control already had, where saving an allocation turned
-today's measurement into tomorrow's floor.
+**`Columns` is kept as the widget's own note** (`w->columns`), and not read back
+out of GTK: a `GtkColumnViewColumn` cannot be walked back into a width and an
+alignment without losing which of them were defaulted — and a column that asked
+for no width must not come back asking for the one it happens to be drawn at,
+which is the trap `Width` on a control already had, where saving an allocation
+turned today's measurement into tomorrow's floor.
 
-It is kept **on the widget's own wrapper** (`__columns`), not in C. A `JSValue`
-held from C is a strong reference the collector cannot see, and `JS_FreeRuntime`
-aborts on anything still alive; the object graph owning it means nothing has to
-be freed, and a `__` name is invisible to the serialiser besides, which discovers
-accessors and not own properties. `__menus` and `__declared` are the same
-pattern.
+The note is a `JSValue` held from C, so `gc_mark` reports it and the finalizer
+releases it — the road `w->form` and `w->menu` already took. It is not an own
+property of the wrapper on purpose: a widget's own properties are supposed to
+*be* its properties, and a mode that refuses a name the class does not have
+cannot tell a runtime note from a misspelling (`docs/plans/strict-plan.md`).
+`__menus`, `__actions` and `__declared` live the same way, the last of them as
+an accessor because `rad.js` reads it.
+
+**A heading can be dragged to move its column, and the drag is *followed*
+rather than merely allowed.** The columns model's order is read as a
+permutation, and the declaration, the rows and each factory's idea of which
+column it is move with it — so `Columns`, a save and every column argument
+answer for the order the user made. What it is *not* is a rebuild: GTK has
+already put the widgets where they were dropped and the cells travel with them,
+and rebuilding inside the model's own `items-changed` left the header row
+drawing a title that was no longer there (measured: a drag that ended `B,C,A`
+drew `A | C | A`). A tree is the one case that gets fresh factories, because
+the disclosure is a widget a factory builds and it belongs on the first visible
+column. `Reorderable = false` keeps the order the form declared — what a
+program that answers `Data` positionally wants — and `ReorderColumn(column,
+index)` is the same move from code.
 
 **`MultiSelect` swaps the selection model**, which is the only way GTK4 offers,
 and the swap carries the handler with it — a table that changed mode and stopped
