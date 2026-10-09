@@ -770,7 +770,8 @@ headings is a `TreeView`; one *with* them — columns, widths, alignment — is 
 
 Everything they both do, they do with the same words: `Key`, `Count`,
 `AutoExpand`, `Add`, `Clear`, `RemoveNode(key)` (with the subtree), `Exists`,
-`ExpandNode`, `CollapseNode`, `Expanded`, `ExpandAll`, `CollapseAll`, `SetIcon`.
+`ExpandNode`, `CollapseNode`, `Expanded`, `ExpandAll`, `CollapseAll`, `SetIcon`,
+`SetTooltip`.
 Three things differ, and each for a reason worth knowing:
 
 - **`Add`.** Here it is `Add(key, text, [parentKey], [icon])`, because in a tree
@@ -801,6 +802,7 @@ Three things differ, and each for a reason worth knowing:
 | `Activate([index])` | raises `Activate` for that visible position, as a double click would; the selected row with no argument. Answers whether there was one |
 | `SetText(key, text)` | renames a node, keeping it where it is — and keeping the selection on it. **Translated** |
 | `SetIcon(key, name)` | its icon, or `""` for none. One column, so no column argument — otherwise it is `TableView`'s |
+| `SetTooltip(key, text)` | what resting the pointer on that row says, or `""` for nothing. For what the label cannot hold — a full path under a file's name. **Not translated**: it is yours to say in the language you mean |
 | `ExpandAll()` | opens every node |
 | `ExpandNode(key)` | opens it, **and the way to it**: a node only exists on screen once its ancestors are open. Not `Expand`, which is `Widget`'s layout property |
 | `Expanded(key)` | whether it is open |

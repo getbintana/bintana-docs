@@ -43,6 +43,7 @@ matters is in the section.
 | `RemoveNode(key)` | takes that node out **and the subtree with it** — a node whose parent is gone is not something this control can show | [the nodes](#the-nodes) |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one | [the nodes](#the-nodes) |
 | `SetIcon(key, name)` | its icon, or `""` for none | [the nodes](#the-nodes) |
+| `SetTooltip(key, text)` | what resting the pointer on that row says, or `""` for nothing | [the nodes](#the-nodes) |
 | `SetText(key, text)` | renames a node, keeping it where it is — and keeping the selection on it | [the nodes](#the-nodes) |
 
 **Events**
@@ -121,6 +122,7 @@ nothing has added yet is not there to go under.
 | `Add(key, text, [parentKey], [icon])` | a node. `key` is yours to choose and must be unique in this tree; an empty `parentKey` is a root; `icon` is a name from the theme, and one the theme lacks is dropped rather than drawn as a hole |
 | `SetText(key, text)` | renames a node, keeping it where it is — and keeping the selection on it. **Translated** |
 | `SetIcon(key, name)` | its icon, or `""` for none. One column, so no column argument — otherwise it is `TableView`'s |
+| `SetTooltip(key, text)` | what resting the pointer on that row says, or `""` for nothing. For what the label cannot hold — a full path under a file's name. **Not translated**: it is yours to say in the language you mean |
 | `RemoveNode(key)` | takes that node out **and the subtree with it** — a node whose parent is gone is not something this control can show |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one. The index is a visible position, like `Activate`'s |
 | `Exists(key)` | whether that node is there. The question you ask *before* you know, so it answers rather than throwing |
