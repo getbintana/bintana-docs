@@ -467,6 +467,12 @@ this.MnuTheme.Value = 1;                            /* Dark, marked, and fires n
 
 - **Disabling an item also kills its accelerator**, so a shortcut can never fire
   a command the UI shows as unavailable.
+- **A focused text field keeps its editing keys.** An item or command whose
+  `shortcut` is a standard editing key (`<Control>c`, `x`, `v`, `a`, `z`,
+  `<Control><Shift>z`, `<Control>y`) does not run its handler while the focus
+  is in a `TextBox` or an editor: the field copies, cuts, pastes, selects all,
+  undoes or redoes instead. A click on the item does the same — Edit > Copy
+  copies what has the focus — and `Execute()` from code still runs the handler.
 - **Assigning `Value` does not fire `Click`** — restoring a saved setting must
   not run the command it stands for. `Click()` chooses on purpose.
 - `Enabled = false` on a dynamic item greys out the whole submenu, which is how
