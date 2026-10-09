@@ -2150,6 +2150,61 @@ undo only reverts the widget tree — it would put the old name back in the `.fo
 while leaving the code with the new one, which is exactly the silent breakage the
 feature exists to prevent. So the form is saved and the history cleared.
 
+## Pages, and the page one looks at
+
+A `Notebook` or a `Switcher` shows one page at a time and the designer edits
+what is on screen, so the other pages have to be easy to reach — and reaching
+one must not change the form. **Two things are kept apart**:
+
+- **`Current` is the page the application opens on.** It is chosen in the
+  property grid, where it is a drop-down of the pages by their tabs' names, and
+  choosing one is an edit like any other: undoable, and the form is dirty.
+- **The page the designer shows is a design value** (`design.Current` in the
+  node), which no running application reads. Looking at another page does not
+  mark the form dirty, goes on no undo stack and does not change where the
+  program starts; the next save remembers it, so a form reopens where it was
+  left. Delphi saves the page looked at as `ActivePage`, and the program then
+  opens wherever the designer was left — the confusion this split avoids.
+
+The ways to another page, none of which is an edit:
+
+- **picking a control** in the control tree shows the page it is on, through
+  every page container around it;
+- **a click on a tab**, or on a switcher's button, shows that page and selects
+  it — the page, not the container, so the grid shows the page;
+- **the page bar** — `‹ 2 / 3 Datos › +` under the page container the selection
+  is in — steps through the pages and adds one. It is the only thing to click on
+  a `Switcher` with `Strip: "None"`;
+- **`Ctrl+Page Up` / `Ctrl+Page Down`** on the canvas.
+
+A page is something one works with and not an index:
+
+- **a new `Notebook` or `Switcher` arrives with two empty pages**, the first one
+  shown. Empty, the next control from the palette used to become a page instead
+  of going on one;
+- **with a page container selected, the palette puts the control on the page on
+  screen.** A page is made by *Add page* — the page bar's `+`, or the canvas's
+  context menu — and dragging onto the strip still makes one;
+- **a selected page has a *Tab* row** in the grid, which edits that page's
+  caption in its container's `Tabs` (prose, so it is the msgid). It replaced
+  editing `Tabs` as a JSON list;
+- **the control tree names a page by its tab** — `Datos — Panel2 (Panel)` — since
+  picking a page there is how one gets to it.
+
+A **`Split`** is the same story with two halves: it arrives with two empty
+`Panel`s and its divider in the middle (`Position` is written), where it used to
+arrive empty with its handle against the edge, where nobody could see or grab
+it.
+
+Moving a page is the arrow keys with the page selected, as for any child of a
+container with an order, and deleting one is `Delete`.
+
+Undo leaves the page on screen where it was: the view is not part of what was
+undone. A drawing raises no events on the IDE by name (`Designing` on the
+canvas), which matters here because the IDE's own controls are called `Tabs`,
+`Pages` and `SideTabs`: a drawn `Tabs` that changed page used to run the IDE's
+`Tabs_Switch` and move the IDE to another file.
+
 ## The menu editor
 
 `Ctrl+M` opens `MenuForm`, one more Bintana form. Menus cannot be *built* on the

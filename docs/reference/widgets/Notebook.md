@@ -18,6 +18,7 @@ follows is what is its own.
 | `Tabs` | the labels, as an array of strings | [the strip](#the-strip) |
 | `Append(child, [label])` | one more page, at the end | [the pages](#the-pages) |
 | `GetAction(where)` | the widget in that end of the strip, or `null` | [a widget in the strip](#a-widget-in-the-strip) |
+| `PageAt(x, y)` | the index of the page whose tab is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip, on a widget in the strip (`SetAction`), or with `Strip | [the strip](#the-strip) |
 | `RemovePage(index)` | takes that page out, and the control in it goes with it | [the pages](#the-pages) |
 | `SetAction(control, [where])` | puts a widget **in the tab strip** instead of making it a page | [a widget in the strip](#a-widget-in-the-strip) |
 | `SetTabLabel(index, label)` | renames one, and **`label` is a widget** like `Append`'s — what a tab showing a file name and an asterisk needs | [the strip](#the-strip) |
@@ -48,8 +49,14 @@ the wrong page from the next click on.
 
 | | |
 |---|---|
-| `Current` | which page is showing, `-1` when there are none. Assigning it switches, and **raises `Switch`**. Default `-1` |
+| `Current` | which page is showing, `-1` when there are none. Assigning it switches, and **raises `Switch`**. An index past the last page is **kept and applied when that page arrives**, so a `.form` may declare the page it opens on. Default `-1` |
 | **event** `Switch(index)` | a different page is showing — chosen by the user or assigned |
+
+**`Current` in a `.form` is the page the form opens on.** The loader applies a
+node's properties before it builds its pages, so the index is kept and applied
+when that page arrives — and so is an assignment from code that names a page
+not added yet. A form designer that shows other pages while editing keeps that
+in the node's `design` block, not here: see [ide.md](../../ide.md).
 
 **A notebook with no pages is not nothing**: it is an expanding widget with an
 empty body, which is why a window that may have none hides the whole thing rather
@@ -62,6 +69,12 @@ than leaving a blank band. That is what the IDE does when every file is closed.
 | `Strip` | where the tabs are: `Top` `Bottom` `Start` `End`, or `None` for no strip at all — which is a notebook only code switches, and a [`Switcher`](Switcher.md) is usually the better answer. Default `"Top"` |
 | `Tabs` | the labels, as an array of strings. **Translated** |
 | `SetTabLabel(index, label)` | renames one, and **`label` is a widget** like `Append`'s — what a tab showing a file name and an asterisk needs |
+| `PageAt(x, y)` | the index of the page whose tab is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip, on a widget in the strip (`SetAction`), or with `Strip: "None"`. What a form designer asks to turn a click on the strip into a page, since it keeps the pointer for itself and the strip never sees the press |
+
+`PageAt` counts the padding around a tab as the tab, which is where a press
+usually lands. It exists for an editor that keeps the pointer for itself, the
+way the IDE's canvas does: the real strip never sees the press, so a click is
+turned into a page by asking.
 
 ## A widget in the strip
 

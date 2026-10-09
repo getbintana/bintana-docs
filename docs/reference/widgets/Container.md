@@ -20,6 +20,7 @@ between [`Widget`](Widget.md) and the containers themselves. Everything on
 | `Anchored` | with it off, children stay exactly where they were drawn however big the container gets — a drawing board rather than a window | [the two layout models](#the-two-layout-models) |
 | `Arrangement` | `Fixed` (the default) lays children out by `X`/`Y` and `Width`/`Height` | [the two layout models](#the-two-layout-models) |
 | `Children` (ro) | its real children, one level deep, in the order they are in | [putting children in](#putting-children-in) |
+| `Designing` | a drawing of a form rather than a form: the controls inside it, at any depth, run no `<name>_<event>` on the form they belong to, while a handler installed with `On` still answers | [a drawing of a form](#a-drawing-of-a-form) |
 | `Homogeneous` | every child the same size along the axis — what a row of buttons that must all match wants | [rows and columns](#rows-and-columns) |
 | `Placement` (ro) | how this one places a child, which is the question an editor asks | [not every container arranges](#not-every-container-arranges) |
 | `Spacing` | pixels between children, in a row or a column | [rows and columns](#rows-and-columns) |
@@ -48,6 +49,19 @@ part of one at run time from a file.
 |---|---|
 | `Arrangement` | `Fixed` (the default) lays children out by `X`/`Y` and `Width`/`Height`; `Horizontal` is a row and `Vertical` a column, where coordinates mean nothing and `Spacing` and `Homogeneous` do. **Not on every container**; see the table above |
 | `Anchored` | with it off, children stay exactly where they were drawn however big the container gets — a drawing board rather than a window. Default `true` |
+
+### A drawing of a form
+
+| | |
+|---|---|
+| `Designing` | a drawing of a form rather than a form: the controls inside it, at any depth, run no `<name>_<event>` on the form they belong to, while a handler installed with `On` still answers. What a form designer sets on its canvas, so a drawn `Notebook` named like one of the designer's own does not run the designer's handler. Default `false` |
+
+A form designer draws a form out of real controls inside its own window, so
+every control it draws belongs to *its* form — and a drawn `Notebook` named
+`Tabs` that changed page used to run the designer's own `Tabs_Switch`.
+`Designing` on the canvas is what keeps the drawing quiet: nothing inside it is
+answered by name. The IDE sets it on its drawing surface; an application with
+an editor of its own sets it on whatever holds the drawing.
 
 **There is no box class.** A container arranged as a row *is* one, and the
 arrangement may be changed at any time: the children keep their order, and going

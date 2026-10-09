@@ -271,6 +271,7 @@ Written in `rad.js` rather than in C, and on every widget just the same:
 | Member | |
 |---|---|
 | `Anchored` | with it off, children stay exactly where they were drawn however big the container gets — a drawing board rather than a window. Default `true` |
+| `Designing` | a drawing of a form rather than a form: the controls inside it, at any depth, run no `<name>_<event>` on the form they belong to, while a handler installed with `On` still answers. What a form designer sets on its canvas, so a drawn `Notebook` named like one of the designer's own does not run the designer's handler. Default `false` |
 | `Arrangement` | `Fixed` (the default) lays children out by `X`/`Y` and `Width`/`Height`; `Horizontal` is a row and `Vertical` a column, where coordinates mean nothing and `Spacing` and `Homogeneous` do. **Not on every container**; see the table above |
 | `Placement` (ro) | how this one places a child, which is the question an editor asks: `Coordinates` `Order` `Layers` `Pages` `Halves`. Every container answers, including the ones that refuse `Arrangement` |
 | `Homogeneous` | every child the same size along the axis — what a row of buttons that must all match wants |
@@ -1427,12 +1428,13 @@ Pages in tabs. Its `children` **are** its pages.
 
 | Member | |
 |---|---|
-| `Current` | which page is showing, `-1` when there are none. Assigning it switches, and **raises `Switch`**. Default `-1` |
+| `Current` | which page is showing, `-1` when there are none. Assigning it switches, and **raises `Switch`**. An index past the last page is **kept and applied when that page arrives**, so a `.form` may declare the page it opens on. Default `-1` |
 | `Strip` | where the tabs are: `Top` `Bottom` `Start` `End`, or `None` for no strip at all — which is a notebook only code switches, and a [`Switcher`](../reference/widgets/Switcher.md) is usually the better answer. Default `"Top"` |
 | `Tabs` | the labels, as an array of strings. **Translated** |
 | `Count` (ro) | how many pages there are. **An action widget in the strip is not one** |
 | `Append(child, [label])` | one more page, at the end. The child **is** the page — usually a [`Panel`](../reference/widgets/Panel.md), which is then an ordinary container. **`label` is a widget too** (a [`Label`](../reference/widgets/Label.md)), not text: a tab has room for one, where a [`Switcher`](../reference/widgets/Switcher.md)'s page name is a string. A tab label that has to change is a `Label` you keep and mutate |
 | `GetAction(where)` | the widget in that end of the strip, or `null` |
+| `PageAt(x, y)` | the index of the page whose tab is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip, on a widget in the strip (`SetAction`), or with `Strip: "None"`. What a form designer asks to turn a click on the strip into a page, since it keeps the pointer for itself and the strip never sees the press |
 | `RemovePage(index)` | takes that page out, and the control in it goes with it |
 | `SetAction(control, [where])` | puts a widget **in the tab strip** instead of making it a page. `where` is `Start` or `End`; `null` takes it out. In a `.form` this is a child carrying `"strip": "End"` |
 | `SetTabLabel(index, label)` | renames one, and **`label` is a widget** like `Append`'s — what a tab showing a file name and an asterisk needs |
@@ -1445,11 +1447,12 @@ Pages picked from a strip of linked buttons.
 
 | Member | |
 |---|---|
-| `Current` | which page is showing. Assigning it switches, and **raises `Switch`**. Default `-1` |
+| `Current` | which page is showing. Assigning it switches, and **raises `Switch`**. An index past the last page is **kept and applied when that page arrives**, so a `.form` may declare the page it opens on. Default `-1` |
 | `Strip` | `Top` `Bottom` `Start` `End` `None` — `None` is a bare stack only code switches. Default `"Top"` |
 | `Tabs` | the labels, as strings. **Translated**. A segmented control has nowhere to put a widget, so this is the whole of it |
 | `Count` (ro) | how many there are |
 | `Append(child, [name])` | one more page. The child is the page, and `name` is a **string** — a segmented control has nowhere for a widget, where a [`Notebook`](../reference/widgets/Notebook.md)'s tab label is one |
+| `PageAt(x, y)` | the index of the page whose button is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip or with `Strip: "None"`. What a form designer asks to turn a click on the strip into a page, since it keeps the pointer for itself and the strip never sees the press |
 | `RemovePage(index)` | takes it out, with the control in it |
 | **event** `Switch(index)` | a different page is showing |
 

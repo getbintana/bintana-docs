@@ -18,6 +18,7 @@ follows is what is its own.
 | `Strip` | `Top` `Bottom` `Start` `End` `None` — `None` is a bare stack only code switches | [the strip](#the-strip) |
 | `Tabs` | the labels, as strings | [the strip](#the-strip) |
 | `Append(child, [name])` | one more page | [the pages](#the-pages) |
+| `PageAt(x, y)` | the index of the page whose button is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip or with `Strip | [the strip](#the-strip) |
 | `RemovePage(index)` | takes it out, with the control in it | [the pages](#the-pages) |
 | **event** `Switch(index)` | a different page is showing | [the page showing](#the-page-showing) |
 
@@ -40,12 +41,14 @@ follows is what is its own.
 
 | | |
 |---|---|
-| `Current` | which page is showing. Assigning it switches, and **raises `Switch`**. Default `-1` |
+| `Current` | which page is showing. Assigning it switches, and **raises `Switch`**. An index past the last page is **kept and applied when that page arrives**, so a `.form` may declare the page it opens on. Default `-1` |
 | **event** `Switch(index)` | a different page is showing |
 
-**`Strip: "None"` plus `Current` from code is the whole of a wizard**, and of the
-IDE's own window, which is a switcher of two pages — the welcome page and the
-workspace — with nothing to click between them.
+**`Strip: "None"` plus `Current` is the whole of a wizard**, and of the IDE's
+own window, which is a switcher of two pages — the welcome page and the
+workspace — with nothing to click between them. **`Current` may be declared in
+the `.form`**: the loader builds the pages after the properties, and the index
+is kept until the page it names arrives.
 
 ## The strip
 
@@ -53,6 +56,10 @@ workspace — with nothing to click between them.
 |---|---|
 | `Strip` | `Top` `Bottom` `Start` `End` `None` — `None` is a bare stack only code switches. Default `"Top"` |
 | `Tabs` | the labels, as strings. **Translated**. A segmented control has nowhere to put a widget, so this is the whole of it |
+| `PageAt(x, y)` | the index of the page whose button is under that point, in this control's own coordinates, or `-1` where there is none: away from the strip or with `Strip: "None"`. What a form designer asks to turn a click on the strip into a page, since it keeps the pointer for itself and the strip never sees the press |
+
+A hidden page has no button on the strip, so the buttons after it answer for
+the pages after it — `PageAt` counts pages, not buttons.
 
 ## What goes wrong
 
