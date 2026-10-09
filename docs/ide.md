@@ -15,6 +15,7 @@ ide/
     AskForm          "type a name"                    ConfirmForm    yes/no
     NewProjectForm   name, description, folder        ProjectForm    its settings
     MenuForm         the menu editor                  ColumnForm     a TableView's columns
+    ActionForm       the command editor
     IconForm         the icon chooser                 ImageForm      an image, full size
     SearchForm       find across the project          PoForm         a catalogue, entry by entry
     AboutForm        the version, and what it runs on
@@ -2185,6 +2186,53 @@ Double clicking an item writes its `Name_Click` handler, the same gesture the
 canvas has. The edit is applied first -- writing a handler for an item that a
 Cancel would take away again is a trap.
 
+## The command editor
+
+*Form > Edit commands...* opens `ActionForm`: the form's `actions`, the commands a
+button's and a menu item's `Action` point at. It is the menu editor's shape -- a
+Bintana form working on a **copy** of the spec, handed back on OK -- with a list
+of the commands on the left and, for the one chosen, its name, text, icon (the
+same `IconForm` the property grid's `Icon` row opens), shortcut, and whether it is
+enabled when the window opens. The fields apply as they are typed; a name is
+checked on OK.
+
+It refuses what the loader would: a command with no name, a name that is not an
+identifier, two commands with one name, and a name something else on the form
+already has -- a command is published on the form beside the controls and the
+menu items, so the two would be one name for two things. **A command something
+points at is not deleted**, and the refusal names what points at it; deleting it
+would leave a control the loader refuses, which is the form not opening at all.
+
+**Renaming one is the control rename's bargain.** A command's name is what the
+controls and the menu items point at and the prefix of its handler, so the
+designer carries a rename to every `Action` and every `{ "action": ... }` item --
+the bar's, and a control's own `Menu` and `HeaderMenu` -- and moves `Old_Click`
+and `this.Old` to the new name in the `.js`. That half is not undoable, so a
+rename saves the form and clears its history; a name the code already answers
+for is refused first. Any other change is one undoable edit, and undo brings back
+the commands together with the labels they lend.
+
+Double clicking a command writes its `Name_Click` handler.
+
+### A control bound to a command, in a drawing
+
+The designer draws a form inside the IDE's own window, so **anything a control
+resolves against its form is resolved against the IDE** -- and `Action` is
+looked up among the commands of the form the control is on. Bound for real, a
+button pointing at a command the IDE has not got was refused and drawn as a
+stand-in, and one pointing at a command the IDE has (`ActOpen`) was bound to the
+IDE's own. So in a drawing `Action` is a note, like `Menu` and `HeaderMenu`: kept
+as the file says and written back on save, never built.
+
+The designer lends what the command would: its text and its icon, to a control
+that declared none -- each only where the control has none of its own, and no
+text beside an icon the control declared, which is the runtime's rule. The grid
+says where they came from: **a lent `Text` or `Icon` row is empty, with the
+command's value as its placeholder and a tooltip naming the command**, because the
+file says nothing there. Typing a value gives the control its own; emptying it
+gives the command's back. The `Action` row is a drop-down of the drawn form's
+commands.
+
 ## The bar on the board
 
 The form's own menu bar is drawn between the title bar and the canvas, which is
@@ -3856,10 +3904,17 @@ The scan feeds two things, both from `listFiles()`:
 Placing one creates a **stand-in**: the designer has the runtime's widgets and none
 of the project's, so there is nothing to instantiate. The stand-in is a `Component`
 carrying the original node in `__node`, and `nodeOf()` writes that node back with
-the geometry and the name the designer gave it. Its property grid offers only
-`Name`, `X`, `Y`, `Width` and `Height` -- what the designer really owns. Everything
+the geometry and the name the designer gave it. Its property grid offers
+`Name`, `X`, `Y`, `Width` and `Height` -- what the designer really owns -- and
+`Visible`, which every control has and which lives in the node. Everything
 else belongs to the component, and a property one could edit and lose on the next
 save would be worse than one that is not shown.
+
+**A stand-in is hidden like the control it stands for.** A built control is handed
+its `Visible: false` and drops out of the drawing; a stand-in used to be handed
+only its name and geometry, so a component a form keeps hidden -- a `Report` that
+only ever prints -- sat on the board under everything that is shown. It stays in
+the control tree, which is where a hidden control is selected from.
 
 **And it is drawn rather than named**, out of the component's own `.form`, by the
 machinery a list's [design-time item](#what-a-list-holds-while-it-is-being-designed)
