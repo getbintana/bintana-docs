@@ -2206,13 +2206,13 @@ would leave a control the loader refuses, which is the form not opening at all.
 **Renaming one is the control rename's bargain.** A command's name is what the
 controls and the menu items point at and the prefix of its handler, so the
 designer carries a rename to every `Action` and every `{ "action": ... }` item --
-the bar's, and a control's own `Menu` and `HeaderMenu` -- and moves `Old_Click`
+the bar's, and a control's own `Menu` and `HeaderMenu` -- and moves `Old_Execute`
 and `this.Old` to the new name in the `.js`. That half is not undoable, so a
 rename saves the form and clears its history; a name the code already answers
 for is refused first. Any other change is one undoable edit, and undo brings back
 the commands together with the labels they lend.
 
-Double clicking a command writes its `Name_Click` handler.
+Double clicking a command writes its `Name_Execute` handler.
 
 ### A control bound to a command, in a drawing
 

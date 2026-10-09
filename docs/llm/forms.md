@@ -523,7 +523,7 @@ A command a button, a menu item and a key all point at — declared once, in an
 ```
 
 ```js
-ActDelete_Click() { this.designer.deleteSelected(); }   // once, not four times
+ActDelete_Execute() { this.designer.deleteSelected(); } // once, not four times
 this.ActDelete.Enabled = hasSelection;                   // and all of them follow
 ```
 
@@ -531,9 +531,16 @@ this.ActDelete.Enabled = hasSelection;                   // and all of them foll
 |---|---|
 | `Name`, `Text`, `Icon` (ro) | what the `.form` declared. The label goes through the catalogue **once**, however many places show it |
 | `Enabled` | the whole reason this exists: one assignment, and every button, menu item and accelerator naming the command follows |
-| `Click()` | invoked from code, the way a menu item can be |
+| `Execute()` | runs the command from code, as a button or an accelerator would -- raising `Execute`. **Throws while it is disabled** |
 | `PropertyNames()`, `EventNames()` | what this class has, asked of it the way a control is asked. A command is not a widget, so nothing else can make one to ask |
-| **event** `Click()` | the command was invoked — by a button, a menu item or its key |
+| **event** `Execute()` | the command ran: from a control or a menu item that points at it, its accelerator, or `Execute()`. **Not raised while it is disabled** |
+
+**A command's event is `Execute` and a menu item's is `Click`**, because a
+command is not clicked: it runs from a button, a menu item, a key or code, and
+naming it after one of those read as though the others did not count. It is
+Delphi's pair, `TMenuItem.OnClick` beside `TAction.OnExecute`. A form whose code
+still carries a command's old `<Name>_Click` is **refused at load**, naming the
+method -- a handler that would never be called again is otherwise silent.
 
 **What makes it worth having is the shared `Enabled`, not the shared body.** A
 command that needs a selection greys out in every place it appears from one
