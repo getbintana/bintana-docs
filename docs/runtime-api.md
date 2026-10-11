@@ -1,7 +1,9 @@
 # Runtime API
 
 Everything here is a global, ambient and always present — the Gambas bargain: no
-imports, no module system, no `require`.
+imports, no `require`. A file of the project may say `export` to keep the rest of
+its names to itself; what it exports still reaches every file without an import
+(see *the language underneath*).
 
 ## The language underneath
 
@@ -18,7 +20,21 @@ of continuations, and leaving it out makes that a fact instead of advice.
 alongside `Promise`, so one that merely parsed left an object nothing could
 collect and a process that could not close. **`import()` is refused the same
 way**, since what it answers is a promise: it used to compile, and a program
-that called it aborted on its way out for `async`'s reason. What a sequence is written with
+that called it aborted on its way out for `async`'s reason. So is a module's
+top-level `await`. **The `Promise` intrinsic is installed and its name deleted
+after boot**: a file with `export` is a module, a module is evaluated through a
+promise, and installing the intrinsic is what registers the engine's async
+classes -- the family whose objects could never be collected. Nothing a program
+writes can make or receive a promise.
+
+**A file with `export` is a module.** What it exports is put on the global
+object, so it reaches every file of the program -- and a `.form`'s `type`, a
+`startup`, `Task.Start` -- with no `import`; what it does not export is its own.
+Two files exporting one name both load and the name then throws, naming both;
+exporting a name the runtime has, or one a script declares at its top level,
+stops the program at load; `export default` is refused. An export is read-only
+outside its file and live (`export let`). `import` declarations are not
+available yet. What a sequence is written with
 instead, and what would make that answer change, is
 [plans/async-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/async-plan.md).
 

@@ -110,7 +110,7 @@ the error: an editor reads this while somebody types, and the complaint is
 
 | | |
 |---|---|
-| `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm`. **A top-level `class` is a lexical binding and not a property of the global object**, so a library's and a project's classes are *not* in it -- read those out of the sources, which is what the IDE does. It exists because the alternative is a hand-written list of global names, and there are a hundred and sixty-four of them |
+| `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm`. **A top-level `class` is a lexical binding and not a property of the global object**, so a library's and a project's classes are *not* in it -- nor what a module exports, which is on the global object and left out on purpose: it is the program's and not the runtime's -- read those out of the sources, which is what the IDE does. It exists because the alternative is a hand-written list of global names, and there are a hundred and sixty-four of them |
 
 `Application.Globals()` answers with **what is on the global object**: `File`,
 `Directory`, `Locale`, `Timer`, `Message`, `Widget` and the rest of the runtime's
