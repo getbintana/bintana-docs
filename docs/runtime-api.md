@@ -16,7 +16,9 @@ of continuations, and leaving it out makes that a fact instead of advice.
 `async` and `await` are therefore **refused by the compiler**, with a
 `SyntaxError` on the word itself: the engine registers its async classes only
 alongside `Promise`, so one that merely parsed left an object nothing could
-collect and a process that could not close. What a sequence is written with
+collect and a process that could not close. **`import()` is refused the same
+way**, since what it answers is a promise: it used to compile, and a program
+that called it aborted on its way out for `async`'s reason. What a sequence is written with
 instead, and what would make that answer change, is
 [plans/async-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/async-plan.md).
 
