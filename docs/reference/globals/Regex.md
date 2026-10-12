@@ -22,7 +22,7 @@ Regex.Escape(name)                    // a name as a literal inside a pattern
 | `IsMatch(text)` | whether it matches at all |
 | `Match(text, [start])` | the first match at or after `start`, or `null` |
 | `Matches(text)` | every match, for a `for…of` |
-| `Replace(text, with, [count])` | the text with the matches replaced. **All of them** unless a count says how many |
+| `Replace(text, with, [count])` | the text with the matches replaced. **All of them** unless a count says how many. The replacement is a text (`$1`, `${name}`, `$&`, `$$`) or a function handed **one argument, the `Match`** -- a group is `m.Groups[1]`, not a second parameter -- that answers text or a number; a function declaring more parameters, or answering anything else, is refused |
 | `Split(text)` | the pieces between the matches |
 | `Regex.Escape(text)` | the text as a **literal** inside a pattern |
 

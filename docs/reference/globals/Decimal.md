@@ -33,10 +33,13 @@ holds the digits somebody wrote and does arithmetic on them.
 |---|---|
 | `new Decimal(value, [decimals])` | from **text**, a number or another decimal. `decimals` fixes the scale |
 
-**Construct from text, not from a literal.** `new Decimal(0.1)` is already the
-wrong number before anything can round it, and so is `1.005`: the double was
-wrong when the source file was parsed. Everything that arrives as text — a field,
-a JSON file, a database column — should stay text until it is a `Decimal`.
+**Construct from text, not from arithmetic on numbers.** A plain number is read
+through the shortest text that is the same double -- which is what its literal
+says -- so `new Decimal(0.1)` is a tenth and `price + 0.2` works. What cannot be
+recovered is a double that is already wrong: `0.1 + 0.2` worked out as numbers is
+0.30000000000000004 before the decimal ever sees it, and is refused for having
+more than nine places. Everything that arrives as text — a field, a JSON file, a
+database column — should stay text until it is a `Decimal`.
 
 ## The operators
 

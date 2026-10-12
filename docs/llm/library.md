@@ -1229,8 +1229,9 @@ const total = price * qty + tax;             // exact, to the cent
 `+ - * /`, `< > <= >=` and unary `-` all work, and mix with ordinary numbers and
 strings: `price * 3`, `price - "0.99"`.
 
-Construct from **text**, not from a literal: `0.1` and `1.005` are already the
-wrong number before anything can round them. `JSON.stringify` writes a decimal's
+Construct from **text**, not from arithmetic on numbers: a plain `0.2` is read
+as the shortest text that is the same double, so it is two tenths, but `0.1 + 0.2`
+worked out as numbers is already 0.30000000000000004 and is refused. `JSON.stringify` writes a decimal's
 text, because a JSON number would be a double again.
 
 ## Day
@@ -1430,7 +1431,9 @@ Regex.Escape(name)                    // a name as a literal inside a pattern
 Options: `IgnoreCase`, `Multiline`, `Singleline`, `Unicode`,
 `IgnorePatternWhitespace`. `Replace` replaces **all** unless a `count` says how
 many. There is no `lastIndex`, so a `Regex` can be a `const`. A replacement
-function is handed the `Match`.
+function is handed **one argument, the `Match`** (a group is `m.Groups[1]`) and
+answers text or a number; `(m, g1) =>` is refused rather than writing
+`undefined` into the result.
 
 **`Regex` is the only way to a pattern built from a string**: the name `RegExp`
 is not in the language any more, and `Unicode` is where the `u` went — without
