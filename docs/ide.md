@@ -45,20 +45,15 @@ ide/
   po/                the IDE's own catalogues
 ```
 
-**The file name is the class name, and the class is in `Ide`.** Every file in
-`modules/` declares `Namespace("Ide")` and assigns one class — `Ide.Designer`,
-`Ide.TabSet`, `Ide.Classes` — so twenty-three names like `Classes`, `Runner`,
-`Export` and `Chrome` stop standing in the global lexical scope where a
-top-level `class` quietly wins over a runtime global of the same name. It is
-also the project that should be using the feature: this is the largest Bintana
-program there is, and namespaces exist for exactly a folder like this one.
-
-The forms stay bare. A form's name is what the *runtime* looks it up by —
-`startup`, the `class` of a `.form`, the file it finds by name — they are unique
-and already say what they are, and `Ide.` in front of every one of them would
-buy nothing. **`Ide` is declared by the code, not read off `modules/`**, which
-is the rule the runtime states and this is what it looks like: `Modules.Designer`
-would be the folder talking, and the folder has nothing to say.
+**The file name is the class name, and every file is a module.** A file in
+`modules/` exports one class — `export class Designer`, `TabSet`, `Classes` —
+and a form exports its own (`export class MainForm extends Form`), since a
+form's name is what the *runtime* looks it up by: `startup`, the `class` of a
+`.form`. What one file uses of another is exported where it is declared and
+reached by name with no `import`; the rest stays in its file. Of the IDE's 326
+top-level names, 99 are exported and 227 are private, so a `GRID` or a `lines`
+of one file is nobody else's business. It is the largest Bintana program there
+is, and it uses [modules](runtime-api.md) the way any project can.
 
 
 **Enter and Escape are declared, not handled.** Every dialog here used to carry
@@ -476,7 +471,7 @@ say so. See [the window](#the-window) for why per-tab, and what it cost.
 
 **A tab can be dragged along the strip, and the notebook is what answers for the
 order.** `Tabs_Switch` reads the page at the index out of `Tabs.Children` rather
-than `tabOrder[index]`, and `Ide.TabSet.reordered` rebuilds `tabOrder` from the
+than `tabOrder[index]`, and `TabSet.reordered` rebuilds `tabOrder` from the
 notebook on the runtime's `Reordered` — a list kept beside the strip is a cache,
 and it is only as fresh as the last event. The first version of this feature read
 the list and was reverted: `nameOfPage`, which built it, was a `for...in` over
@@ -542,7 +537,7 @@ and the IDE could not show it: the one file a project writes for a person to
 that is the whole of the design. The tab still owns its `SourceEditor` holding
 the text, so the modified flag, saving, reloading when the file changes on disk,
 the find bar, the session and the recovery of unsaved work are the ones every
-other code tab has, with nothing added to any of them. `Ide.Document` adds a bar
+other code tab has, with nothing added to any of them. `Document` adds a bar
 with a *Source* toggle and a `Markdown` beside the editor, and decides which of
 the two is on screen; `this.document` is the one on screen, repointed by
 `placeContent()` beside `this.Editor`, and `null` when the tab is anything else.
@@ -604,7 +599,7 @@ class of `Btn`, not about a method called `Btn_Click`.
 
 **And the help works with only the runtime installed.** The reference pages are
 a package of their own (`bintana-docs`), and when it is not beside the build
-F1 falls back to `Ide.Completion.reference`: `Widget.Members` and
+F1 falls back to `Completion.reference`: `Widget.Members` and
 `Widget.EventDoc` answer what the class declares, the same descriptions the
 pages would carry, and the window renders the generated Markdown in the same
 place. The last line points at the package's page for the long form. So an
@@ -633,9 +628,9 @@ is the argument `lib_candidates` makes in the runtime, applied here — `bin/` a
 `share/` move together under a prefix and under a packager's DESTDIR, where a
 path baked in at configure time does not.
 
-**And the pointer resting on a name describes it.** `Ide.Tooltip` arms a 400 ms
+**And the pointer resting on a name describes it.** `Tooltip` arms a 400 ms
 dwell on every `MouseMove`, and `Editor.PositionAt` says which character is under
-the point; the same `Ide.Completion.topic` that answers F1 answers the tooltip,
+the point; the same `Completion.topic` that answers F1 answers the tooltip,
 so `File.Load` and `Chart.Select` read the same in both. Any movement, a leave,
 a click or a key puts it away, and the popover does not hide itself (`Autohide`
 off) because an autohide one takes the keyboard — the pointer may rest over a
@@ -855,7 +850,7 @@ and 20 000 lines for the IDE's own project, once per keypress, which is less tha
 F12 answers *where is this declared*; **Shift+F12** answers *where else is it* —
 the question somebody asks before touching a name at all, and one the same
 doctrine answers without an analyser: a reference is a word in code, and
-`Ide.Lex` is what says which words are code. A mention in a comment or in a
+`Lex` is what says which words are code. A mention in a comment or in a
 string is not one, which is the whole difference between this and *Find in
 project*.
 
@@ -917,16 +912,16 @@ nothing more is claimed. `ide/modules/Completion.js` answers the other half, thr
 
 ### A menu item is a thing a form has
 
-It was not, for three flatteners at once. `Ide.Completion`, `Ide.Names` and
-`Ide.Check` each walked a `.form`'s `children`, and `menus` and `actions` are
+It was not, for three flatteners at once. `Completion`, `Names` and
+`Check` each walked a `.form`'s `children`, and `menus` and `actions` are
 **not among them** -- they are blocks of their own, and the loader binds what
 they name on the form exactly as it binds a control. So `this.MnuSave.` proposed
 nothing, `MnuSave_Clik()` went unremarked, a menu item called `Actions` was a
 collision nothing looked for, and a command declared twice lost the first
 silently.
 
-One walk now, `Ide.Names.tableOf`, over all three blocks; the other two read it.
-Which is the rule this repository has kept about `Ide.Git`'s commands, about
+One walk now, `Names.tableOf`, over all three blocks; the other two read it.
+Which is the rule this repository has kept about `Git`'s commands, about
 `SOURCE_LINK` and about `Navigator.symbols` -- a second copy of *what does this
 form have* is a second answer to drift from the first -- and here there were
 three copies and they had already drifted to the same wrong answer.
@@ -1216,7 +1211,7 @@ It also removes a shape the alternative would have needed. A cascade resolves at
 read time, so every value has to be able to say *nothing* — and a `Record` cannot:
 `Field.Bool` is `{ def: false }`, so a field always says something. Copying at
 creation means no value ever has to mean *ask my parent*, and every field of
-`Ide.LaunchConfig` is an ordinary one.
+`LaunchConfig` is an ordinary one.
 
 A project that declares none is the ordinary case, and Run does for it exactly
 what it always did.
@@ -1227,7 +1222,7 @@ what it always did.
 argument: `bintana --strict`. Under it a control **refuses a property its class
 does not have**, so `this.Lbl.Txt = "x"` throws where it is written instead of
 doing nothing forever -- which is the half of that question
-[`Ide.Live` and `Ide.Check`](#the-names-a-file-uses-checked-while-it-is-written)
+[`Live` and `Check`](#the-names-a-file-uses-checked-while-it-is-written)
 cannot answer, because it needs the program to be running. The other half is
 theirs and stays theirs: a handler nobody calls is a mistake no execution
 reaches.
@@ -1390,7 +1385,7 @@ row — the same mistake `Cursor` would have been on the log.
 
 ## The names a file uses, checked while it is written
 
-`Ide.Live`, and **it is not a live syntax check** — refusing to be one is the
+`Live`, and **it is not a live syntax check** — refusing to be one is the
 design.
 
 `TabSet.checkSyntax` runs on save and [says why](#what-a-save-says-about-the-file):
@@ -1440,7 +1435,7 @@ have less 260 -- the outline gets a column of its own width -- and not at the
 editor's width, which left the outline wider than the code and almost empty. A
 divider the person dragged still wins (`Session.divider`).
 
-`Ide.Outline`: the methods the file on screen declares, in the side panel, for
+`Outline`: the methods the file on screen declares, in the side panel, for
 the tabs that never had one.
 
 That panel spoke about a *selection* — properties, events, the control tree — so
@@ -1561,14 +1556,14 @@ since it was written. Escape emits `clicked` on whichever button carries
 a stray keystroke](formats.md) unless the window says so — and `SymbolForm` had
 no `BtnCancel_Click`. Every other dialog in this IDE has the line. Nothing
 noticed, the way nothing notices a handler that is never called: which is the
-same silence `Ide.Live` exists to break, one floor down.
+same silence `Live` exists to break, one floor down.
 
 ## Checking the whole project
 
-`Ide.Check`, *Project → Check the project*, and once on its own when a project is
+`Check`, *Project → Check the project*, and once on its own when a project is
 opened.
 
-[`Ide.Live`](#the-names-a-file-uses-checked-while-it-is-written) reads the file
+[`Live`](#the-names-a-file-uses-checked-while-it-is-written) reads the file
 on screen, which is one file. Most of what this language accepts in silence is
 not about the file on screen at all — a `.form` loses a control because another
 one has its name, a manifest lists a source that is not there, a `.js` sits on
@@ -1604,7 +1599,7 @@ throw per collision found rather than per control. It matters because the two
 futures are different things to do about: a read-only member stops the program
 starting, a shadowed method does not.
 
-The manifest's legal keys are **`Ide.ProjectFile`'s own**: it is a `Record`, so
+The manifest's legal keys are **`ProjectFile`'s own**: it is a `Record`, so
 what a `project.json` may hold is a list this class does not have to keep.
 
 ### What it costs
@@ -1632,7 +1627,7 @@ list, no staging and no way back to the editor.
 **The engine is the git CLI**, which is the bargain `Translations` makes with
 `msgmerge` and `Exporter` with `tar`: ask `Application.HasCommand`, say the
 sentence when it is missing, run the tool. A binding would be a new dependency
-for something every machine with a project in git already has. `Ide.Git` is the
+for something every machine with a project in git already has. `Git` is the
 only thing in `ide/` that runs one, so where the worktree is disagreed with is
 one file.
 
@@ -1726,7 +1721,7 @@ discarding `data[1].json` also restored `data1.json`. Every invocation passes
 
 **A project need not be the root of its repository**, and that is not a detail:
 `examples/clients` lives inside this one. git names a file from the root of the
-*repository* and the IDE names it from the root of the *project*, so `Ide.Git`
+*repository* and the IDE names it from the root of the *project*, so `Git`
 keeps git's own answer to *where am I* and translates every path across that
 boundary -- and every listing is scoped to the project with `-- .`, because a
 repository can hold more than one thing and the panel must not offer to stage
@@ -1742,7 +1737,7 @@ apart at the first change and everything below it is compared against the wrong
 line.
 
 **The diff is git's own**, parsed out of the unified output that is already in
-the tab beside it ([`Ide.Diff`](https://github.com/getbintana/bintana/blob/main/ide/modules/Diff.js)). Nothing here computes
+the tab beside it ([`Diff`](https://github.com/getbintana/bintana/blob/main/ide/modules/Diff.js)). Nothing here computes
 one: a second opinion about the same two files would be a second opinion, and an
 expensive one -- the pair can be four thousand lines and a table of that is
 sixteen million cells. Where git offers no diff at all -- a file it has never been
@@ -1772,7 +1767,7 @@ are two different things to do with it.
   260-pixel column would be a worse answer than the one that already exists.
 - **Stage** and the row's menu -- *Stage*, *Unstage*, *Discard changes...*,
   *Stage everything* -- are the same commands the window's buttons press, and
-  literally so: they are `Ide.Git`'s methods, so *stage* has one spelling and
+  literally so: they are `Git`'s methods, so *stage* has one spelling and
   one set of guards wherever it is pressed.
 - **Enter in the message box commits**, which is what makes it quick. What gets
   committed is **what is staged**, never what is selected -- a button that
@@ -2307,7 +2302,7 @@ The form's own menu bar is drawn between the title bar and the canvas, which is
 where the runtime puts the real one: `bta_menus_build` prepends it into a column
 inside the window, above the surface.
 
-**It is not the widget, and it does not have to be.** `Ide.MenuBar` is a `Panel`
+**It is not the widget, and it does not have to be.** `MenuBar` is a `Panel`
 with a `Label` per top level menu, and the drop-downs are real menus -- every
 widget has a `Menu` and a `PopupMenu`. Left click an entry and its menu falls
 open; click a leaf and you are writing its handler, the same gesture the canvas
@@ -2634,7 +2629,7 @@ icon search path.
 ([library](llm/library.md#desktopentries)) reads and writes the file through
 `GKeyFile`, which is the platform's implementation of the Desktop Entry
 Specification — the escaping and the localized keys (`Name[es]`) are not a second
-interpretation of them. What the IDE adds is `Ide.Apps`: the id, which is a slug
+interpretation of them. What the IDE adds is `Apps`: the id, which is a slug
 of the name and never the file's; the command, which is *this* binary and *this*
 project; and the `X-Bintana-Project` key that makes an entry recognisable as this
 project's afterwards.
@@ -3210,7 +3205,7 @@ grid could only offer what the designer itself owned: the name and the geometry.
 
 It can offer more than that without the class, by applying the serialiser's rule
 to the **text**: a property is an accessor with *both* a getter and a setter.
-`Ide.Classes` reads the component's `.js` — the IDE already knows where it is, it
+`Classes` reads the component's `.js` — the IDE already knows where it is, it
 read the same file to decide the class was a `Component` at all — and pairs up
 `get X()` with `set X(`. A getter without a setter is left out for the reason it
 always is: the `.form` could never put the value back.
@@ -3321,7 +3316,7 @@ list; it shows the value being built; and what it offers comes from two places
 neither of which is a list anybody typed here. The project's classes are read out
 of `<project>/app.css` by `styleClasses()` — found by name, exactly as the runtime
 finds it — fresh on every popup, so a class written in the editor beside the grid
-is offered without reopening anything. The theme's come from `Ide.Styles`, which
+is offered without reopening anything. The theme's come from `Styles`, which
 is **generated** from the theme itself by `tests/styles.sh --json`.
 
 **And it is ordered by what can actually reach the control**, which is the
@@ -3363,7 +3358,7 @@ rest of the file is left exactly as it was — a stylesheet is somebody's, and a
 tool that reformats it on the way past is one nobody trusts with theirs.
 
 **And a class it cannot reproduce is not its to edit.** Rather than keep a list of
-declarations it understands, `Ide.Sheet.owned` reads the rule back into
+declarations it understands, `Sheet.owned` reads the rule back into
 properties, regenerates it through the runtime, and compares: anything that does
 not come out the same — a gradient, a transition, a `:hover`, a selector of
 somebody's own — is left alone, and the editor says to open `app.css` and edit it

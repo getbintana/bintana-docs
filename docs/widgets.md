@@ -3219,11 +3219,11 @@ The third piece is the one that matters. `page-reordered` is the only report the
 notebook gives that its order changed, and publishing it is not enough on its
 own: **a list kept in step with the strip that is not moved on that event
 answers with the wrong page from the next one on, and nothing says so.** The IDE
-has such a list (`Ide.TabSet.tabOrder`, "the order the strip shows them in"), and
+has such a list (`TabSet.tabOrder`, "the order the strip shows them in"), and
 the first version of this feature was reverted because moving between a form tab
 and a code tab left the page on screen and the tab the names spoke for as two
 different answers. **The cause was measured later, and it is one word**:
-`Ide.TabSet.nameOfPage` walked its `openTabs` `Map` with `for...in`, which visits
+`TabSet.nameOfPage` walked its `openTabs` `Map` with `for...in`, which visits
 no entries at all -- so the list was rebuilt empty on the first reorder, and
 every tab click after it did nothing while the notebook went on switching. It is
 iterated with `of` now; the notebook is the truth (`Tabs_Switch` reads the page
@@ -3620,7 +3620,7 @@ anything inside the window should wait for.** `Resize` is the form's;
 gave it a real rectangle, with the same box `Bounds()` answers. A fit-to-the-room,
 a dialog centred on its monitor, a translated label measured against its panel:
 `Form_Open` runs before the window is presented, so all of it measures zero
-there. That is what the five bounded retries this replaced -- `Ide.Chrome`,
+there. That is what the five bounded retries this replaced -- `Chrome`,
 `ImageForm`, `examples/viewer` and both `examples/i18n` -- were for, each with its
 own number of tries.
 

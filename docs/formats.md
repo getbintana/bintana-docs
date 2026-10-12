@@ -59,9 +59,8 @@ runtime obeys what the file says. Nothing requires a folder to be a namespace,
 and the IDE asks before making one — it just keeps the two in step afterwards,
 because that is a sane convention. It never asks for `forms/`, `components/`,
 `modules/` or `po/`: those are folders a *tool* named, and a name nobody chose is
-not a namespace. The IDE's own twenty classes live in `modules/` and answer to
-`Ide.Designer`, `Ide.TabSet` and so on, because their files say `Namespace("Ide")`
-— which is this paragraph, working.
+not a namespace. The IDE's own classes live in `modules/` and answer to
+`Designer`, `TabSet` and so on — no folder named them `Modules.Designer`.
 
 ### How a name resolves
 
