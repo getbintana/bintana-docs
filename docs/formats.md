@@ -51,7 +51,7 @@ Widgets.Stepper = class Stepper extends Component {
 ```
 
 A namespace is an ordinary object on `globalThis` and nothing more — no module
-system, no imports, no compile step. `Namespace("A.B")` nests, creating both.
+system of its own, nothing to import, no compile step. `Namespace("A.B")` nests, creating both.
 What it buys is that two folders may each have a `Stepper`.
 
 The namespace is declared **by the code**, not deduced from the directory: the

@@ -2,8 +2,9 @@
 
 Everything here is a global, ambient and always present — the Gambas bargain: no
 imports, no `require`. A file of the project may say `export` to keep the rest of
-its names to itself; what it exports still reaches every file without an import
-(see *the language underneath*).
+its names to itself; what it exports still reaches every file without an import,
+and an `import` is there for the file that has to choose between two owners of
+a name (see *the language underneath*).
 
 ## The language underneath
 
@@ -32,9 +33,23 @@ object, so it reaches every file of the program -- and a `.form`'s `type`, a
 `startup`, `Task.Start` -- with no `import`; what it does not export is its own.
 Two files exporting one name both load and the name then throws, naming both;
 exporting a name the runtime has, or one a script declares at its top level,
-stops the program at load; `export default` is refused. An export is read-only
-outside its file and live (`export let`). `import` declarations are not
-available yet. What a sequence is written with
+stops the program at load. An export is read-only outside its file and live
+(`export let`); an `export default` reaches nobody by name and is there for an
+`import`.
+
+**An `import` is standard JavaScript, and scoped to its file.** A path
+(`import { Parser } from "./Csv.js"`) is a file of the project -- or of the
+library the importing file is in -- and nothing outside them; a bare name
+(`import { Markdown } from "markdown"`) is a library `project.json`'s `uses`
+names, standing for the exports of all its module files at once (a name two of
+them export is refused as ambiguous when imported). The binding the import
+makes wins over the shared one in that file alone, so `as` renames an owner and
+two owners of one name can both be used. A file brought in by an import is
+evaluated before the file that imports it and only once, need not be listed in
+`sources`, and hands its exports to every file like any module; a file with no
+`export` cannot be imported, since its names already reach everybody. A `Task`'s
+worker loads the task's file **and what it imports**, which is how a task gets
+its helpers. What a sequence is written with
 instead, and what would make that answer change, is
 [plans/async-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/async-plan.md).
 
