@@ -1469,7 +1469,8 @@ the method the caret is in reads them by.
 module's private names inside that file and nowhere else, offers what the file
 imports, renames a private name in its file only (and refuses a name two files
 declare), and underlines a name two modules export where it is used with no
-`import` — the runtime's sentence, said before the run.
+`import` — the sentence the runtime refuses to start the program with, said
+while typing.
 
 Prior art, and it is the oldest thing in this IDE: Visual Basic's **procedure
 dropdown**, the pair of combos over every code window. Delphi's *Code Explorer*
