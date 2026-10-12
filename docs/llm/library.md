@@ -1516,6 +1516,13 @@ double each literal makes is already below the half. `Decimal("1.005").Round(2)`
 is `1.01`. An amount that has to round the way it was written is a
 `Field.Decimal`.
 
+**A `Field.Decimal` rounds to its places, away from zero** — the value, not
+only its display: a file saying `19.999` loads as `20.00`, and the next save
+writes that. An assignment does it in silence, since the program chose the
+field; `Load` (and `LoadXml`, and a `Table`'s rows) says so in `Problems`:
+`Price: 19.999 has 3 decimal places, the field 2 -- rounded to 20.00`. Trailing
+zeros change nothing and are not reported.
+
 | On a record | |
 |---|---|
 | `new C({ Name: "Ana" })` | through the setters, so every value is checked |
