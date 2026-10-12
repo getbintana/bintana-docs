@@ -260,7 +260,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 | `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
-| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.json` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same |
+| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.json` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 | `LoadXml(path)` | the file as a [`Xml`](../reference/globals/Xml.md) document. **The error names the file**, and the document's own declaration says what encoding it is in: this reads bytes, unlike `Load` |
 | `SaveXml(path, node)` | the canonical XML shape, atomically, honouring neither locale nor encoding guesses |
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
@@ -1509,6 +1509,12 @@ class Customer extends Record {
 | `Field.List(item, o)` | an array, each entry through `item` — a `Field` or a `Record` class | `required`, `max` |
 | `Field.Record(of, o)` | another record: the class, or `() => the class` for a shape that contains itself | `required` |
 | `Field.Decimal(o)` | a [`Decimal`](../reference/globals/Decimal.md) at a fixed scale | `required`, `min`, `max`, `decimals` (2 by default) |
+
+**`Field.Number`'s `decimals` rounds the double**, as `Math.round(v * 10^n) /
+10^n` does: `1.005` comes out `1` and `8.575` comes out `8.57`, because the
+double each literal makes is already below the half. `Decimal("1.005").Round(2)`
+is `1.01`. An amount that has to round the way it was written is a
+`Field.Decimal`.
 
 | On a record | |
 |---|---|

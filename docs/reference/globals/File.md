@@ -76,7 +76,7 @@ and destroys a PNG.
 | | |
 |---|---|
 | `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
-| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.json` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same |
+| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.json` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 
 ## XML
 

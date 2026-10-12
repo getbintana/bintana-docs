@@ -379,7 +379,12 @@ because it names the idiom somebody arrives with:
 
 `File.SaveJson` writes one canonical shape — indented by two, one trailing
 newline — so the choice never comes up and every file the runtime writes reads
-the same. `File.LoadJson` names the file in its error, which a bare
+the same. **It also refuses what JSON cannot hold**: `NaN`, `Infinity`,
+`-Infinity` and an `undefined` inside a list, which `JSON.stringify` writes as
+`null` without a word — the error names where the value is (`'items[3].x' is
+NaN`), and the file is left as it was. That is the limit, and the left column of
+the table above is the way past it: `JSON.stringify` still writes those nulls,
+for a program that means them. `File.LoadJson` names the file in its error, which a bare
 `SyntaxError` never did.
 
 `Timer.After` and `Timer.Every` hand the `Timer` back, so what was started can
