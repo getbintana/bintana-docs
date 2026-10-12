@@ -31,9 +31,14 @@ writes can make or receive a promise.
 **A file with `export` is a module.** What it exports is put on the global
 object, so it reaches every file of the program -- and a `.form`'s `type`, a
 `startup`, `Task.Start` -- with no `import`; what it does not export is its own.
-Two files exporting one name both load and the name then throws, naming both;
-exporting a name the runtime has, or one a script declares at its top level,
-stops the program at load. An export is read-only outside its file and live
+Two files exporting one name both load, and a file that uses it with no
+`import` stops the program at load, naming both; so does a file that uses a
+name another module keeps to itself (every such use is listed, so a forgotten
+`export` is found by running once -- `typeof` is not a use). Exporting a name
+the runtime has, or one a script declares at its top level, stops the program
+at load in either order, naming the files. The class `startup` names and the
+function `main` names are exported too when their file is a module; `export {}`
+makes one that exports nothing. An export is read-only outside its file and live
 (`export let`); an `export default` reaches nobody by name and is there for an
 `import`.
 
