@@ -763,11 +763,12 @@ could only answer with *Find in project*, which is a search and not an answer: i
 finds the mentions and leaves the choosing to whoever asked.
 
 It is the same doctrine as the completion below, word for word: **table lookups,
-never inference, and silence where nothing says what a name is.** Four questions,
+never inference, and silence where nothing says what a name is.** Five questions,
 asked in this order:
 
 | the word under the caret | where it goes |
 |---|---|
+| a name the file imports from a path | the file the `import` names, at the declaration of what it imports — before any class of the same name elsewhere, since the import says whose it is; an import from a library is not followed |
 | `this.greet` | the method declared in the file being edited |
 | `this.Ok` | the control on the `.form` beside it — which opens the designer and **selects** it, since a designer has no lines to scroll to |
 | `Child`, or `Whatever.Child` | the class of that name, wherever the project declares it — the tail of a qualified name is the class |
@@ -1458,6 +1459,17 @@ half belongs there* and *what is in it* are the same question:
 
 A document tab has an editor too, so the test is the extension and not the
 editor: a README has no methods to list.
+
+**In a module** — a file that says `export` — the list also has a row
+`export <name>` for each name it publishes, at the line that declares it, so the
+file says what other files see. Rows stay in line order, which is what marking
+the method the caret is in reads them by.
+
+**And what a module does not export is its own here too**: completion offers a
+module's private names inside that file and nowhere else, offers what the file
+imports, renames a private name in its file only (and refuses a name two files
+declare), and underlines a name two modules export where it is used with no
+`import` — the runtime's sentence, said before the run.
 
 Prior art, and it is the oldest thing in this IDE: Visual Basic's **procedure
 dropdown**, the pair of combos over every code window. Delphi's *Code Explorer*
