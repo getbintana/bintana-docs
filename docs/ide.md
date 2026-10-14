@@ -112,7 +112,6 @@ desktop's theme already declares.
 | `LblFiles`, `LblWelcomeRecent` | `heading` |
 | `LblStatus`, `LblWelcomeHint` | `dim-label` |
 | `LblWelcome` | `title-1` — the welcome page's name of the program |
-| `SideBar` | `sidebar` |
 
 `.toolbar` **flattens the buttons directly inside it** — `.toolbar > button` in
 Adwaita, which is the GNOME look and exactly right for the three flat icon
@@ -160,7 +159,17 @@ ToolBar (Panel)         a row, HAlign Fill: the strip across the top
   RunGroup (Panel)      Run and Stop, linked into one pair
   LblStatus             HExpand: takes the width the buttons leave
 Split                   HAlign/VAlign Fill: the whole window below the toolbar
-  SideBar (Panel)       "Project" label + FileTree, both Fill
+  SideBar (Panel, a row)  the project panel: SideView, and beside it the strip
+                        it folds to
+    SideStrip (Panel, a column)  one button per view, built in code, hidden
+                        while the panel is open
+    SideView (Panel, a column)
+      SideHead (Panel, a row)  CmbView, the chooser over the three views, and
+                        BtnSideHide, which folds the panel away
+      SideStack (Switcher, no strip)
+        "Project"/"Files"  TreePage: FileTree and the filter over it
+        "Changes"          ChangesBox: ChangeTable, the message box and the
+                        two buttons a small commit needs
   RightSplit (Split)
     WorkArea (Split)      the pages, and beside them the panel that speaks for them
       EditorBox (Panel, a column)  the notebook and the bar under it; hidden with
@@ -195,10 +204,29 @@ Split                   HAlign/VAlign Fill: the whole window below the toolbar
                                         Widget.Available("Terminal") says yes
 ```
 
-`SideBar` works in coordinates because its height follows from numbers the
-`.form` itself declares — `Split`'s `Height` and `RightSplit`'s `Position`. That
-is the test for whether a container can be drawn: **can its size be derived from
-what is written down?**
+**The project panel folds to a strip, and the strip opens any of its three
+views.** `BtnSideHide` — beside the chooser — hides `SideView` and leaves
+`SideStrip` in the same half of the `Split`: the half itself stays, because
+hiding it would hand its room to the work area and GTK would hide the divider
+with it, taking the strip down too. The strip is **one button per view** —
+*Project*, *Files*, *Changes* — so a folded panel opens straight on any of
+them; the single button it replaces could only bring back whatever was up.
+Pressing one moves the chooser and unfolds the panel around it, so the two
+never disagree, and the width to come back to is kept beside the fold in
+`session.window` — the divider says the strip's while it is folded.
+
+The three views are the chooser's list: *Project* and *Files* are the tree's
+two groupings and share `TreePage`; *Changes* is the git page. The strip's
+buttons are **built from that list** and not declared in the `.form`: how many
+there are is its answer, and each view publishes its own row — the name, the
+button's tooltip and icons, the page of `SideStack`, and what brings it up —
+beside the class that owns it. A fourth panel is a page of the stack and a row
+where its class lives.
+
+`SideBar` is a container and not a drawn surface, because the fold decides
+while the window runs which of its two children shows: a drawn surface would
+have to be laid out for both. The test for whether a container can be drawn is
+unchanged — **can its size be derived from what is written down?**
 
 `ConsoleBox` used to be one of those and is a `Notebook` now, for the reason at
 the bottom of the list below. The label that used to sit over the output pane
@@ -414,7 +442,8 @@ A chooser at the top of the tree, where the heading used to be: **Project** and
 **Files** (and a third, **Changes**, for git). They are worth having separately for the
 reason Android Studio has them — the first is where one works, and the second is where
 one goes when the *grouping* is what hides something. Both show every file of the
-project: what they differ about is grouping, not membership.
+project: what they differ about is grouping, not membership. A folded panel
+offers the same three as its strip, one icon button each.
 
 **Project is a lie about the disk, deliberately.** A form's two files are one
 node, catalogues from anywhere gather under one category, the folders a tool
