@@ -173,10 +173,10 @@ callback form and a [`Spinner`](../widgets/Spinner.md).
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
 | `BaseUrl` | what a relative path in a call is relative to, so the program's requests are one-liners |
 | `Headers` | sent with every request this client makes — an API key, an `Accept` |
-| `Timeout` | ms before a request is given up on; `0` waits forever |
+| `Timeout` | ms before a request is given up on; `0` waits forever for the callback verbs. The blocking ones use it when it is not zero and otherwise give up after 30 s — `{ Timeout: 0 }` on the call is the explicit *wait forever* |
 | `FollowRedirects` | follow a `3xx`. Default `true` |
 | `Language` | the `Accept-Language` it asks with |
 | `Proxy` | what to go through |

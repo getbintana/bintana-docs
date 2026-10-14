@@ -48,6 +48,7 @@ not repeated here.
 | | | |
 |---|---|---|
 | `Add(values, [options])` | one row, as an array of strings | [the rows](#the-rows-it-holds), [a tree](#a-tree) |
+| `AddRows(rows)` | many rows in one call, each the array `Add` takes | [the rows](#the-rows-it-holds) |
 | `Cell(row, column)` | one value | [the rows](#the-rows-it-holds) |
 | `Clear()` | empties it — **and forgets which of the three shapes this table was** | [the rows](#the-rows-it-holds) |
 | `CollapseAll()` | closes every node | [a tree](#a-tree) |
@@ -202,7 +203,8 @@ row shorter than there are columns simply reads blank in the rest.
 
 | | |
 |---|---|
-| `Add(values, [options])` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated |
+| `Add(values, [options])` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
+| `AddRows(rows)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. Refused on a tree, whose rows are nodes with keys, and it clears an on-demand `Count` as one `Add` does |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 | `Cell(row, column)` | one value. Refused on an on-demand table, which has no cells to answer about |
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
@@ -520,7 +522,7 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 
 | | |
 |---|---|
-| `Add(values, { Key, Parent, Icon })` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated |
+| `Add(values, { Key, Parent, Icon })` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
 | `Key` | the selected node's key; assigning selects, opening the way to it. `""` selects nothing. A tree only |
 | `Exists(key)` | whether that node is there. `false` on a flat table rather than a refusal: it is the question you ask *before* you know |
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand. Default `true`. A tree only. The same mechanism `TreeView` uses, answering the same |

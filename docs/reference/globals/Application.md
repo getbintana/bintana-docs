@@ -158,7 +158,7 @@ matching on the message is the shape this language refuses elsewhere.
 
 | | |
 |---|---|
-| `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success. A `code` that is not a number is refused rather than read as `0`, which a runner would take for success; `Quit()` is `0` |
+| `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success; `Quit()` is `0`. **An uncaught error makes a `main` project exit `1` unless `Quit` said otherwise** — a traceback that leaves the status at `0` is a failure a runner reads as success too |
 
 A window closing does not end a program by itself: what ends it is the last
 window going and the main loop running out, or this.

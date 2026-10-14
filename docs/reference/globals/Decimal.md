@@ -17,6 +17,7 @@ holds the digits somebody wrote and does arithmetic on them.
 |---|---|---|
 | `new Decimal(value, [decimals])` | from text, a number or another decimal | [making one](#making-one) |
 | `Abs()` | its magnitude | [asking about one](#asking-about-one) |
+| `Equals(other)` | whether the two are the same number | [asking about one](#asking-about-one) |
 | `IsExact` | whether the value is exactly what its digits say, which a division may make false | [asking about one](#asking-about-one) |
 | `Number()` | the nearest double, asked for **by name**: for a chart, a width, a percentage — anywhere the value stops being money | [leaving the type](#leaving-the-type) |
 | `Round(decimals, [how])` | `"Away"` (the default — the half goes away from zero, which is what an invoice does), `"Even"` (banker's), `"Zero"`, `"Up"`, `"Down"` | [rounding](#rounding) |
@@ -67,6 +68,7 @@ the next time it is added up.
 | `Sign` | `-1`, `0` or `1` |
 | `Abs()` | its magnitude |
 | `IsExact` | whether the value is exactly what its digits say, which a division may make false |
+| `Equals(other)` | whether the two are the same number. **`==` compares two objects by identity** — `new Decimal("1") == new Decimal("1.0")` is `false`, and `!=` is `true`, while `<=` and `>=` answer true because those are operators this type implements — so **this is the comparison**. It reads a number or machine text as the operators do, at any scale; a third is never equal to the nine-place text it rounds to |
 
 ## Leaving the type
 

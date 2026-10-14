@@ -90,7 +90,7 @@ reason a total on screen and a total in the database are the same number.
 
 | | |
 |---|---|
-| `Date(when, [format])` | `"Date"` `"Time"` `"DateTime"` `"ISO"` `"Weekday"` `"Month"`. `when` is a `Date` **or** a `"YYYY-MM-DD"` string |
+| `Date(when, [format])` | `"Date"` `"Time"` `"DateTime"` `"ISO"` `"Weekday"` `"Month"`. `when` is a `Date` **or** a `"YYYY-MM-DD"` string. The default -- `"Date"` -- is the desktop's own pattern **with the year in four digits** |
 
 ```js
 Locale.Date("2026-12-25")             // 25/12/26

@@ -24,7 +24,7 @@ Every name here is a global: ambient, always present, no import.
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once. The other direction of the lookup: `LibraryPath` resolves a name you already know, this is what a dialog that offers a choice needs |
 | `Replacements()` | every name this language takes away, and what to write instead. It is a bag keyed by the name that went: `{ setTimeout: "Timer.After(delay, tick) — the delay comes first", "Object.assign": "{ ...a, ...b }", … }`. **`""` where there is no word for that thing here**, which is an answer rather than a gap in the table. An editor asks it of an identifier nobody can find, so a beginner meets `Timer` at the token rather than a `ReferenceError` at the next run |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors |
-| `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success. A `code` that is not a number is refused rather than read as `0`, which a runner would take for success; `Quit()` is `0` |
+| `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success; `Quit()` is `0`. **An uncaught error makes a `main` project exit `1` unless `Quit` said otherwise** — a traceback that leaves the status at `0` is a failure a runner reads as success too |
 
 `BTA_VERSION` is the **runtime's** version, and is not
 `Application.Version`. Showing the wrong one is what an About box does until it
@@ -184,7 +184,7 @@ not the one the user is in.
 | `Number(value, [decimals \| options])` | grouped, with this desktop's separators. As many decimals as the value has, unless told |
 | `Currency(value, [decimals \| options])` | money, with the symbol where this desktop puts it — which is before the number in some places and after it in others |
 | `Parse(text, [options])` | a [`Decimal`](../reference/globals/Decimal.md), or `null` when the text is not a number. **`null` and not a throw**: a field being typed into is not an error. The same format read backwards |
-| `Date(when, [format])` | `"Date"` `"Time"` `"DateTime"` `"ISO"` `"Weekday"` `"Month"`. `when` is a `Date` **or** a `"YYYY-MM-DD"` string |
+| `Date(when, [format])` | `"Date"` `"Time"` `"DateTime"` `"ISO"` `"Weekday"` `"Month"`. `when` is a `Date` **or** a `"YYYY-MM-DD"` string. The default -- `"Date"` -- is the desktop's own pattern **with the year in four digits** |
 | `Compare(a, b)` | `-1`, `0` or `1`, in the order this desktop puts names in. `localeCompare` is **refused** and its message points here: it compares code units and puts `Álvarez` after `Zapata` |
 | `Matches(text, needle)` | whether a search for `needle` should find `text`, **accents folded**: `cordoba` finds `Córdoba` and `ver` finds `Echeverría`. `toLowerCase().includes()` does neither |
 | `DecimalPoint` | the character a decimal is written with here, for the rare case that has to parse one back |
@@ -1222,6 +1222,7 @@ const total = price * qty + tax;             // exact, to the cent
 | `Round(decimals, [how])` | `"Away"` (the default — the half goes away from zero, which is what an invoice does), `"Even"` (banker's), `"Zero"`, `"Up"`, `"Down"` |
 | `Trim()` | drops trailing zeros: `2.50` → `2.5` |
 | `Abs()`, `Scale`, `Sign`, `IsExact` | |
+| `Equals(other)` | whether the two are the same number. **`==` compares two objects by identity** — `new Decimal("1") == new Decimal("1.0")` is `false`, and `!=` is `true`, while `<=` and `>=` answer true because those are operators this type implements — so **this is the comparison**. It reads a number or machine text as the operators do, at any scale; a third is never equal to the nine-place text it rounds to |
 | `Number()` | the nearest double, asked for **by name**: for a chart, a width, a percentage — anywhere the value stops being money |
 | `Decimal.Split(total, parts)` | pieces that add back up to the total, **exactly** |
 | `toString()`, `toJSON()` | its own text. Which is why `${d}` and `JSON.stringify(d)` are both exact, and why a decimal in a file reads back as itself |
@@ -1510,6 +1511,10 @@ class Customer extends Record {
 | `Field.Record(of, o)` | another record: the class, or `() => the class` for a shape that contains itself | `required` |
 | `Field.Decimal(o)` | a [`Decimal`](../reference/globals/Decimal.md) at a fixed scale | `required`, `min`, `max`, `decimals` (2 by default) |
 
+**A field can also be built from a document.** `Field.Kinds()` answers every kind a
+field can be, by name, and `Field.Spec(spec)` builds one from the object a `.record`
+file holds for it — refusing what a class body refuses.
+
 **`Field.Number`'s `decimals` rounds the double**, as `Math.round(v * 10^n) /
 10^n` does: `1.005` comes out `1` and `8.575` comes out `8.57`, because the
 double each literal makes is already below the half. `Decimal("1.005").Round(2)`
@@ -1534,6 +1539,8 @@ zeros change nothing and are not reported.
 | `Problems` (ro) | **the report of one `Load`**: what the file said that could not be taken |
 | `PropertyNames()`, `PropertyOptions(name)`, `Dump()` | as a widget answers them |
 | `PropertyInfo(name)` | `{ Kind, Column, Key }`: what a field *is*, for whoever maps it onto something else |
+| `Record.File(type)` | the `.record` file that declares this type's fields, or `""` when the shape is built in code. **The file**, because it is a document like a `.form`: what the tree shows and a dialog edits. Two files claiming the class refuse by name |
+| `Record.Shape(type)` | the type's shape as the document a `.record` file holds, ready for `JSON.stringify` |
 | `C.Load(json)` | a file, read **leniently** |
 | `C.LoadXml(node)` | the same, from an XML document or element — see [a record over XML](#a-record-over-xml) |
 | `ToXml([all])` | a new element: what differs from the start, or every field |
@@ -1809,7 +1816,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one |
 | `MaxConns`, `MaxPerHost` | constructor-only (`10`/`2` unless told): soup takes them once, so assigning later throws |
 | `Request(method, url, [body], [opts], onDone, [onError])` | any verb: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`; anything else is refused, in the blocking spelling too |
@@ -1912,6 +1919,7 @@ srv.Start();
 | `Tls` | `{ Cert, Key }` files, or nothing: `https` when set, `null` when not. **Missing files fail at `Start`, naming them** |
 | `Allow` | a list of **exact** IPs, or nothing (open). A refused remote gets `403` before the handler runs. Exact means exact: on a dual-stack `"any"` server, `::1` is not `127.0.0.1` |
 | `Auth` | `{ Realm, Users }`: Basic over the whole server, `401` with the realm until the right password. Nothing set is open, and it reads back `null`. Like `Allow`, it takes effect at once |
+| `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **before the handler runs**, and a body that arrives without one is read and refused the same way when it passes the number |
 | `req.Multipart()` | the upload parsed: a `Multipart` to read with `Part(index)` (or re-post). Refused on a plain body |
 | `Request` | assign `(req) => …`. **Required before `Start`**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
 | `Start()` | listens; throws naming the reason (a busy port says which one). A second `Start` is refused |
