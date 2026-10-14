@@ -411,22 +411,28 @@ The IDE's own tree is the first client: `ide/forms/` holds the twelve
 ## The tree, in two views
 
 A chooser at the top of the tree, where the heading used to be: **Project** and
-**Files**. They are worth having separately for the reason Android Studio has
-them — the first is where one works, and the second is where one goes when the
-first is not telling the whole truth.
+**Files** (and a third, **Changes**, for git). They are worth having separately for the
+reason Android Studio has them — the first is where one works, and the second is where
+one goes when the *grouping* is what hides something. Both show every file of the
+project: what they differ about is grouping, not membership.
 
 **Project is a lie about the disk, deliberately.** A form's two files are one
 node, catalogues from anywhere gather under one category, the folders a tool
 named are not drawn at all, **the hierarchy is the namespaces and not the
-directories**, and everything is grouped by what it *is*. That is what makes it the view
-one works in, and what makes it unable to answer *why is there a stray file in
-here*.
+directories**, and everything is grouped by what it *is*. What it is not is a
+*short* list: a file no kind claims — a `.txt`, a `.bin`, the `.gpx` of a track —
+sits under `Other`, so the file an application ships is never one the person who
+put it there cannot see.
 
 ## The project tree
 
-`listFiles()` rebuilds a `TreeView` from `Directory.List`, showing only what is editable
-(`.js`, `.form`, `.json`). Each form is grouped with its code, because a form is one
-thing that happens to live in two files:
+`listFiles()` rebuilds a `TreeView` from `Directory.List`: **every file of the
+directory**, hidden ones aside. What `ide/modules/TabSet.js` names is not which files
+the tree lists but **how one opens** — the extensions edited here (`.js`, `.form`,
+`.json`, `.css`, `.xml`, `.md`), the ones shown but never in a tab (a catalogue, an
+image, a record's shape, a sound), and, for anything the table does not name, the
+desktop's own answer: text opens in a tab, everything else is handed out. Each form is
+grouped with its code, because a form is one thing that happens to live in two files:
 
 ```
 widgets              a folder: its own categories inside
@@ -442,6 +448,13 @@ Components           the same, for classes that extend Component
 Modules              loose .js
 Other                everything else
 ```
+
+Past the sketch, the same bargain covers the other kinds a project ships:
+`Translations`, `Images`, `Documents`, `Records` and `Sounds`. Each is a category
+rather than the `Other` pile because those are not opened the way everything else is —
+a `.po` goes to the translation editor, a `.png` to the viewer, a `.record` to the
+dialog that edits its fields, a `.wav` to the desktop's player — and **`Other` is where
+every file the list does not know ends up**, shown and handed out like the rest.
 
 `listFiles()` walks the project with `Classes.scan()`, so **every file is a path
 relative to the project** — `"widgets/Stepper.form"` — and that path is its key and
