@@ -947,16 +947,26 @@ is here.
 
 ### Separator
 
-A `GtkSeparator`, and one property: `Orientation`, through the accessor `Slider`
-and `ProgressBar` share — `GtkOrientable` is what the three have in common, and
-the word is not `Arrangement`, which is what a *container* does with children
-these do not have.
+A `GtkSeparator`, with `Orientation` through the accessor `Slider` and
+`ProgressBar` share — `GtkOrientable` is what the three have in common, and the
+word is not `Arrangement`, which is what a *container* does with children these
+do not have.
 
-**Its thickness is the line.** A separator paints its whole allocation, so one
-declared 12 high is a line 12 thick and not a line with room around it; the
-natural height of a horizontal rule is a single pixel, which the suite measures
-rather than assumes. Room above and below goes on `Margin` — the same answer this
-runtime gives a form whose contents sit against the frame.
+**Its size is the room, and the rule is the pixel in the middle of it.** A
+`GtkSeparator` draws nothing of its own — it is a `separator` CSS node and the
+theme paints its *whole allocation* — so a size could otherwise only mean a band
+of colour as thick as itself: a separator 76 wide came out a 76-wide square of
+border colour, the mistake everybody makes once. The runtime reads the size as
+the room instead and insets what is painted with a CSS margin, which GTK applies
+when it allocates and does not count when it measures — a box's cell and a
+surface's rectangle stay exactly what they were, and `Bounds()` answers the size
+declared, which is how the designer selects and resizes it. The axis across
+the rule is never stretched, either: a horizontal rule in a horizontal bar is
+one pixel, not the bar's height. `Width: 76` on a
+`Vertical` separator is a rule with 37 pixels of air on each side; `Width: 1` is
+no room, the rule filling its box as it always did. `Margin` is one number for
+the four sides rather than CSS's four, which is the other half of why the room
+is the size.
 
 That does make it a one-pixel target once placed. Adding one from the palette
 selects it, so the property grid is already pointed at it; afterwards it is
