@@ -26,8 +26,11 @@ itself; see [resources.md](resources.md).
 `app.css` is found the way `icons/` is — by name, with nothing in `project.json`
 pointing at it. It is loaded once at startup, above the desktop's theme and below
 the per-widget `Background`/`Foreground`/`Font`, and its classes are what a
-control wears through `Style`. A rule GTK cannot parse is reported on stderr with
-its line and the rest of the sheet is kept.
+control wears through `Style`. **Under it the runtime loads a sheet of its own**
+(`runtime/css/base.css`, baked into the binary): the rules every application
+shares, loaded first so a project's own wins whatever its specificity — see
+[widgets.md](widgets.md#the-runtimes-own-sheet). A rule GTK cannot parse is
+reported on stderr with its line and the rest of the sheet is kept.
 
 A class is found by its **name**, from anywhere: `Widget.New("Stepper")` and a
 `.form` node of `"type": "Stepper"` both mean *the* Stepper of this project, and

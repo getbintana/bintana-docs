@@ -94,7 +94,11 @@ none of.
 `"danger"`, `"card title-3"`. The classes come from `<project>/app.css`, which the
 runtime loads at `GTK_STYLE_PROVIDER_PRIORITY_APPLICATION` because it is found by
 name beside `project.json` (see [formats](formats.md)), or from the desktop's
-theme, which declares a good many of them already.
+theme, which declares a good many of them already. **Under the project's sheet
+there is one of the runtime's own** (`runtime/css/base.css`, baked into the
+binary and loaded first), and it is where a class the theme writes for a node a
+control only keeps *inside* itself — `flat` on a `ComboBox` — is made to reach
+the thing that is drawn; [below](#what-the-theme-gives-you) has the whole of it.
 
 **Which classes exist is the theme's answer, not this runtime's.** The grid's
 drop-down offers a starting set and whatever `app.css` declares, and it can be
@@ -734,7 +738,7 @@ your own; the shape of the answer matters more than these rows.
 |---|---|---|
 | `large-title`, `title-1`…`title-4`, `heading`, `body`, `caption-heading`, `caption`, `title`, `subtitle`, `dim-label`, `monospace` | anywhere | type; they set font and colour, and those inherit, so on a container they reach what is inside |
 | `suggested-action`, `destructive-action` | `button` | |
-| `flat` | `button`, `entry`, `spinbutton` | |
+| `flat` | `arrow`, `button`, `colorbutton`, `dropdown`, `entry`, `fontbutton`, `menubutton`, `modelbutton`, `spinbutton`, `text` | the four composites come from the runtime's own base sheet, [below](#the-runtimes-own-sheet) |
 | `circular`, `image-button`, `text-button` | `button` | |
 | `error`, `warning` | `entry`, `label`, `spinbutton` | the only two state colours plain GTK has — `success`, `accent`, `card` and `pill` are libadwaita's, and this theme does not define them |
 | `frame`, `view`, `background`, `osd` | anywhere | `view` also has rules of its own for `columnview`, `listview`, `treeview` |
@@ -745,10 +749,9 @@ your own; the shape of the answer matters more than these rows.
 
 Two rules read off that table cover most surprises:
 
-- **A class written for a node other than yours is accepted, saved, and does
-  nothing.** `Style = "flat"` on a `ColorButton` is the case: the class lands on
-  `colorbutton`, and the theme writes `button.flat`. Measured, twice, with the
-  same result both times.
+- **A class written for a node other than yours is accepted, saved, and
+  does nothing.** `Style = "suggested-action"` on a `ColorButton` is the case:
+  the class lands on `colorbutton`, and the theme writes `button.suggested-action`.
 - **A class that styles `> children` needs a widget whose children really are
   those.** `linked` on a `Panel` works, because a panel's children are the
   buttons. `boxed-list` on a `RowList` cannot, because the rows are three nodes
@@ -762,6 +765,33 @@ beside it are the two children of a `linked` panel, and they draw as one control
 What a class reaches is the theme's answer and not the widget's, so the way to
 find out is to read the rule (`tests/styles.sh`) rather than to reason from where
 the class lands.
+
+### The runtime's own sheet
+
+**And that half — a control drawn as a button, whose class lands on the wrapper —
+is the one the runtime fixes itself.** `runtime/css/base.css` is baked into the
+binary and loaded for every application, *under* the project's `app.css` (same
+priority, added first, so a project's rule wins whatever its specificity). Four
+controls are drawn as a button: a `ComboBox` is a `dropdown`, a `DatePicker` a
+`menubutton`, a `ColorButton` a `colorbutton` and a `FontButton` a `fontbutton`,
+and what is painted in each is the `button` inside. The sheet names that path —
+`dropdown.flat > button`, and the other three — which is why `flat` reaches them
+and `suggested-action` on a `ColorButton` still does not.
+
+**The states are part of it.** `flat` is not one rule: the theme writes
+`button.flat:hover` and `:active`/`:checked` beside the rest state, so a sheet
+that copied only the rest state would give a control that is flat until the
+pointer arrives and then wears the plain button's gradient and frame. Those are
+copied too, with the tints as `alpha(@theme_fg_color, …)` at the weights Adwaita's
+light theme uses (`#dad6d2` and `#cdc7c2` over `#f6f5f4`) rather than as the
+literal grey — a dark or high-contrast desktop hovers with its own ink. Measured
+on an `Xvfb` with `xfwm4`: a flat `ComboBox` at rest is the window's own
+`srgb(246,245,244)`, under the pointer `srgb(213,214,214)` against the theme's
+own flat button at `srgb(218,214,210)`, and a disabled one stays flat.
+
+What the sheet will not do is guess a colour: an accent, a destructive action or
+a per-project tint is a rule of the project's own in `app.css`, which is the next
+section.
 
 ### Writing your own
 
