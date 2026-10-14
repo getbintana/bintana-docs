@@ -24,8 +24,11 @@ not repeated here.
 |---|---|---|
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand | [a tree](#a-tree) |
 | `ColumnLines` | rules between the columns | [the columns](#the-columns) |
-| `Columns` | an array of `{ Text, Width, Alignment, Editable, Link }` | [the columns](#the-columns) |
+| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link }` | [the columns](#the-columns) |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws | [the rows](#the-rows-it-holds), [on demand](#on-demand-a-table-that-holds-nothing) |
+| `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none | [the current cell](#the-current-cell) |
+| `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor` | [editing a cell](#editing-a-cell) |
+| `EndEdit([commit])` | ends the open edit: committed as Enter would, or with `false` given up as Escape would | [editing a cell](#editing-a-cell) |
 | `HeaderHeight` (ro) | how tall the row of column headings is | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes | [the heading's menu](#the-headings-menu) |
 | `HeaderMinHeight` | a floor for the row of column headings, in pixels | [beside something else](#beside-something-else-the-geometry-it-can-say) |
@@ -37,6 +40,7 @@ not repeated here.
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Selection` (ro) | every selected row, as an array of indices in order | [the selection](#the-selection) |
+| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor` | [editing a cell](#editing-a-cell) |
 | `Sortable` | makes the headers clickable | [sorting](#sorting) |
 
 **Methods**
@@ -73,6 +77,7 @@ not repeated here.
 | | | |
 |---|---|---|
 | `Activate()` | raises `Activate` for that visible position, as a double click would; the selected row with no argument | [the selection](#the-selection) |
+| `CellChange(row, column)` | the current cell moved; `null` and `-1` say it was cleared | [the current cell](#the-current-cell) |
 | `Data(row, column)` | a cell is needed — **the answer is the return value** | [on demand](#on-demand-a-table-that-holds-nothing) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
@@ -172,7 +177,7 @@ scrollbar away from the rows, which is the opposite of what was wanted.
 
 | | |
 |---|---|
-| `Columns` | an array of `{ Text, Width, Alignment, Editable, Link }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack; `Editable: true` makes a cell a field — clicked, typed and committed — and an editable column reads left-aligned, because a `GtkEditableLabel` is not a label. `Link: true` makes each cell a link — underlined, a pointer over it, a focus stop, Enter — whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **A column is a field or a link, never both** |
+| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack. **`Editor` makes the cells fields**, and is a kind's name or `{ Kind, ... }`: `"Text"`; `{ Kind: "Number", Min, Max, Step, Decimals }`, answering with a point and rounding a half away from zero; `"Date"`, a field with a calendar whose day is `YYYY-MM-DD` (the arrows move the day, Enter or Space picks it); `{ Kind: "Check", ActiveText, InactiveText }`, a tick holding one of the two (`"true"`/`"false"`); `{ Kind: "Combo", Items }`; and `"Custom"`, which opens nothing and raises `CellEditor`. The kinds are `Widget.PropertyOptions("TableView", "Columns.Editor")`. A click or F2 opens a cell, Enter or the focus leaving commits, Escape gives up, and `CellEdit` decides. **A cell is still text** -- every kind reads it and writes it back. `Editable: true` is `Editor: "Text"`. `Link: true` makes each cell a link -- underlined, a pointer over it, a focus stop, Enter -- whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **A column is edited or a link, never both**, and a misspelt option is refused by name |
 | `ColumnLines` | rules between the columns. Default `false` |
 | `RowLines` | rules between the rows. Default `true` |
 
@@ -256,6 +261,36 @@ activate and not an error.
 **`Index` answers the first selected row**, once there is more than one:
 selecting 0, then 2, then 3 leaves `Index` at `0` and `Selection` at `[0, 2, 3]`.
 Ask `Selection` whenever `MultiSelect` is on.
+
+## The current cell
+
+| | |
+|---|---|
+| `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none. **Assigning moves it and selects the row**, opening the way to it; `null` clears it. A cell that is not editable is a cell all the same: it can be current, and F2 is what opens it |
+| **event** `CellChange(row, column)` | the current cell moved — a press, `EditCell`, F2, or an assignment to `CurrentCell`. `row` is an index in a flat table and a key in a tree; **`null` and `-1` say it was cleared**. `CurrentCell` is where it is now |
+
+**A row is selected; a cell inside it is current**, and that finer cursor is the
+table's own: `CurrentCell` answers it as `{ Row, Column }` — a key in a tree, an
+index in a flat table — or `null` for none. A press moves it, F2 and `EditCell`
+move it to the cell they open, and **assigning it moves it too, selecting the row
+and opening the way to the node**; assigning `null` clears it, and a cell that
+does not edit is a cell all the same: a summary's date can be the current one,
+and F2 is what opens a field there. **The rows that leave take it with them** —
+`Clear`, `RemoveRow`, `RemoveNode` and a shrinking `Count` drop it — and while
+one is current it carries the class `bta-cell-current`, so an application's
+`app.css` is what draws the frame or the tint its sheet wants.
+
+**`CellChange(row, column)` is raised when it moves**, whichever way it moved —
+`null` and `-1` say it was cleared — so a status line, an entry bar or a
+program's own cursor can follow the reader.
+
+**Enter, Tab and Shift+Tab are the grid's move-on keys**, and the table consumes
+them: the program reads them and moves the current cell itself, since where it
+goes — the next row, the next column, wrapping at the ends — is the
+application's. `CellEdit` says so in its `how`, so **an edit that ends with one
+is reported even when the text did not change**: the whole message is *this edit
+is over, move on*. Enter arrives as `KeyPress` before the view activates the
+row, so a grid can use it without the row's dialog opening instead.
 
 ## Sorting
 
@@ -357,8 +392,8 @@ Set `Count` and answer `Data`:
 | | |
 |---|---|
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
-| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri }` for a cell with a picture or an address of its own. In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
-| **event** `CellEdit(row, column, text)` | an editable cell's edit ended — Enter, or the focus moving away. `row` is an index in a flat table and a key in a tree, as every verb here addresses one. **Returning `false` refuses it** and the cell goes back to what it said; anything else is taken and the text is written into the row. An on-demand table holds no cells, so there the handler stores it |
+| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri, Editable }` for a cell with a picture or an address of its own, or one that does not edit in a column that does (`Editable: false`). In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
+| **event** `CellEdit(row, column, text, how)` | an edit ended. **`how` says what ended it**: `"enter"`, `"tab"` and `"shift-tab"` are the grid's move-on keys, and an edit that ends with one is reported even when nothing changed, because the program reads the reason and moves; `"pick"` is a day, an item or a tick chosen; `"focus"` is the keyboard leaving; `"code"` is `EndEdit`; `"left"` is the row unbound, scrolled away. Every other reason reports a text that changed. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and the cell goes back to what it said; **a string is kept instead of the text** -- the program's own spelling of what was typed; anything else keeps the text. A handler that throws refuses. An on-demand table holds no cells, so there the handler stores it. **A held flat row the program removed while the edit was open is not raised at all**: its index went with it, and `-1` names no row; a tree keeps its key |
 | **event** `CellLink(row, column, uri)` | a `Link` cell was activated — a click, or Enter on it. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and nothing is opened, as in `CellEdit`; anything else lets the desktop open `uri` |
 
 ```js
@@ -383,23 +418,83 @@ refused — it clears the count and the table starts holding rows again.
 
 ## Editing a cell
 
-A column declared `Editable: true` draws its cells as fields: clicked, typed and
-committed with Enter or by leaving. When the edit ends, `CellEdit(row, column,
-text)` is raised and **its answer decides**: `false` puts back what the cell
-said, anything else means *taken* and the text is written into the row. That
-makes the event a notification with a veto rather than a request — a program
-that wants validation, or that wants to store the value somewhere of its own,
-has the one hook.
+A column with an `Editor` draws its cells as labels and opens a field on one when
+it is clicked, or when it has the focus and F2 is pressed. Enter, Tab and
+Shift+Tab — the grid's move-on keys, see [the current
+cell](#the-current-cell) — or the focus leaving, commits; Escape gives up. **The
+kind is the column's**, and every kind reads the cell's text and writes text
+back, so the rows, `Cell`, `Data` and sorting are the same as in any other
+table:
 
 ```js
-Files_Columns   = [{ Text: "Name", Editable: true }, { Text: "Size" }];
-Files_CellEdit  = (row, column, text) => text.trim() !== "";   // empty refuses
+Plan_Columns = [
+    { Text: "Task",      Editor: "Text" },
+    { Text: "Duration",  Alignment: "Right",
+      Editor: { Kind: "Number", Min: 0, Step: 1, Decimals: 1 } },
+    { Text: "Start",     Editor: "Date" },              // a day picked is YYYY-MM-DD
+    { Text: "Milestone", Alignment: "Center",
+      Editor: { Kind: "Check", ActiveText: "Yes", InactiveText: "No" } },
+    { Text: "Calendar",  Editor: { Kind: "Combo", Items: ["Standard", "Night"] } },
+    { Text: "Constraint", Editor: "Custom" },           // shows …, opens your dialog
+];
 ```
 
-An editable column reads **left-aligned**: the cell is a `GtkEditableLabel` and
-not a `GtkLabel`, and `Alignment` is the label's property. A table that answers
-`Data` holds no cells to write, so there the handler stores the value and the
-cell asks again on the next bind.
+`Editable: true` is `Editor: "Text"`. A misspelt option is refused by name, and an
+option of another kind too (`Items` on a `Number`). The kinds there are answer
+`Widget.PropertyOptions("TableView", "Columns.Editor")`, and the designer's column
+dialog offers them as the column's *Cell*, beside *None* and *Link*, with each
+kind's options under it.
+
+Two kinds have rules worth knowing before relying on them. **A `Number` answers
+with a point and rounds a half away from zero**, as `Decimal` does: 12.25 at one
+decimal is `12.3`, where printf would say `12.2`. **A `Date` is typed or picked**:
+the button beside the field opens a calendar, the arrows move the day (across
+months), and Enter, Space or a click picks it.
+
+**`CellEdit(row, column, text, how)` decides**: `how` says what ended the edit
+— `"enter"`, `"tab"` and `"shift-tab"` are the move-on keys, reported even when
+nothing changed so the program can move the [current
+cell](#the-current-cell); `"pick"` is a day, an item or a tick chosen; `"focus"`
+is the keyboard leaving; `"code"` is `EndEdit`; `"left"` is the row unbound,
+scrolled away. When the text changed, `false` puts back what the cell said, a
+string is kept *instead* of what was typed — the program's own spelling, `"2"`
+kept as `"2d"` — and anything else keeps the text. A table that answers `Data`
+holds no cells to write, so there the handler stores the value and the cell asks
+again on the next bind.
+
+**Whether a cell edits at all is the row's**, and it is said before anything is
+typed: a summary's dates are its children's, so on that row the cell is drawn dim
+and opens nothing. **`CellEditor(row, column)` is asked as an edit begins**, and
+is where a row's own list or kind comes from — the calendars a plan has, a date
+only for the constraints that take one:
+
+```js
+Plan.SetEditable(row, 2, false);                          // a held row
+Plan_Data = (row, column) => ({ Text: text(row, column),  // an on-demand one
+                                Editable: !summary(row) });
+
+Plan_CellEditor = (row, column) => {
+    if (column === 4) return { Items: plan.Calendars };   // this edit's list
+    if (column === 5) { openConstraintDialog(row); return; }
+};
+```
+
+| | |
+|---|---|
+| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }` |
+| `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor`. Answers whether it did -- `false` for a cell that is not on screen (`Reveal` first), not editable, or refused by `CellEditor` |
+| `EndEdit([commit])` | ends the open edit: committed as Enter would, or with `false` given up as Escape would. Answers whether one was open |
+| **event** `CellEditor(row, column)` | an edit is about to begin -- a click, F2 or `EditCell`. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it**; an object is this edit's editor over the column's -- `{ Items: [...] }` for a list that is the row's, `{ Max: 1000 }`, or `{ Kind: "Date" }` for a cell whose kind depends on its row (a `Check` column stays one). For a `Custom` column this is the whole edit: open the dialog here and write with `SetCell` |
+
+`EditCell` is the click, from code, and `EndEdit` the Enter or the Escape — what a
+Save button wants before it reads the rows. A `Custom` column opens nothing of its
+own: `CellEditor` is the whole edit, and the program writes with `SetCell`.
+
+[`examples/plan`](https://github.com/getbintana/bintana/tree/main/examples/plan)
+is all of it running: a plan of phases and tasks with one column of each kind,
+the phases' derived cells shut, the calendars handed to the `Combo` per edit, the
+notes written in a dialog, and *Add task* opening the new row's name with
+`EditCell`.
 
 ## A link in a cell
 
@@ -541,4 +636,4 @@ editors', and the same two panes locked together is
 
 [`ListBox`](ListBox.md) · [`RowList`](RowList.md) · [`TreeView`](TreeView.md) ·
 [`Record`](../globals/Record.md), for rows that are data rather than strings ·
-[`examples/table`](https://github.com/getbintana/bintana/tree/main/examples/table) · [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients)
+[`examples/table`](https://github.com/getbintana/bintana/tree/main/examples/table) · [`examples/plan`](https://github.com/getbintana/bintana/tree/main/examples/plan) · [`examples/clients`](https://github.com/getbintana/bintana/tree/main/examples/clients)
