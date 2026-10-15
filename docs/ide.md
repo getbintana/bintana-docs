@@ -223,6 +223,32 @@ button's tooltip and icons, the page of `SideStack`, and what brings it up —
 beside the class that owns it. A fourth panel is a page of the stack and a row
 where its class lives.
 
+**The panels are shown and hidden from the `View` menu.** *Project panel*
+(`Ctrl+B`) is the very fold `BtnSideHide` makes — the item and the button are
+two roads into one state, and the tick cannot disagree with what the two show;
+*Output* (`Ctrl+J`) is the bottom panel, the row of tabs with what the program
+printed, what is wrong with it and where a stopped one is; *Toolbar* is the
+strip of buttons over the split; and *Full screen* (`F11`) is a plain command
+and not a tick, because whether a window goes full screen is the window
+manager's answer and not the application's. The three ticks are remembered with
+the window, so the desk comes back the way it was left, and *Show problems*
+turns to its page **and brings the panel up with it** rather than switching to
+a page nobody can see. The bottom panel is one `Visible`: a `Split` gives its
+room to the half that is left, and the panel comes back the height it had with
+no number kept anywhere.
+
+**And each panel's own choices are in the menu with it.** *Side panel* lists
+the side bar's three views and *Bottom panel* the console's pages — the
+Terminal included where the build has one — with the mark on the one that is
+up; choosing one from there opens the panel around it, the same road the
+strip's buttons take. Beside them the editor keeps three settings of its own —
+*Line numbers*, *Word wrap* and *Syntax theme*, the last the list of themes the
+runtime ships — and they are the **reader's**: one value for every code tab,
+applied to the tab on screen and to the ones behind it, and remembered so the
+tab that opens next is born with them. *Focus the editor*, *Focus the project
+tree* and *Focus the console* move the keyboard, bringing the panel they name
+back into view first — a control nobody can see cannot take it.
+
 `SideBar` is a container and not a drawn surface, because the fold decides
 while the window runs which of its two children shows: a drawn surface would
 have to be laid out for both. The test for whether a container can be drawn is
@@ -1146,7 +1172,7 @@ whole design:
 
 | | |
 |---|---|
-| `session.window` | the size, whether it was maximised, and the four dividers — **the person's**: one screen, one pair of eyes, and the same answer in every project |
+| `session.window` | the size, whether it was maximised, the four dividers — **and what each half that keeps its size is worth**, the folded project panel, and what the View menu left showing — **the person's**: one screen, one pair of eyes, and the same answer in every project |
 | `session.projects` | one entry per project: the open files in the order the strip had them, the active one, and a line and a column each — **the work's**, and the next project has its own |
 
 **It is kept in `Settings` and never beside the project.** Delphi writes a `.dsk`
