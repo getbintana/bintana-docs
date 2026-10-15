@@ -69,6 +69,7 @@ not repeated here.
 | `SelectAll()` | with `MultiSelect` | [the selection](#the-selection) |
 | `SetCell(row, column, value)` | one cell, in place | [the rows](#the-rows-it-holds) |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text | [the rows](#the-rows-it-holds) |
+| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour | [the rows](#the-rows-it-holds) |
 | `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text | [the rows](#the-rows-it-holds) |
 | `SortBy(column, [ascending], [compare])` | actually reorders the rows it holds, **by the text the cells show**: natural order by default (`9` before `10`, the locale's collation otherwise), or `compare(a, b)` — the two cells' text, answering a number as `Array.sort`'s does — for what natural order reads wrongly: a minus sign, grouped thousands, a `d/m/Y` date | [sorting](#sorting) |
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised | [sorting](#sorting) |
@@ -210,6 +211,7 @@ row shorter than there are columns simply reads blank in the rest.
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
 | `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
+| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }` |
 | `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
 | `RemoveRow(index)` | takes that row out. **Flat only** — a tree says `RemoveNode(key)`, and this one refuses with that sentence |
 | `RemoveNode(key)` | takes that node out, **and the subtree with it**. **Tree only** — a flat table says `RemoveRow(index)` |
@@ -394,7 +396,7 @@ Set `Count` and answer `Data`:
 | | |
 |---|---|
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
-| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri, Editable }` for a cell with a picture or an address of its own, or one that does not edit in a column that does (`Editable: false`). In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
+| **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri, Style, Editable }` for a cell with a picture, an address or a theme class of its own, or one that does not edit in a column that does (`Editable: false`). In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
 | **event** `CellEdit(row, column, text, how)` | an edit ended. **`how` says what ended it**: `"enter"`, `"tab"` and `"shift-tab"` are the grid's move-on keys, and an edit that ends with one is reported even when nothing changed, because the program reads the reason and moves; `"pick"` is a day, an item or a tick chosen; `"focus"` is the keyboard leaving; `"code"` is `EndEdit`; `"left"` is the row unbound, scrolled away. Every other reason reports a text that changed. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and the cell goes back to what it said; **a string is kept instead of the text** -- the program's own spelling of what was typed; anything else keeps the text. A handler that throws refuses. An on-demand table holds no cells, so there the handler stores it. **A held flat row the program removed while the edit was open is not raised at all**: its index went with it, and `-1` names no row; a tree keeps its key |
 | **event** `CellLink(row, column, uri)` | a `Link` cell was activated — a click, or Enter on it. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and nothing is opened, as in `CellEdit`; anything else lets the desktop open `uri` |
 
@@ -516,6 +518,23 @@ Tickets_Columns  = [{ Text: "Task" }, { Text: "Ticket", Link: true }];
 Tickets_CellLink = (row, column, uri) => uri.startsWith("https://");
 ```
 
+## A class on a cell
+
+`SetStyle(row, column, style)` puts a theme class on one cell, the way `Style`
+takes one on a control: **a name, not a colour** — `"heading"` for a row that is
+a group rather than a file, `"dim-label"` for one that is out of play, whatever
+the theme paints. A theme that does not know the name simply does not paint it,
+and that is not an error.
+
+```js
+Board_SetStyle = (key, column) => key.startsWith("g/") && column === 1 ? "heading" : "";
+```
+
+`""` takes it off, and the class comes off by itself when the cell is recycled
+for another row — which is what makes a list that reuses its widgets say the
+right thing. The one class the runtime adds on its own is `dim-label`, on a cell
+`SetEditable` locked; a cell can wear both.
+
 ## A tree
 
 Give a row a `Key` and the table becomes a hierarchy with headings over it.
@@ -537,8 +556,8 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 nothing has added yet is not there to go under.
 
 **In a tree, a row is addressed by its key** — `Cell(key, column)`,
-`SetCell(key, …)`, `SetIcon(key, …)`, `Row(key)`, and `RemoveNode(key)`, which takes
-the subtree with it. That is not a second spelling of the same thing: a *position*
+`SetCell(key, …)`, `SetIcon(key, …)`, `SetStyle(key, …)`, `Row(key)`, and
+`RemoveNode(key)`, which takes the subtree with it. That is not a second spelling of the same thing: a *position*
 in a tree is a position in the **visible** list, so it moves the moment something
 above it is collapsed. `Index` still says where the highlight is right now, and
 `Key` is the one to keep.

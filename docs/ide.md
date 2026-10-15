@@ -168,8 +168,8 @@ Split                   HAlign/VAlign Fill: the whole window below the toolbar
                         BtnSideHide, which folds the panel away
       SideStack (Switcher, no strip)
         "Project"/"Files"  TreePage: FileTree and the filter over it
-        "Changes"          ChangesBox: ChangeTable, the message box and the
-                        two buttons a small commit needs
+        "Changes"          ChangesSplit: ChangeTable over the commit box (the
+                        message and its one button), a divider between them
   RightSplit (Split)
     WorkArea (Split)      the pages, and beside them the panel that speaks for them
       EditorBox (Panel, a column)  the notebook and the bar under it; hidden with
@@ -1825,34 +1825,72 @@ the third entry of the side bar's chooser -- *Project*, *Files*, *Changes* --
 because they all answer the same question, *what is on the left*, and a second
 chooser stacked over one column is the shape that makes people hunt.
 
-What is in it is a small commit and nothing else: the changed files, a one-line
-message box and two buttons. `●` marks a row that is in the next commit and `○`
-one that is not, followed by git's own letter. A file that is **both** -- staged
-and then edited again -- is in the list twice, which is not a bug to hide: those
-are two different things to do with it.
+What is in it is a small commit and nothing else: the changed files as a **tree
+of two branches** -- *versioned* and *unversioned*, the files the last commit
+has and the ones it does not -- a **tick per file**, a multiline message box and
+one button. **A tick is whether the file is in the index**: ticking runs
+`git add`, unticking `git restore --staged`, and *Commit* commits what is
+ticked, because what is ticked is what is staged. **A tick is not a commit**: a
+new file waits under *unversioned* while it is ticked and crosses only when the
+commit puts it in the repository. A file that is **both** -- staged and then
+edited again -- keeps one row: it lives under *versioned* and the state column
+spells git's own two letters, `MM`, part in the next commit and part not.
+
+**A directory git has never seen shows the files inside it**, one row each
+(`git status -uall`), so every one of them can be ticked, opened or ignored --
+a folder is not a row anybody can do anything with.
+
+**The list and the commit box are a pane**: the divider between them is dragged
+like any other in the window, and the box keeps the height it was left at --
+the next run opens with it (`Session`'s dividers, the same file the console's
+height lives in). The list takes whatever is left, and the room the box is
+given goes into the message, which is the control that expands -- a message
+with a body is written in a box the person sized, under its own header.
+
+**The header is a header**: it wears the theme's `heading`, and its tick takes
+the whole branch in or out — ticking *Versioned* stages every file under it.
+There is no third state in a box, so a branch that is only half in reads as
+unchecked and one click puts it all in.
 
 - **Double click** opens the *Changes* window on that file. A diff in a
   260-pixel column would be a worse answer than the one that already exists.
-- **Stage** and the row's menu -- *Stage*, *Unstage*, *Discard changes...*,
-  *Stage everything* -- are the same commands the window's buttons press, and
-  literally so: they are `Git`'s methods, so *stage* has one spelling and
-  one set of guards wherever it is pressed.
-- **Enter in the message box commits**, which is what makes it quick. What gets
-  committed is **what is staged**, never what is selected -- a button that
-  quietly staged something first would make *Commit* mean two different things
-  depending on where the pointer had been. A message with a body is written in
-  the window, which has a text editor for it.
+- **The row's menu** -- *Show the diff*, *Open the file*, *Discard changes...*,
+  *Add to .gitignore*, *Stage everything*, *Changes window...* -- is the same
+  commands the window's buttons press, and literally so: they are `Git`'s
+  methods, so *discard* has one spelling and one set of guards wherever it is
+  pressed. *Add to .gitignore* is offered for a file git has never been told
+  about and written into **the project's own `.gitignore`** (made if there is
+  none), anchored and with the glob characters escaped: `data[1].json` written
+  as itself would take `data1.json` with it, and a root file written without
+  the leading `/` would take every file of that name below it. An entry for a
+  file git already tracks would change nothing, so the item is not offered
+  there.
+- **The button commits.** The box is a text editor, so Enter is a newline and a
+  message with a body is written where the commit is made. There is no
+  Ctrl+Enter here: a `GtkTextView` keeps Return for itself -- measured, with the
+  plain key and with Ctrl -- so neither a handler nor a control's `Shortcut`
+  hears it while the box has the focus. What gets committed is **what is
+  staged**, never what is selected -- a button that quietly staged something
+  first would make *Commit* mean two different things depending on where the
+  pointer had been.
 - *Discard* is the one command here with no undo, so it asks, by count, and says
   *deleted* rather than *restored* about a file git has never been told about --
   because that is what happens to it.
 
-An empty table says **which** kind of empty it is: *nothing has changed* is not
+An empty tree says **which** kind of empty it is: *nothing has changed* is not
 the same news as *this project is not in a git repository*, and a blank
 rectangle is what an empty list must never be.
 
-Prior art: this is Android Studio's *Commit* tool window, and Visual Studio's
-*Git Changes* pane -- a list of changed files and a message box docked beside
-the project tree rather than floating over it.
+**And the first commit of a project works**, which is the state the plain
+`restore --staged` cannot unstage in: with no `HEAD` to restore from, taking a
+file back out of the index is `git rm --cached`, and `Git.unstage` picks by
+asking whether the branch has a commit (`git rev-parse --verify -q HEAD`). The
+file stays on disk either way; what goes is its place in the next commit.
+
+Prior art: this is Android Studio's *Commit* tool window, IntelliJ's commit tree
+-- whose checkboxes are the same gesture -- and Visual Studio's *Git Changes*
+pane: a list of changed files and a message box docked beside the project tree
+rather than floating over it.
 
 **Saving is what changes the list**, so a save refreshes it -- along with the
 tree's `[M]` and the counts in the status bar, which all come out of one
