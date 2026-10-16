@@ -750,11 +750,12 @@ A drop-down.
 
 | Member | |
 |---|---|
-| `Index` | which is chosen; `-1` when the list is empty. Assigning chooses the row; **assigning `-1` moves nothing**, because a drop-down with items always has one chosen (the first, until told otherwise) |
-| `Items` | the contents, as an array of strings. Assigning replaces every row at once **and chooses the first one** — a non-empty drop-down always has something chosen. **Translated**: a list declared in a `.form` goes through the catalogue |
-| `Text` | the chosen row's words. Reading it is reading the *translated* text |
+| `AllowEmpty` | `true` lets the drop-down show **nothing chosen**, for a field that is optional: `Index = -1`, `Text = ""` and `Key = ""` then clear the choice, `Items` and `Add` leave it empty, and removing the chosen row empties it. Default `false`, where a drop-down with rows always has one chosen. Set it before `Items`; a `.form` orders it already |
+| `Index` | which is chosen; `-1` when the list is empty or, with `AllowEmpty`, when nothing is chosen. Assigning chooses the row; **assigning `-1` moves nothing** unless `AllowEmpty` is on, because a drop-down with items always has one chosen (the first, until told otherwise) |
+| `Items` | the contents, as an array of strings. Assigning replaces every row at once **and chooses the first one** — a non-empty drop-down always has something chosen, unless `AllowEmpty` is on, which leaves nothing chosen. **Translated**: a list declared in a `.form` goes through the catalogue |
+| `Text` | the chosen row's words, `""` when nothing is. Reading it is reading the *translated* text. Assigning `""` clears the choice with `AllowEmpty` on, and is a `RangeError` on a list with rows otherwise |
 | `Count` (ro) | how many rows there are |
-| `Key` | the selected row's application key; assigning selects the row it belongs to, and a key nothing has is a `RangeError`. `""` moves nothing, as `Index = -1` does — a drop-down with items always has one chosen |
+| `Key` | the selected row's application key; assigning selects the row it belongs to, and a key nothing has is a `RangeError`. `""` moves nothing, as `Index = -1` does — a drop-down with items always has one chosen; with `AllowEmpty` it clears the choice |
 | `KeyAt(index)` | that row's key, without selecting it. **`RangeError`** when there is no such row |
 | `Add(text, [key])` | one more, at the end. `key` is the application's own name for it |
 | `RemoveRow(index)` | takes that row out. **`RangeError`** when there is no such row |

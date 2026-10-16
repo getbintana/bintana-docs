@@ -13,10 +13,11 @@ It is a `Widget` and a control like any other, so everything on
 
 | | | |
 |---|---|---|
+| `AllowEmpty` | `true` lets the drop-down show **nothing chosen**, for a field that is optional | [what is chosen](#what-is-chosen) |
 | `Count` (ro) | how many rows there are | [the list](#the-list) |
 | `Index` | which is chosen | [what is chosen](#what-is-chosen) |
 | `Items` | the contents, as an array of strings | [the list](#the-list) |
-| `Text` | the chosen row's words | [what is chosen](#what-is-chosen) |
+| `Text` | the chosen row's words, `""` when nothing is | [what is chosen](#what-is-chosen) |
 | `Add(text, [key])` | one more, at the end | [the list](#the-list) |
 | `Key` | the selected row's application key; assigning selects the row it belongs to, and a key nothing has is a `RangeError` | [what is chosen](#what-is-chosen) |
 | `KeyAt(index)` | that row's key, without selecting it | [the list](#the-list) |
@@ -40,7 +41,7 @@ It is a `Widget` and a control like any other, so everything on
 
 | | |
 |---|---|
-| `Items` | the contents, as an array of strings. Assigning replaces every row at once **and chooses the first one** — a non-empty drop-down always has something chosen. **Translated**: a list declared in a `.form` goes through the catalogue |
+| `Items` | the contents, as an array of strings. Assigning replaces every row at once **and chooses the first one** — a non-empty drop-down always has something chosen, unless `AllowEmpty` is on, which leaves nothing chosen. **Translated**: a list declared in a `.form` goes through the catalogue |
 | `Add(text, [key])` | one more, at the end. `key` is the application's own name for it |
 | `KeyAt(index)` | that row's key, without selecting it. **`RangeError`** when there is no such row |
 | `RemoveRow(index)` | takes that row out. **`RangeError`** when there is no such row |
@@ -60,9 +61,10 @@ drop-down of the project's files is filled from code and must not be.
 
 | | |
 |---|---|
-| `Index` | which is chosen; `-1` when the list is empty. Assigning chooses the row; **assigning `-1` moves nothing**, because a drop-down with items always has one chosen (the first, until told otherwise) |
-| `Key` | the selected row's application key; assigning selects the row it belongs to, and a key nothing has is a `RangeError`. `""` moves nothing, as `Index = -1` does — a drop-down with items always has one chosen |
-| `Text` | the chosen row's words. Reading it is reading the *translated* text |
+| `AllowEmpty` | `true` lets the drop-down show **nothing chosen**, for a field that is optional: `Index = -1`, `Text = ""` and `Key = ""` then clear the choice, `Items` and `Add` leave it empty, and removing the chosen row empties it. Default `false`, where a drop-down with rows always has one chosen. Set it before `Items`; a `.form` orders it already |
+| `Index` | which is chosen; `-1` when the list is empty or, with `AllowEmpty`, when nothing is chosen. Assigning chooses the row; **assigning `-1` moves nothing** unless `AllowEmpty` is on, because a drop-down with items always has one chosen (the first, until told otherwise) |
+| `Key` | the selected row's application key; assigning selects the row it belongs to, and a key nothing has is a `RangeError`. `""` moves nothing, as `Index = -1` does — a drop-down with items always has one chosen; with `AllowEmpty` it clears the choice |
+| `Text` | the chosen row's words, `""` when nothing is. Reading it is reading the *translated* text. Assigning `""` clears the choice with `AllowEmpty` on, and is a `RangeError` on a list with rows otherwise |
 | **event** `Select()` | the selection moved. Ask `Index` or `Text` for what it is now |
 
 **Compare `Index`, never `Text`.** The words are prose and a translated build
@@ -78,8 +80,11 @@ an entry for it.
   itself in.
 - **`Index = -1` did not clear it.** It moves nothing: assigning `Items` chooses
   the first row, and only `Clear()` leaves a drop-down with nothing chosen. A
-  field that must be able to say *nothing chosen* gives the combo a row that
-  means it — `Items = ["—", …]` — and selects that one.
+  field that must be able to say *nothing chosen* — an optional one — sets
+  `AllowEmpty = true`, and then `Index = -1`, `Text = ""` and `Key = ""` clear
+  the choice and `Items` leaves it clear. Set it before `Items`; a `.form`
+  orders it already. The popup shows a blank first line, which is how a person
+  undoes a choice, and `Count`, `Items` and `Index` never count it.
 - **It opened on the first row without being told.** That is the same fact from
   the other side: a non-empty drop-down always has one chosen.
 - **`Clear()` left the handler thinking something was chosen.** It leaves
