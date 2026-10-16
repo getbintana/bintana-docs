@@ -27,6 +27,8 @@ in the section.
 | `AcceptDrop` | receives a drop from **this application**, which arrives as `Drop(data, x, y)` | [drag and drop](#drag-and-drop) |
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)` | [drag and drop](#drag-and-drop) |
 | `Action` | the **command** this control points at, or `""` | [commands, menus and keys](#commands-menus-and-keys) |
+| `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name | [accessibility](#accessibility) |
+| `AccessibleName` | what a screen reader calls it, when the words on it are not enough or there are none: a button that is only an icon, a picture, a field with no caption beside it | [accessibility](#accessibility) |
 | `Background` | any CSS colour — a value, not a reference | [how it looks](#how-it-looks) |
 | `Border` | width, style and colour in one string | [how it looks](#how-it-looks) |
 | `ColumnSpan` | how many columns of a `Grid` it runs under | [how it is placed](#how-it-is-placed) |
@@ -68,6 +70,7 @@ in the section.
 | | | |
 |---|---|---|
 | `Bounds([container])` | `{ X, Y, Width, Height }`: what GTK really allocated, in window coordinates or in the coordinates of the container you pass | [where it is and how big](#where-it-is-and-how-big) |
+| `AccessibleInfo()` | what the assistive technologies are told, **read back from GTK** | [accessibility](#accessibility) |
 | `CssNode()` | the GTK node name it is styled as (`"button"`, `"entry"`) | [what it answers about itself](#what-it-answers-about-itself) |
 | `Delete()` | removes it **and destroys it** | [shown, enabled, focused](#shown-enabled-focused) |
 | `Emit(event, ...args)` | raises an event that arrives by name on the host form | [commands, menus and keys](#commands-menus-and-keys) |
@@ -374,6 +377,53 @@ Every widget raises these, with coordinates **relative to itself**:
 
 **These are additive and arrive after the control's own behaviour**: a `Button`
 still clicks, and a `MouseDown` handler on it runs as well as, not instead of.
+
+## Accessibility
+
+| | |
+|---|---|
+| `AccessibleName` | what a screen reader calls it, when the words on it are not enough or there are none: a button that is only an icon, a picture, a field with no caption beside it. **A button with only an icon and a `Tooltip` of 60 characters or fewer is named by the tooltip** when this is empty, so the usual case is said once; this is what wins when it is set. `""` is nothing said. **Translated** |
+| `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name. `""` is none. **Translated** |
+| `AccessibleInfo()` | what the assistive technologies are told, **read back from GTK**: `{ Role, Label, Description, LabelledBy }` -- the role is GTK's name for the kind of control (`button`, `text-box`), `Label` and `Description` are what a screen reader says (an icon-only button's tooltip included, which no assignment shows), and `LabelledBy` is whether a caption's `For` points at it. Read off the control that takes the focus, which is what is read. Empty where the desktop has no accessibility at all (`GTK_A11Y=none`) |
+
+What a screen reader (Orca on Linux) says about a control. GTK names what it can: a
+button with words on it is called by them. **What it cannot name is the rest** — a
+button that is only an icon, a text box beside a caption, a picture, a drawing — and
+to a person using a screen reader those are a "button" and a "text box" with no
+telling which. These two properties say it, and [`Label.For`](Label.md#captioning-a-field)
+is the relation between a caption and its field.
+
+```js
+Papelera.Icon = "edit-delete-symbolic";
+Papelera.Tooltip = "Borrar";            // an icon-only button: this is its name
+Foto.AccessibleName = "Photo of the client";
+Foto.AccessibleDescription = "Taken at the last visit";
+```
+
+**The usual case is said once.** A button with *only an icon* and a `Tooltip` of **60
+characters or fewer** is named by the tooltip when `AccessibleName` is empty; setting
+`AccessibleName` wins, and a button given words afterwards is named by them, not by
+a tooltip. Past sixty characters a tooltip is advice and not a name — read out on every
+visit to the button — so it is left alone and the author says `AccessibleName`.
+
+**It is applied where the focus is.** The reading is of the widget that has the focus,
+and that is often inside the outer one — the `GtkText` within a `TextBox`, the toggle
+within a `ComboBox` — so the name goes on the control and on the focusable parts of it.
+
+**`AccessibleInfo()` asks GTK and not the assignment**, which is why it exists:
+`AccessibleName` reads back what it was given, and a derived name has no assignment.
+
+```js
+Papelera.AccessibleInfo();   // { Role: "button", Label: "Borrar", Description: "", LabelledBy: true }
+```
+
+`Role` is GTK's name for the kind of control and is the control's own — not something to
+assign. A button always answers `LabelledBy: true`, since GTK labels it by its own words;
+for a field it is whether a caption's `For` points at it. On a desktop with no
+accessibility at all (`GTK_A11Y=none`) there is nothing to ask and everything is empty.
+
+**Mnemonics are not part of this**, and stay refused: the marker lives inside
+translated prose and a collision is silent. Orca does not need one.
 
 ## What it answers about itself
 

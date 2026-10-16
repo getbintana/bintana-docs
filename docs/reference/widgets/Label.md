@@ -18,6 +18,7 @@ It is a `Widget` and a control like any other, so everything on
 | `Lines` | at most this many lines while wrapping | [fitting the room](#fitting-the-room) |
 | `Markup` | read `Text` as **Pango markup** — `<b>`, `<i>`, `<tt>`, `<s>`, `<span foreground="…">` — instead of as plain words | [markup](#markup) |
 | `Selectable` | the user may select the text with the pointer and copy it | [selectable](#selectable) |
+| `For` | the control this is the caption of, **by name** in a `.form` or as the control itself in code -- reads back the name | [captioning a field](#captioning-a-field) |
 | `Text` | what it says | [the words](#the-words) |
 | `Wrap` | wrap long text over as many lines as it takes | [fitting the room](#fitting-the-room) |
 
@@ -126,6 +127,31 @@ row, so the item somebody wanted to copy is the one that never gets selected. In
 [`RowList`](RowList.md) or a [`TableView`](TableView.md), copying belongs to a
 button or a context menu, which has the other advantage of copying the *value*
 rather than what happens to be drawn.
+
+## Captioning a field
+
+| | |
+|---|---|
+| `For` | the control this is the caption of, **by name** in a `.form` or as the control itself in code -- reads back the name. A screen reader says it when the focus arrives on that control, which GTK cannot know from two widgets standing side by side. A name is resolved against the form, once it is built; one nothing answers stays unsettled and says nothing. `""` is none |
+
+Next to a text box a label looks like its caption; to a screen reader the box is
+unnamed, because two widgets standing side by side say nothing about each other. `For`
+is the relation — *labelled by* — and the field is then read out with the caption.
+
+```json
+{ "type": "Label",   "name": "LblWho", "properties": { "Text": "Who", "For": "TxtWho" } },
+{ "type": "TextBox", "name": "TxtWho" }
+```
+
+**By name in a `.form`, by the control in code** — `lbl.For = this.TxtWho` — and it reads back
+the name. The caption is declared first and the field after it, which is the order anyone
+writes it in, and a `.form` applies a control's properties before its siblings exist: so
+the name is **settled when the form has been built**. A name nothing answers stays
+unsettled and says nothing, as a handler named for a control that is not there does. A
+control with no `Name` cannot be written by name; give it one.
+
+Reading it back is `AccessibleInfo().LabelledBy` on the field. Clicking the caption does
+**not** move the focus to the field: that is a behaviour, not a relation, and not in this.
 
 ## What goes wrong
 

@@ -190,6 +190,9 @@ Every control and every container has all of this.
 | `Style` | the CSS classes it wears, space separated: `"card title-3"`. **The first thing to reach for**: the theme draws `suggested-action`, `destructive-action`, `dim-label`, `title-1`…`title-4`, `heading`, `card`, `frame`, `boxed-list`, `toolbar`, `flat`, `linked`, `pill`, `monospace`. A name that could not be a class is refused |
 | `TabIndex` | where Tab reaches it on a surface laid out by coordinate. Sparse, never renumbered; `0` means *in drawn order*. The IDE edits it as a list — *Form > Tab order...* — which is the shape a relation needs |
 | `Tooltip` | plain text, and `""` is none rather than an empty balloon. **Translated** |
+| `AccessibleName` | what a screen reader calls it, when the words on it are not enough or there are none: a button that is only an icon, a picture, a field with no caption beside it. **A button with only an icon and a `Tooltip` of 60 characters or fewer is named by the tooltip** when this is empty, so the usual case is said once; this is what wins when it is set. `""` is nothing said. **Translated** |
+| `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name. `""` is none. **Translated** |
+| `AccessibleInfo()` | what the assistive technologies are told, **read back from GTK**: `{ Role, Label, Description, LabelledBy }` -- the role is GTK's name for the kind of control (`button`, `text-box`), `Label` and `Description` are what a screen reader says (an icon-only button's tooltip included, which no assignment shows), and `LabelledBy` is whether a caption's `For` points at it. Read off the control that takes the focus, which is what is read. Empty where the desktop has no accessibility at all (`GTK_A11Y=none`) |
 | `Dark` (ro) | whether it is drawn on a dark ground, derived from the ink its text uses. The same answer `Painter.Dark` gives, and a `Form` raises `ThemeChange` when the desktop moves it. What a drawing chooses its palette by |
 | `VAlign` | the same, vertically |
 | `VExpand` | absorbs vertical slack |
@@ -356,6 +359,7 @@ Text that is not editable.
 | `Lines` | at most this many lines while wrapping; `0` is no limit. Beyond it the text is cut |
 | `Markup` | read `Text` as **Pango markup** — `<b>`, `<i>`, `<tt>`, `<s>`, `<span foreground="…">` — instead of as plain words |
 | `Selectable` | the user may select the text with the pointer and copy it |
+| `For` | the control this is the caption of, **by name** in a `.form` or as the control itself in code -- reads back the name. A screen reader says it when the focus arrives on that control, which GTK cannot know from two widgets standing side by side. A name is resolved against the form, once it is built; one nothing answers stays unsettled and says nothing. `""` is none |
 | `Text` | what it says. **Translated**: a label declared in a `.form` goes through the catalogue, and what is filled in from code does not |
 | `Wrap` | wrap long text over as many lines as it takes. The label then wants a width to wrap *at* — in a box, that is what `HExpand` gives it |
 
@@ -743,6 +747,8 @@ A list of strings.
 | `SelectAll()` | with `MultiSelect` |
 | **event** `Select()` | the selection moved. Ask `Index` or `Text` for what it is now |
 | **event** `Activate()` | a double click on a row, or Enter on it: the gesture for *use this one* |
+
+**Accessibility is three words and one relation.** GTK names a button by its words and nothing else: a button that is only an icon, a field beside a caption and a picture are *unnamed* to a screen reader. `AccessibleName` and `AccessibleDescription` say it; **a button with only an icon and a `Tooltip` of 60 characters or fewer is named by the tooltip** when `AccessibleName` is empty (words given to it later take over); `Label.For = "TxtName"` says which field a caption captions. `AccessibleInfo()` reads back what GTK holds, which is what a test asserts. Mnemonics are refused, as before: Orca does not need one.
 
 ## ComboBox
 
