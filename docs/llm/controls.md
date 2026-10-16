@@ -932,7 +932,10 @@ shape — a `GtkSourceView` *is* a `GtkTextView`.
 | `Undo()` | one step back |
 | **event** `Change()` | the value changed, including from an assignment in code — the round trip goes out to GTK and back |
 | **event** `Cursor()` | the cursor moved. `Line` and `Column` say where |
+| **event** `KeyPreview(key, ctrl, shift, alt)` | a key, **before the editor has acted on it**. `KeyPress` arrives after: the view has taken Tab, Enter, the arrows and every printable key by then, so it cannot turn Tab into a snippet or Enter into something that is not a newline. Answer `true` to take the key and the editor never sees it. `key` is a name like `Tab`, `Return` or `a` |
 | **event** `Scroll(x, y)` | it was scrolled — by the wheel, a scrollbar, the keyboard or an assignment. One event for a diagonal move. Two panes locked together is `Before_Scroll(x, y) { this.After.ScrollY = y; }`, and it does not loop: assigning a value it already has emits nothing |
+
+**A key the editor would take is `KeyPreview`'s, not `KeyPress`'s.** `KeyPress` bubbles, so the view has already taken Tab, Enter, the arrows and every printable key when it is raised -- on an editor it hears almost nothing. `KeyPreview` is the same key before the editor acts, and `true` takes it (Tab into a snippet is `Editor_KeyPreview(key, ctrl, shift) { return key === "Tab" && !ctrl && !shift && this.expandTrigger(); }`, where `expandTrigger` is yours and answers whether it expanded one). It is raised for every key, so answer `false` fast.
 
 **Two units, and which verb takes which is the whole of it.** `Offset` and
 `OffsetAt` count **characters**, as `Column` and `Select` do. `LineOf` receives
@@ -978,21 +981,33 @@ own. It is [`Editor`](#editor--inherited-by-both-editors) plus everything below.
 | `Language` | a GtkSourceView id — `js` `json` `c` `python3` `markdown` `css` `sh` `xml` `sql` `yaml` `diff`… `""` for none. **`PropertyOptions("Language")` asks this machine what it has**, which is the honest list rather than one written down here |
 | `ShowLineNumbers` | the gutter's numbers. Default `true` |
 | `ShowMarks` | the gutter's marks — see `Mark` |
+| `ShowMap` | a minimap of the whole file beside the text — its shape, the line the view is on, and a drag or a click to scroll. Default `false`. Built the first time it is turned on, so an editor that never shows one pays nothing |
+| `FoldRanges` | the blocks that can be folded, as `[{ Start, End }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End`. **The program says** -- only whoever knows the language knows where a block ends -- and the editor draws a marker beside each `Start` (`▼` open, `▶` folded) that a click toggles. Assigning is all or nothing, and a row that is not `1 <= Start < End` is a `RangeError`. Keep it in step with the text |
+| `Fold(line, [endLine])` | hides the lines after `line`, down to `endLine` -- or to the end of the range `FoldRanges` has for it, which is what a missing `endLine` asks for. The line itself stays whole. A fold is text made invisible, so the cursor is moved out of it, and **an edit at or inside a fold opens it**. **`RangeError`** for a line that is not there or a range `FoldRanges` does not have |
+| `Unfold(line)` | opens the fold that starts on that line. `true` when there was one |
+| `Folded(line)` | whether a fold starts on that line |
+| `FoldAll()` | folds every range `FoldRanges` has. How many were closed |
+| `UnfoldAll()` | opens every fold. How many were open |
+| `Folds()` | what is folded now, in line order, as `[{ Start, End }]` -- `End` the last line hidden. Read off the text itself, so it is right after lines were added or taken away above |
 | `Text` | everything in the buffer. Assigning replaces it all and **raises `Change`** |
 | `Theme` | `Adwaita` `Adwaita-dark` `classic` `classic-dark` `cobalt` `cobalt-light` `kate` `kate-dark` `oblivion` `solarized-light` `solarized-dark` `tango`. Default `"classic"` |
 | `Matches` (ro) | how many the last `Search` found |
 | `MatchIndex` (ro) | which one the cursor is standing on — the `3` in *3/12* |
 | `ClearMarks([kind])` | takes them off every line |
-| `FindNext()` | moves to the next match, wrapping around |
+| `FindNext()` | moves to the next match, wrapping around. **Opens every fold** first, as `Search` does |
 | `FindPrevious()` | and backwards |
 | `Mark(line, kind, [text])` | a gutter mark. `kind` is `Error` `Warning` `Info` `Bookmark` — or `Added` `Removed` `Gap`, which **paint the line** — and `text` is its tooltip |
 | `Marks([kind])` | **a record per mark**, in line order: `{ Line, Kind, Text }` — not a list of line numbers, which is what "the lines that carry one" was read as by the first thing that used it |
 | `Replace(text)` | the match the cursor is standing on |
 | `ReplaceAll(text)` | every match |
-| `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments. `Regex: true` is **PCRE2** — GtkSourceView's own engine and not the language's [`Regex`](library.md#regex): always multiline, and `\d` `\w` `\b` are Unicode-aware. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments, and a find bar that jumped on every keystroke would drag the view about while somebody is still typing |
+| `InsertSnippet(template)` | text with places to move through, put at the cursor **in place of the selection**. `${1:name}` is a place with a default that is selected when the cursor arrives, the same number twice is one place typed once and shown in each, and `$0` is where the cursor ends. Tab goes to the next place and Shift+Tab to the one before, which the editor does by itself while the snippet lasts; a template written at column 0 takes the indentation of the line it lands on. **`RangeError`** when the template does not parse |
+| `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one. **It opens every fold**: the search does not look in hidden text, and *nothing found* about code that is in the file would be wrong. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments. `Regex: true` is **PCRE2** — GtkSourceView's own engine and not the language's [`Regex`](library.md#regex): always multiline, and `\d` `\w` `\b` are Unicode-aware. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments, and a find bar that jumped on every keystroke would drag the view about while somebody is still typing |
 | `ShowCompletion()` | opens the completion popup from code |
 | `Unmark(line, [kind])` | takes marks off that line |
 | **event** `Complete(word, line, column, text)` | a completion was asked for. Answer with a list, or nothing. An entry is a **word**, or `{ Text, Detail }` for one that says what it is beside itself — a type, a one-line description. An entry that is neither is skipped, not refused |
+| **event** `FoldChange(line, folded)` | the user clicked a fold marker in the margin. `folded` is what it is now. **Only the click**: a fold made by `Fold` from code is not announced, because the program that made it knows |
+
+**Folding: the program says where, the editor hides.** `FoldRanges = [{ Start, End }]` declares what can be folded (lines, 1-based; a fold hides `Start + 1` to `End` **whole**, so the line it hangs from stays), a marker is drawn beside each `Start`, and a click raises `FoldChange`. **A fold is a view, not an edit**: `Text`, `Selection` and `LineOf` still count hidden lines. An edit inside a fold, `GotoLine`/`Select` into one, and **every search (`Search`, `FindNext`) open it** -- the library's search does not look in hidden text, so a search that left folds shut would say *nothing found* about code that is there. `InsertSnippet` and `ShowMap` are in the table above.
 
 It was called `TextEditor` until there was a real one. A `.form` that still says
 `TextEditor` where it means this one now loads the plain editor — and the

@@ -40,6 +40,7 @@ everything here works the same in both.
 | `Undo()` | one step back | [undo](#undo) |
 | **event** `Change()` | the value changed, including from an assignment in code — the round trip goes out to GTK and back | [what is in it](#what-is-in-it) |
 | **event** `Cursor()` | the cursor moved | [the cursor](#the-cursor) |
+| **event** `KeyPreview(key, ctrl, shift, alt)` | a key, **before the editor has acted on it** | [keys before the editor has them](#keys-before-the-editor-has-them) |
 | **event** `Scroll(x, y)` | it was scrolled — by the wheel, a scrollbar, the keyboard or an assignment | [where it is scrolled to](#where-it-is-scrolled-to) |
 
 ## What is in it
@@ -151,6 +152,30 @@ through a [`Scroller`](Scroller.md): putting one inside a scroller is refused,
 and it would measure the outer box and not the text. The four names and the
 event are `Scroller`'s own, and mean the same number in both — which is the
 point, for anything keeping two of them together.
+
+## Keys before the editor has them
+
+| | |
+|---|---|
+| **event** `KeyPreview(key, ctrl, shift, alt)` | a key, **before the editor has acted on it**. `KeyPress` arrives after: the view has taken Tab, Enter, the arrows and every printable key by then, so it cannot turn Tab into a snippet or Enter into something that is not a newline. Answer `true` to take the key and the editor never sees it. `key` is a name like `Tab`, `Return` or `a` |
+
+**`KeyPress` is the wrong event for a key an editor would take, and the reason
+is where it is raised.** It bubbles, so whatever has the focus gets first
+refusal: by the time a form hears it, the view has taken Tab, Enter, the arrows
+and every printable key. Typed into an editor, `a` never reaches `KeyPress` at
+all (measured, with a real keyboard). `KeyPreview` is the same key *before* the
+view acts, and `true` takes it, so the editor never sees it — Visual Basic's
+`KeyPreview`, for the same reason.
+
+```js
+Editor_KeyPreview(key, ctrl, shift) {
+    /* Tab turns a word into a snippet; any other Tab is the editor's own */
+    return key === "Tab" && !ctrl && !shift && this.expandTrigger();
+}
+```
+
+It is raised for **every** key, so answer `false` at once for the ones you do not
+want. `key` is a name (`Tab`, `Return`, `Escape`, `a`), as in `KeyPress`.
 
 ## Undo
 
