@@ -126,6 +126,12 @@ and reloads. So a worker sorts ten thousand names and does not translate one.
 - **A sort put the accented names at the end.** A plain `<`, or a bare `sort()`
   with no comparator — `localeCompare` refuses now and says so, but the other
   two are silent and give the same wrong order.
+- **A bare `sort()` put `10` before `9`.** With no comparator it compares text, so
+  numbers want `sort((a, b) => a - b)`; and `Locale.Compare` is not a natural
+  order either (`a10` before `a9`).
+- **`toLocaleString()` printed `1234567.891`.** There is no `Intl`, so it, and
+  `toLocaleDateString`/`toLocaleTimeString`, ignore the desktop's language and are
+  not refused. `Number`, `Currency` and `Date` are the words that follow it.
 - **A search box could not find a name with an accent in it.** `Matches`.
 - **The window kept the old language after switching.** Assigning `Current`
   affects what is built afterwards: rebuild the form, or restart.

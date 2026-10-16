@@ -240,6 +240,14 @@ keys of a bag. Over text a person reads, write `list.sort(Locale.Compare)`.
 `Locale.Currency` take a `Decimal` and write it from its own digits, never
 through a double.
 
+**Two more calls answer wrongly and say nothing.** A bare `numbers.sort()` compares
+*text* (`[10, 9, 1, 100]` becomes `1, 10, 100, 9`): write `sort((a, b) => a - b)`.
+And `n.toLocaleString()`, like `toLocaleDateString` and `toLocaleTimeString`, ignores
+the desktop's language because there is no `Intl` â `1234567.891` stays
+`1234567.891` and a date is always the US spelling. They are not refused; use
+`Locale.Number`, `Locale.Currency` and `Locale.Date`. `Locale.Compare` is a collator
+and not a *natural* order: `a10` sorts before `a9`.
+
 Most text needs none of this: see
 [forms.md](forms.md#text-a-person-reads).
 
