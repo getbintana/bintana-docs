@@ -313,7 +313,8 @@ claims them for its default widget, which is what `Button.Default` is for.
 ## Form: the window
 
 `Text` (alias `Caption`), `Icon`, `Modal`, `Resizable`, `Maximized`,
-`FullScreen`, `HideOnClose`, plus everything a container has.
+`FullScreen`, `HideOnClose`, `Decorated`, `DragToMove`, plus everything a
+container has.
 Read-only: `Controls`, `Menus`, `DefaultButton`, `CancelButton`.
 Methods: `Show()`, `Close()`, `Center()`, `Minimize()`, `Serialize()`,
 `SaveForm(path)`.
@@ -341,6 +342,14 @@ Events: `Open`, `Close`, `Resize(width, height)`.
 - `Resizable: false` bounds the *user*, not the layout: the contents still drive
   the window's size, so a translated caption still opens it wider.
 - `Center()` is a no-op on Wayland — the compositor places windows.
+- **A window of only its contents** — a desk clock, a splash — is
+  `Decorated: false`, and then **nothing can move it** unless it also declares
+  `DragToMove: true`: a press dragged anywhere a control does not claim moves the
+  window, as a header bar does. A press that does not move is still a click, a
+  `TextBox` still selects, and a drag that starts on a `Button` moves the window
+  (GTK's own header bars do the same). `Background: "rgba(0,0,0,0)"` lets the
+  desktop show through wherever nothing is drawn, on a compositing desktop —
+  `"transparent"` is not a colour here. `examples/clock` is the whole of it.
 - `Form_Resize` fires with the size GTK settled on, including the first time.
 
 ## A dialog that asks something

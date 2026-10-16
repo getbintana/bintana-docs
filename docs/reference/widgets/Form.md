@@ -13,6 +13,8 @@ dispatches every event to a method. A form is also a
 |---|---|---|
 | `CancelButton` (ro) | the button Escape presses, likewise | [the keyboard](#the-keyboard) |
 | `DefaultButton` (ro) | the button Enter presses, resolved from whichever declared `Default` | [the keyboard](#the-keyboard) |
+| `Decorated` | whether the desktop draws a title bar and a frame | [how it appears](#how-it-appears) |
+| `DragToMove` | a press dragged anywhere on the form that **no control claims** moves the window, as a header bar does | [how it appears](#how-it-appears) |
 | `FullScreen` | the same, for the whole screen | [how it appears](#how-it-appears) |
 | `HideOnClose` | put away instead of taken apart | [showing and closing](#showing-and-closing) |
 | `Icon` | the window's icon, for a task list or a dock | [how it appears](#how-it-appears) |
@@ -79,6 +81,8 @@ A field that should press the default button on Enter says so itself with
 | `Resizable` | bounds the **user**, not the layout: the contents still drive the size, so a longer translation still opens it wider. Default `true` |
 | `Maximized` | a **state**: reads `false` until there is a window; set before `Show()` it applies when the window appears. **Keep it out of the `.form`** |
 | `FullScreen` | the same, for the whole screen |
+| `Decorated` | whether the desktop draws a title bar and a frame. `false` is a window of only its contents — a clock, a splash, a palette — which **cannot be moved by the user** unless it also says `DragToMove`. With a `Background` of `"rgba(0,0,0,0)"` the desktop shows through wherever nothing is drawn, on a compositing desktop. Default `true` |
+| `DragToMove` | a press dragged anywhere on the form that **no control claims** moves the window, as a header bar does. A press that does not move past the desktop's threshold is still a click — `MouseDown`, `DblClick` and a `Button`'s `Click` arrive — and a `TextBox` claims its drag and still selects; a drag that starts on a `Button` moves the window, the same as in GTK's own header bars. What a window with `Decorated` `false` needs to be movable at all. Default `false` |
 | `Minimize()` | a verb because there is nothing to read back — GTK reports nothing about a minimised window |
 | `Center()` | **a no-op on Wayland**: the compositor places windows. [`Screen`](../../llm/library.md#screen) answers how big the desktop is, which is a different question from where a window goes |
 | **event** `Resize(width, height)` | the size GTK settled on — the same numbers `Bounds()` gives. Fires when the window is first given a size too |
@@ -98,6 +102,10 @@ toolbar button alike.
   declare `HideOnClose`, or build the form again.
 - **A measurement inside `Form_Open` answered zero.** Nothing is laid out yet.
 - **`DefaultButton` was `null`.** Same reason: it is settled after `Open`.
+- **A window with `Decorated: false` could not be moved.** Nothing draws a title
+  bar to grab; declare `DragToMove` as well.
+- **`Background: "transparent"` was refused.** A colour is what GDK parses, and
+  that word is not one: a see-through window is `"rgba(0,0,0,0)"`.
 - **The window would not shrink.** Something in it has a floor — see
   [Widget](Widget.md#how-it-is-placed).
 - **`Maximized` in the `.form` did nothing sensible.** It is a state, not a

@@ -1498,6 +1498,8 @@ The window. See [forms.md](forms.md#form-the-window) for the behaviour a table c
 
 | Member | |
 |---|---|
+| `Decorated` | whether the desktop draws a title bar and a frame. `false` is a window of only its contents — a clock, a splash, a palette — which **cannot be moved by the user** unless it also says `DragToMove`. With a `Background` of `"rgba(0,0,0,0)"` the desktop shows through wherever nothing is drawn, on a compositing desktop. Default `true` |
+| `DragToMove` | a press dragged anywhere on the form that **no control claims** moves the window, as a header bar does. A press that does not move past the desktop's threshold is still a click — `MouseDown`, `DblClick` and a `Button`'s `Click` arrive — and a `TextBox` claims its drag and still selects; a drag that starts on a `Button` moves the window, the same as in GTK's own header bars. What a window with `Decorated` `false` needs to be movable at all. Default `false` |
 | `FullScreen` | the same, for the whole screen |
 | `HideOnClose` | put away instead of taken apart. **A closed form's window is destroyed**, so `Show()` on it is not a window either — it stays 0×0. Declare this, or construct the form again |
 | `Icon` | the window's icon, for a task list or a dock. A name the theme lacks is not shown but **is kept**, so a `.form` round-trips |
