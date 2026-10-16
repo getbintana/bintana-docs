@@ -17,7 +17,7 @@ are made of.
 | `Matches` (ro) | how many the last `Search` found | [search](#search) |
 | `ShowLineNumbers` | the gutter's numbers | [highlighting](#highlighting) |
 | `ShowMap` | a minimap of the whole file beside the text — its shape, the line the view is on, and a drag or a click to scroll | [the minimap](#the-minimap) |
-| `FoldRanges` | the blocks that can be folded, as `[{ Start, End }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End` | [folding](#folding) |
+| `FoldRanges` | the blocks that can be folded, as `[{ Start, End, [Tail] }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End`, **whole** | [folding](#folding) |
 | `Fold(line, [endLine])` | hides the lines after `line`, down to `endLine` -- or to the end of the range `FoldRanges` has for it, which is what a missing `endLine` asks for | [folding](#folding) |
 | `Unfold(line)` | opens the fold that starts on that line | [folding](#folding) |
 | `Folded(line)` | whether a fold starts on that line | [folding](#folding) |
@@ -66,7 +66,7 @@ about a hundred pixels of the room, which a wrapped text feels as more lines.
 
 | | |
 |---|---|
-| `FoldRanges` | the blocks that can be folded, as `[{ Start, End }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End`. **The program says** -- only whoever knows the language knows where a block ends -- and the editor draws a marker beside each `Start` (`▼` open, `▶` folded) that a click toggles. Assigning is all or nothing, and a row that is not `1 <= Start < End` is a `RangeError`. Keep it in step with the text |
+| `FoldRanges` | the blocks that can be folded, as `[{ Start, End, [Tail] }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End`, **whole**. A closed fold shows `…` after the line it hangs from, and `Tail` -- text, `}` or `} else {` -- after the dots, so a block reads `function f() { … }`; a click on the dots opens it. **The program says** -- only whoever knows the language knows where a block ends -- and the editor draws a marker beside each `Start` (`▼` open, `▶` folded) that a click toggles. Assigning is all or nothing, and a row that is not `1 <= Start < End` is a `RangeError`. Keep it in step with the text |
 | `Fold(line, [endLine])` | hides the lines after `line`, down to `endLine` -- or to the end of the range `FoldRanges` has for it, which is what a missing `endLine` asks for. The line itself stays whole. A fold is text made invisible, so the cursor is moved out of it, and **an edit at or inside a fold opens it**. **`RangeError`** for a line that is not there or a range `FoldRanges` does not have |
 | `Unfold(line)` | opens the fold that starts on that line. `true` when there was one |
 | `Folded(line)` | whether a fold starts on that line |
@@ -81,10 +81,17 @@ is `{ Start, End }` in lines, 1-based, and a fold of it hides `Start + 1` to `En
 **whole**, so the line it hangs from stays and so does whatever follows:
 
 ```js
-ed.FoldRanges = [{ Start: 1, End: 3 }];       // lines 2 and 3 can be hidden
-ed.Fold(1);                                    // ...and now they are
-ed.Text;                                       // still all of the file
+ed.FoldRanges = [{ Start: 1, End: 3, Tail: "}" }];   // lines 2 and 3 can be hidden
+ed.Fold(1);                                           // ...and now they are
+ed.Text;                                              // still all of the file
 ```
+
+**A closed fold says so where the code was.** Dots are drawn after the line it hangs
+from -- `function f() { … }` -- in a chip that a click opens, followed by the `Tail`
+the range carried: the text of the other end, `}` or `} else {`, which only the
+program knows. Without a `Tail` it is the dots alone. A margin marker by itself did
+not say that code was there. A fold inside another closed one draws no dots of its
+own, since it has no row to stand on.
 
 A marker (`▼` open, `▶` closed) is drawn beside each `Start`, and a click on it
 toggles the fold and raises `FoldChange(line, folded)` — **only the click**: a fold
