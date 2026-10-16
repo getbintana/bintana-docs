@@ -24,6 +24,7 @@
 | `sources` | the `.js` files to evaluate, **in this order**, as paths relative to the project |
 | `uses` | libraries of shared classes, by name (`["charts"]`). **A new form project created in the IDE starts with `["dialog"]`**, the two questions every program asks (see [`dialog.md`](dialog.md)) — a default and not a requirement, and a project with a `main` does not get one because it has no display to put a window on. Their `.js` loads before yours and their forms are found like yours, so a `.form` may use their classes. A library may also carry native code (`<name>/<name>.so`), which is loaded before its `.js` — see `docs/plugins.md` in the runtime's own documentation. A name that is not installed stops the program and says where it looked |
 | `description` | free text; the runtime ignores it |
+| `accessibility` | IDE only: how loudly it says a control cannot be named to a screen reader -- `"warning"` (default), `"info"` or `"off"`, one word for every rule. The runtime ignores it |
 
 Without `sources`, every `.js` under the project is loaded, subdirectories
 included, sorted by path. An empty list means the same as no list.

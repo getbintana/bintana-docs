@@ -114,6 +114,7 @@ soon as it lists the files. Qualifying the name is the way out.
 | `uses` | libraries of shared classes to load **before** the project's own sources (`["charts"]`) — see [Libraries](#libraries-uses) |
 | `description` | not used by the runtime; the IDE writes it and leaves it alone |
 | `launch` | how the project is run, as named configurations — arguments, working directory, environment (below). **Read by the IDE and not by the runtime**, which takes its arguments from the command line like any program |
+| `accessibility` | how loudly the IDE says a control of a `.form` cannot be named to a screen reader: `"warning"` (the default), `"info"` or `"off"` -- **one word for all three rules**, not one per rule. **Read by the IDE and not by the runtime**, like `launch`. A word that is not one of the three is reported by the manifest check and treated as the default |
 
 Without `sources`, every `.js` under the project is loaded — subdirectories
 included — sorted by path, so at least the order is reproducible. **An empty list

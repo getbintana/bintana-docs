@@ -28,6 +28,7 @@ in the section.
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)` | [drag and drop](#drag-and-drop) |
 | `Action` | the **command** this control points at, or `""` | [commands, menus and keys](#commands-menus-and-keys) |
 | `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name | [accessibility](#accessibility) |
+| `AccessibleHidden` | decorative | [accessibility](#accessibility) |
 | `AccessibleName` | what a screen reader calls it, when the words on it are not enough or there are none: a button that is only an icon, a picture, a field with no caption beside it | [accessibility](#accessibility) |
 | `Background` | any CSS colour — a value, not a reference | [how it looks](#how-it-looks) |
 | `Border` | width, style and colour in one string | [how it looks](#how-it-looks) |
@@ -384,7 +385,8 @@ still clicks, and a `MouseDown` handler on it runs as well as, not instead of.
 |---|---|
 | `AccessibleName` | what a screen reader calls it, when the words on it are not enough or there are none: a button that is only an icon, a picture, a field with no caption beside it. **A button with only an icon and a `Tooltip` of 60 characters or fewer is named by the tooltip** when this is empty, so the usual case is said once; this is what wins when it is set. `""` is nothing said. **Translated** |
 | `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name. `""` is none. **Translated** |
-| `AccessibleInfo()` | what the assistive technologies are told, **read back from GTK**: `{ Role, Label, Description, LabelledBy }` -- the role is GTK's name for the kind of control (`button`, `text-box`), `Label` and `Description` are what a screen reader says (an icon-only button's tooltip included, which no assignment shows), and `LabelledBy` is whether a caption's `For` points at it. Read off the control that takes the focus, which is what is read. Empty where the desktop has no accessibility at all (`GTK_A11Y=none`) |
+| `AccessibleHidden` | decorative: **a screen reader skips it**, and what is inside it. A logo, a divider, a drawing that says nothing to be read. Not `Visible`, which takes it away from everyone. It is also what the IDE's accessibility check takes as *nothing is missing here*. Default `false` |
+| `AccessibleInfo()` | what the assistive technologies are told, **read back from GTK**: `{ Role, Label, Description, LabelledBy, Hidden }` -- the role is GTK's name for the kind of control (`button`, `text-box`), `Label` and `Description` are what a screen reader says (an icon-only button's tooltip included, which no assignment shows), and `LabelledBy` is whether a caption's `For` points at it, and `Hidden` is whether a screen reader skips it -- `AccessibleHidden`, **or the control not being on screen yet**, which GTK marks the same way. Read off the control that takes the focus, which is what is read. Empty where the desktop has no accessibility at all (`GTK_A11Y=none`) |
 
 What a screen reader (Orca on Linux) says about a control. GTK names what it can: a
 button with words on it is called by them. **What it cannot name is the rest** — a
@@ -410,14 +412,18 @@ visit to the button — so it is left alone and the author says `AccessibleName`
 and that is often inside the outer one — the `GtkText` within a `TextBox`, the toggle
 within a `ComboBox` — so the name goes on the control and on the focusable parts of it.
 
+**Decoration says so.** A logo, a divider and a drawing say nothing a person needs read to them, and a screen reader that stops on each is noise: `AccessibleHidden = true` is GTK's *hidden* state, so it is skipped for real -- and it is the one way to quiet the IDE's accessibility check that is also the truth. It is not `Visible`, which takes the control away from everyone.
+
+**GTK writes that state itself, and writes it after the control is shown.** It is *true* while a control is not on screen and *false* once it is, so a mark made while the control is showing is overwritten the next time its page is left and come back to. The runtime puts it back; and `AccessibleInfo().Hidden` is also true for a control that has not been shown yet, which is true: nothing can read it.
+
 **`AccessibleInfo()` asks GTK and not the assignment**, which is why it exists:
 `AccessibleName` reads back what it was given, and a derived name has no assignment.
 
 ```js
-Papelera.AccessibleInfo();   // { Role: "button", Label: "Borrar", Description: "", LabelledBy: true }
+Papelera.AccessibleInfo();   // { Role: "button", Label: "Borrar", Description: "", LabelledBy: true, Hidden: false }
 ```
 
-`Role` is GTK's name for the kind of control and is the control's own — not something to
+`Hidden` is whether a screen reader skips it (`AccessibleHidden`, or the control not being on screen yet). `Role` is GTK's name for the kind of control and is the control's own — not something to
 assign. A button always answers `LabelledBy: true`, since GTK labels it by its own words;
 for a field it is whether a caption's `For` points at it. On a desktop with no
 accessibility at all (`GTK_A11Y=none`) there is nothing to ask and everything is empty.
