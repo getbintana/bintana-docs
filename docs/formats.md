@@ -109,6 +109,7 @@ soon as it lists the files. Qualifying the name is the way out.
 | `version` | `Application.Version`; free text, optional. What the project calls its own release — not the runtime's, which is `BTA_VERSION` |
 | `startup` | the class instantiated and shown at launch |
 | `main` | a **function** to call instead, for a project with no window (below). Excludes `startup` |
+| `singleInstance` | `true` makes a second run of the project **hand its arguments to the first and exit `0`**, raising the first's window, instead of opening another. Optional, default `false`. It **needs an `id`** (the name the instances find each other by on the session bus) and a value that is not `true` or `false` **stops the program when the project loads**. The first instance hears it in `Application.OnSecondInstance(args, directory)`. With no session bus there is only ever one process, as before |
 | `sources` | `.js` files to evaluate, in this order, as paths relative to the project (`"widgets/Stepper.js"`) |
 | `uses` | libraries of shared classes to load **before** the project's own sources (`["charts"]`) — see [Libraries](#libraries-uses) |
 | `description` | not used by the runtime; the IDE writes it and leaves it alone |

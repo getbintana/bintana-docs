@@ -22,6 +22,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`** | [libraries](#libraries) |
 | `Name` | from `project.json` | [the project](#the-project) |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors | [when something throws](#when-something-throws) |
+| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again | [a second run](#a-second-run) |
 | `Quit(code)` | quit with that exit status | [ending](#ending) |
 | `Replacements()` | every name this language takes away, and what to write instead | [asking about the machine](#asking-about-the-machine) |
 | `Version` | what the **project** calls its release | [the project](#the-project) |
@@ -153,6 +154,35 @@ and a `RangeError` arrive the same, and there is nothing to re-throw. It is
 enough to log and enough to show, which is what it is for; a handler that needs
 to know *which* failure it was has to catch it where it is raised, since
 matching on the message is the shape this language refuses elsewhere.
+
+## A second run
+
+| | |
+|---|---|
+| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. `null` until assigned |
+
+The second process does nothing else: it hands those two over and exits `0`, with no
+window of its own, and **the first instance's window is brought forward after your
+handler returns** whether or not you assigned one. So opening the file the second run
+named is the handler's whole job, and raising the window is not.
+
+```js
+Application.OnSecondInstance = (args, directory) => {
+    for (const path of args)
+        this.Open(path.startsWith("/") ? path : File.Join(directory, path));
+};
+```
+
+`File.Join(directory, "/etc/x")` is `directory/etc/x`, **not** `/etc/x`, so an absolute
+path has to be told apart first, as above; and `File.Absolute` resolves against the
+*first* instance's working directory, which is not where the second run was typed.
+
+**It needs `"id"` in `project.json`** — the id is the name the instances find each
+other by, on the session bus — and a project that says `singleInstance` without one
+is refused when it loads. **Without a session bus** (a bare container, a CI run)
+there is nothing to find, so every run is its own instance, as every project always
+was. A handler that throws is reported like any other handler and the window still
+comes forward.
 
 ## Ending
 
