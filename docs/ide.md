@@ -674,6 +674,14 @@ place. The last line points at the package's page for the long form. So an
 installation with no documentation still describes every member — one paragraph
 instead of one page.
 
+**With no package, the window is still a reference, not an empty box.** F1 on
+nothing opens an index, and the tree on the left is built from the runtime: a node
+per control and per global that has members (`Completion.referenceNames`, asked of
+the runtime, so a class added to it is listed the day it is built), each opening the
+same generated topic. Back goes between generated topics and pages alike, and a link
+to the web -- *More detail* at the foot of a topic, the index's address of the long
+form -- is handed to `xdg-open` where there is one, and shown where there is not.
+
 **Landing on a member is a search and not an anchor.** The finest anchor a page
 has is its class, and what F1 on a property means is *the row that describes it*:
 `Markdown.Find(text)` selects the first run holding it and scrolls it into view.
