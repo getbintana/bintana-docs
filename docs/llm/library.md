@@ -1231,7 +1231,7 @@ const total = price * qty + tax;             // exact, to the cent
 | `Round(decimals, [how])` | `"Away"` (the default — the half goes away from zero, which is what an invoice does), `"Even"` (banker's), `"Zero"`, `"Up"`, `"Down"` |
 | `Trim()` | drops trailing zeros: `2.50` → `2.5` |
 | `Abs()`, `Scale`, `Sign`, `IsExact` | |
-| `Equals(other)` | whether the two are the same number. **`==` compares two objects by identity** — `new Decimal("1") == new Decimal("1.0")` is `false`, and `!=` is `true`, while `<=` and `>=` answer true because those are operators this type implements — so **this is the comparison**. It reads a number or machine text as the operators do, at any scale; a third is never equal to the nine-place text it rounds to |
+| `Equals(other)` | whether the two are the same number. **`==` compares two objects by identity** — `new Decimal("1") == new Decimal("1.0")` is `false`, and `!=` is `true`, while `<=` and `>=` answer true because those are operators this type implements — so **this is the comparison**. It reads a number or machine text as the operators do, at any scale; a third is never equal to the nine-place text it rounds to. What is not a number (`null`, `""`, `"abc"`) is **refused**, as the operators refuse it, and not answered `false` |
 | `Number()` | the nearest double, asked for **by name**: for a chart, a width, a percentage — anywhere the value stops being money |
 | `Decimal.Split(total, parts)` | pieces that add back up to the total, **exactly** |
 | `toString()`, `toJSON()` | its own text. Which is why `${d}` and `JSON.stringify(d)` are both exact, and why a decimal in a file reads back as itself |
@@ -1928,7 +1928,7 @@ srv.Start();
 | `Tls` | `{ Cert, Key }` files, or nothing: `https` when set, `null` when not. **Missing files fail at `Start`, naming them** |
 | `Allow` | a list of **exact** IPs, or nothing (open). A refused remote gets `403` before the handler runs. Exact means exact: on a dual-stack `"any"` server, `::1` is not `127.0.0.1` |
 | `Auth` | `{ Realm, Users }`: Basic over the whole server, `401` with the realm until the right password. Nothing set is open, and it reads back `null`. Like `Allow`, it takes effect at once |
-| `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **before the handler runs**, and a body that arrives without one is read and refused the same way when it passes the number |
+| `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **with the body never read**, and a body that arrives without one (chunked) stops being kept once it passes the number and is refused the same way. The handler runs for neither |
 | `req.Multipart()` | the upload parsed: a `Multipart` to read with `Part(index)` (or re-post). Refused on a plain body |
 | `Request` | assign `(req) => …`. **Required before `Start`**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
 | `Start()` | listens; throws naming the reason (a busy port says which one). A second `Start` is refused |

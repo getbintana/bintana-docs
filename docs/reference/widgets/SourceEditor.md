@@ -14,7 +14,7 @@ are made of.
 | `CompletionTitle` | the heading of the popup your own provider fills | [completion](#completion) |
 | `Language` | a GtkSourceView id — `js` `json` `c` `python3` `markdown` `css` `sh` `xml` `sql` `yaml` `diff`… `""` for none | [highlighting](#highlighting) |
 | `MatchIndex` (ro) | which one the cursor is standing on — the `3` in *3/12* | [search](#search) |
-| `Matches` (ro) | how many the last `Search` found | [search](#search) |
+| `Matches` (ro) | how many matches of the last `Search` there are now, counted again on each read | [search](#search) |
 | `ShowLineNumbers` | the gutter's numbers | [highlighting](#highlighting) |
 | `ShowMap` | a minimap of the whole file beside the text — its shape, the line the view is on, and a drag or a click to scroll | [the minimap](#the-minimap) |
 | `FoldRanges` | the blocks that can be folded, as `[{ Start, End, [Tail] }]` lines, 1-based: what a fold of one would hide is `Start + 1` to `End`, **whole** | [folding](#folding) |
@@ -34,7 +34,7 @@ are made of.
 | `InsertSnippet(template)` | text with places to move through, put at the cursor **in place of the selection** | [snippets](#snippets) |
 | `Marks([kind])` | **a record per mark**, in line order | [marks](#marks) |
 | `Replace(text)` | the match the cursor is standing on | [search](#search) |
-| `ReplaceAll(text)` | every match | [search](#search) |
+| `ReplaceAll(text)` | every match, and how many | [search](#search) |
 | `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one | [search](#search) |
 | `ShowCompletion()` | opens the completion popup from code | [completion](#completion) |
 | **event** `Complete(word, line, column, text)` | a completion was asked for | [completion](#completion) |
@@ -149,12 +149,12 @@ own `CRITICAL` and insert nothing. Write the places and check what comes out.
 | | |
 |---|---|
 | `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one. **It opens every fold**: the search does not look in hidden text, and *nothing found* about code that is in the file would be wrong. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments. `Regex: true` is **PCRE2** — GtkSourceView's own engine and not the language's [`Regex`](../../llm/library.md#regex): always multiline, and `\d` `\w` `\b` are Unicode-aware. **It does not move the cursor**: typing in a find field and jumping to a match happen at different moments, and a find bar that jumped on every keystroke would drag the view about while somebody is still typing |
-| `Matches` (ro) | how many the last `Search` found |
-| `MatchIndex` (ro) | which one the cursor is standing on — the `3` in *3/12* |
+| `Matches` (ro) | how many matches of the last `Search` there are now, counted again on each read. **Counted in what can be seen**: reading a property opens no fold, so a block folded since the search leaves its matches out until `Search`, `FindNext` or `ReplaceAll` opens it |
+| `MatchIndex` (ro) | which one the cursor is standing on — the `3` in *3/12*. Counted the way `Matches` is, in what can be seen |
 | `FindNext()` | moves to the next match, wrapping around. **Opens every fold** first, as `Search` does |
 | `FindPrevious()` | and backwards |
-| `Replace(text)` | the match the cursor is standing on |
-| `ReplaceAll(text)` | every match |
+| `Replace(text)` | the match the cursor is standing on. **Opens every fold** first, as `FindNext` does |
+| `ReplaceAll(text)` | every match, and how many. **Opens every fold** first: the search does not look in hidden text, and a folded match left unreplaced would be a silent short count |
 
 **`Regex: true` is not the language's [`Regex`](../../llm/library.md#regex), and
 the differences are the kind a pattern notices.** The search is GtkSourceView's

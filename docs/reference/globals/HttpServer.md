@@ -74,7 +74,7 @@ port is still held.
 |---|---|
 | `Allow` | a list of **exact** IPs, or nothing (open). A refused remote gets `403` before the handler runs. Exact means exact: on a dual-stack `"any"` server, `::1` is not `127.0.0.1` |
 | `Auth` | `{ Realm, Users }`: Basic over the whole server, `401` with the realm until the right password. Nothing set is open, and it reads back `null`. Like `Allow`, it takes effect at once |
-| `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **before the handler runs**, and a body that arrives without one is read and refused the same way when it passes the number |
+| `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **with the body never read**, and a body that arrives without one (chunked) stops being kept once it passes the number and is refused the same way. The handler runs for neither |
 
 ## Answering
 
