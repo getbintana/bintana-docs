@@ -835,7 +835,7 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes. Built for each click, and every item's handler is told the column, last: `MnuHide_Click(column)`. Like `Menu`, refused on a table that is not in a form yet |
 | `Index` | the selected row, `-1` for none. Assigning selects it. Default `-1` |
 | `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none. **Assigning moves it and selects the row**, opening the way to it; `null` clears it. A cell that is not editable is a cell all the same: it can be current, and F2 is what opens it |
-| `MultiSelect` | more than one row at a time. Refused on a tree |
+| `MultiSelect` | more than one row at a time, in a flat table or a tree, set before the rows or after them. Ctrl+click adds or takes a row, Shift+click selects a range, and Shift+Up/Down grows or shrinks the range from the row the reader is on; a plain click or arrow goes back to one. A Ctrl or Shift click opens no editor. Default `false` |
 | `RowLines` | rules between the rows. Default `true` |
 | `RowHeight` (ro) | how tall one row is, as GTK measured it. `0` while the table holds no row or has not been laid out |
 | `HeaderHeight` (ro) | how tall the row of column headings is. `0` before the first allocation |
@@ -843,13 +843,14 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment. Assigning **clamps** to `[0, ScrollMaxY]`, so a number past the end means the end |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view. `0` when there is nothing to scroll |
 | `Sortable` | makes the headers clickable. **The table does not reorder itself** — it raises `Sort`. Default `false` |
-| `Selection` (ro) | every selected row, as an array of indices in order |
+| `Selection` (ro) | every selected row, as an array of indices in order. In a tree they are positions of the rows shown, which a fold moves -- `SelectedKeys` names the nodes |
 | `ActivateOnSingleClick` | raise `Activate` on one click instead of two. Default `false` |
 | `Activate([index])` | raises `Activate` for that visible position, as a double click would; the selected row with no argument. Answers whether there was one. In both the flat and the tree shape, because a click lands on a position |
 | `Add(values, [options])` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
 | `AddRows(rows)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. Refused on a tree, whose rows are nodes with keys, and it clears an on-demand `Count` as one `Add` does |
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand. Default `true`. A tree only. The same mechanism `TreeView` uses, answering the same |
-| `Key` | the selected node's key; assigning selects, opening the way to it. `""` selects nothing. A tree only |
+| `Key` | the selected node's key; assigning selects it alone, opening the way to it. `""` selects nothing. **With several selected it is the one the reader is on**: the `CurrentCell` row when that row is selected, otherwise the first selected node shown. A tree only |
+| `SelectedKeys` | every selected node's key, in the order shown -- `[]` for none, and one key without `MultiSelect`. Assigning selects exactly those, opening the way to each, and `[]` selects nothing; **it raises no `Select`**. A key that is not there is refused before anything changes, and so are several without `MultiSelect`. `[]` on a flat table, which refuses the assignment. A fold drops the selection of the rows it hides, as GTK does |
 | `Exists(key)` | whether that node is there. `false` on a flat table rather than a refusal: it is the question you ask *before* you know |
 | `ExpandNode(key)`, `CollapseNode(key)` | opens or closes it. Opening opens the way to it too, since a row only exists once its ancestors are open. Not `Expand`, which is `Widget`'s layout property |
 | `ExpandAll()`, `CollapseAll()` | every node |
@@ -868,11 +869,11 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor`. Answers whether it did -- `false` for a cell that is not on screen (`Reveal` first), not editable, or refused by `CellEditor` |
 | `EndEdit([commit])` | ends the open edit: committed as Enter would, or with `false` given up as Escape would. Answers whether one was open |
 | `Select(index)`, `Deselect(index)` | move the selection from code. `Select` leaves the others alone where several are allowed |
-| `SelectAll()` | with `MultiSelect` |
+| `SelectAll()` | with `MultiSelect`. In a tree, every row shown: a node under a closed parent has no row to select |
 | `DeselectAll()` | selects nothing |
 | `SortBy(column, [ascending], [compare])` | actually reorders the rows it holds, **by the text the cells show**: natural order by default (`9` before `10`, the locale's collation otherwise), or `compare(a, b)` — the two cells' text, answering a number as `Array.sort`'s does — for what natural order reads wrongly: a minus sign, grouped thousands, a `d/m/Y` date. **Stable**: equal cells keep the order they had, so sorting by one column and then another nests them. A comparator that throws leaves the rows as they were |
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised |
-| **event** `Select()` | the selection moved — by the user or by an assignment. Ask `Index` for where it is and `Cell`/`Row` for what is there; `Key` when the table is a tree |
+| **event** `Select()` | the selection moved — by the user or by an assignment to `Index` or `Key` (not `SelectedKeys` or `MultiSelect`). Ask `Index` for where it is and `Cell`/`Row` for what is there; `Key` when the table is a tree, and `Selection`/`SelectedKeys` for every row of a `MultiSelect` one |
 | **event** `Activate()` | a double click on a row, or Enter on it. The gesture for *open this one* |
 | **event** `Data(row, column)` | the table needs a cell. **The return value is the answer**: a string, or `{ Text, Icon, Uri, Style, Editable }` for a cell with a picture, an address or a theme class of its own, or one that does not edit in a column that does (`Editable: false`). In a `Link` column an absent `Uri` means the text is the address and `""` means this cell is not a link |
 | **event** `Sort(column, ascending)` | a sortable header was clicked. **The handler decides** — `SortBy` is what actually reorders |
@@ -901,9 +902,13 @@ a tree is a position in the **visible** list, so it moves when something above i
 collapses. `Index` still answers where the highlight is right now; `Key` is what
 to keep.
 
-`MultiSelect` is refused on a tree — a hierarchy is selected one node at a time,
-which is what `TreeView` has always been. `Count` is read-only there and counts
-**every node at every level**, the way `TreeView.Count` does.
+`MultiSelect` works on a tree too, and **`SelectedKeys` names the selected nodes**
+in the order shown; assigning it selects exactly those, raises no `Select`, and
+refuses the whole list over one key that is not there. With several selected,
+`Key` is the `CurrentCell` row when it is one of them, else the first shown. A
+fold drops the rows it hides from the selection. Ctrl+click, Shift+click and
+Shift+Up/Down select as in a sheet, flat or tree. `Count` is read-only there and
+counts **every node at every level**, the way `TreeView.Count` does.
 
 `Sortable` and `SortBy` work, and **sort siblings within each parent**: sorting
 the flattened list would put a child above its own parent, which is not an order.

@@ -149,9 +149,11 @@ key space; if the same tree holds files and categories, `cat:forms` and
 | **event** `Select()` | the selection moved — by the user, by an assignment, or because what was selected is no longer visible. Ask `Key` or `Text` for what it is now |
 | **event** `Activate()` | a double click on a node, or Enter on it: the gesture for *open this one* |
 
-**There is no `MultiSelect` and no `Index`.** A hierarchy is selected one node at
-a time — which is what a tree has meant since the first one — and a position in
-it is a position in the *visible* list, so it is not something to keep.
+**There is no `MultiSelect` and no `Index`.** This control selects one node at a
+time, and a position in it is a position in the *visible* list, so it is not
+something to keep. A hierarchy whose rows are chosen several at a time is a
+[`TableView`](TableView.md#a-tree) tree with `MultiSelect`, which names them by
+`SelectedKeys`.
 
 **`Activate([index])` is the double click from code**, and
 `ActivateOnSingleClick` decides which click raises the event in the first place

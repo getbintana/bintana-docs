@@ -33,8 +33,9 @@ not repeated here.
 | `HeaderMenu` | the menu a column heading offers on a secondary click, as the same array of items `Menu` takes | [the heading's menu](#the-headings-menu) |
 | `HeaderMinHeight` | a floor for the row of column headings, in pixels | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Index` | the selected row, `-1` for none | [the selection](#the-selection) |
-| `Key` | the selected node's key; assigning selects, opening the way to it | [a tree](#a-tree) |
-| `MultiSelect` | more than one row at a time | [the selection](#the-selection) |
+| `Key` | the selected node's key; assigning selects it alone, opening the way to it | [a tree](#a-tree) |
+| `MultiSelect` | more than one row at a time, in a flat table or a tree, set before the rows or after them | [the selection](#the-selection) |
+| `SelectedKeys` | every selected node's key, in the order shown -- `[]` for none, and one key without `MultiSelect` | [a tree](#a-tree) |
 | `RowHeight` (ro) | how tall one row is, as GTK measured it | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `RowLines` | rules between the rows | [the columns](#the-columns) |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
@@ -239,20 +240,30 @@ perfectly until somebody selects two.
 | | |
 |---|---|
 | `Index` | the selected row, `-1` for none. Assigning selects it. Default `-1` |
-| `Selection` (ro) | every selected row, as an array of indices in order |
-| `MultiSelect` | more than one row at a time. Refused on a tree |
-| `Select(index)` | move the selection from code. `Select` leaves the others alone where several are allowed |
+| `Selection` (ro) | every selected row, as an array of indices in order. In a tree they are positions of the rows shown, which a fold moves -- `SelectedKeys` names the nodes |
+| `MultiSelect` | more than one row at a time, in a flat table or a tree, set before the rows or after them. Ctrl+click adds or takes a row, Shift+click selects a range, and Shift+Up/Down grows or shrinks the range from the row the reader is on; a plain click or arrow goes back to one. A Ctrl or Shift click opens no editor. Default `false` |
+| `Select(index)` | move the selection from code. `Select` leaves the others alone where several are allowed. In a tree the index is a position of the rows shown, as `Index` is |
 | `Deselect(index)` | unselects it |
-| `SelectAll()` | with `MultiSelect` |
+| `SelectAll()` | with `MultiSelect`. In a tree, every row shown: a node under a closed parent has no row to select |
 | `DeselectAll()` | selects nothing |
 | `Activate([index])` | raises `Activate` for that visible position, as a double click would; the selected row with no argument. Answers whether there was one. In both the flat and the tree shape, because a click lands on a position |
 | `ActivateOnSingleClick` | raise `Activate` on one click instead of two. Default `false` |
-| **event** `Select()` | the selection moved — by the user or by an assignment. Ask `Index` for where it is and `Cell`/`Row` for what is there; `Key` when the table is a tree |
+| **event** `Select()` | the selection moved — by the user or by an assignment to `Index` or `Key` (not `SelectedKeys` or `MultiSelect`). Ask `Index` for where it is and `Cell`/`Row` for what is there; `Key` when the table is a tree, and `Selection`/`SelectedKeys` for every row of a `MultiSelect` one |
 | **event** `Activate()` | a double click on a row, or Enter on it. The gesture for *open this one* |
 
 `Select` fires for a selection made in code as well as one made with the mouse,
 which is what a form wants: the button under the table is enabled in one place
-rather than in every place that moves the selection.
+rather than in every place that moves the selection. **Two assignments are the
+exception**: `SelectedKeys` and `MultiSelect` raise nothing, so a program that
+puts back the rows it was working on after a rebuild does not hear its own
+doing.
+
+**With `MultiSelect`, the gestures are a sheet's.** Ctrl+click adds a row or
+takes it off, Shift+click selects the range from the row last clicked, and
+Shift+Up/Down grows or shrinks the range from the row the reader is on (the
+current cell's); a plain click or a plain arrow goes back to one row. A Ctrl or
+Shift click is a selection and nothing else -- it opens no editor and leaves the
+current cell where it was. It works the same in a flat table and a tree.
 
 **`Activate([index])` is the double click from code**, and
 `ActivateOnSingleClick` decides which click raises the event in the first place
@@ -542,7 +553,8 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 | | |
 |---|---|
 | `Add(values, { Key, Parent, Icon })` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
-| `Key` | the selected node's key; assigning selects, opening the way to it. `""` selects nothing. A tree only |
+| `Key` | the selected node's key; assigning selects it alone, opening the way to it. `""` selects nothing. **With several selected it is the one the reader is on**: the `CurrentCell` row when that row is selected, otherwise the first selected node shown. A tree only |
+| `SelectedKeys` | every selected node's key, in the order shown -- `[]` for none, and one key without `MultiSelect`. Assigning selects exactly those, opening the way to each, and `[]` selects nothing; **it raises no `Select`**. A key that is not there is refused before anything changes, and so are several without `MultiSelect`. `[]` on a flat table, which refuses the assignment. A fold drops the selection of the rows it hides, as GTK does |
 | `Exists(key)` | whether that node is there. `false` on a flat table rather than a refusal: it is the question you ask *before* you know |
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand. Default `true`. A tree only. The same mechanism `TreeView` uses, answering the same |
 | `ExpandNode(key)` | opens or closes it. Opening opens the way to it too, since a row only exists once its ancestors are open. Not `Expand`, which is `Widget`'s layout property |
@@ -564,6 +576,22 @@ above it is collapsed. `Index` still says where the highlight is right now, and
 
 Sorting sorts **siblings within each parent**, which is the only order a
 hierarchy has: sorting the flattened list would put a child above its own parent.
+
+**Several nodes are selected with `MultiSelect`, and named by `SelectedKeys`.**
+`Selection` still answers positions, which a fold moves; `SelectedKeys` answers
+the keys in the order shown, and assigning it selects exactly those -- opening
+the way to each, refusing the whole list if one key is not there, and raising no
+`Select`. `Key`, with several selected, is the one the reader is on: the
+`CurrentCell` row when it is among them, otherwise the first shown. A `SetCell`
+or a sort keeps every selected node selected; **a fold drops the rows it hides**,
+as GTK does, so read `SelectedKeys` after a `CollapseNode` rather than before.
+
+```js
+const keys = this.Tasks.SelectedKeys;     // the rows the reader chose
+for (const k of keys) this.plan.indent(k);
+this.fill();                              // Clear() and Add the plan again
+this.Tasks.SelectedKeys = keys;           // the same rows, selected again
+```
 
 `ExpandNode` and not `Expand`: `Expand` is `Widget`'s layout property, on every
 control, and means *absorb the slack in the box*.
