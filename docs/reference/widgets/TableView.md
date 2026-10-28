@@ -24,7 +24,7 @@ not repeated here.
 |---|---|---|
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand | [a tree](#a-tree) |
 | `ColumnLines` | rules between the columns | [the columns](#the-columns) |
-| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible }` | [the columns](#the-columns) |
+| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible, Tree }` | [the columns](#the-columns) |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws | [the rows](#the-rows-it-holds), [on demand](#on-demand-a-table-that-holds-nothing) |
 | `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none | [the current cell](#the-current-cell) |
 | `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor` | [editing a cell](#editing-a-cell) |
@@ -180,7 +180,7 @@ scrollbar away from the rows, which is the opposite of what was wanted.
 
 | | |
 |---|---|
-| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack. **`Visible: false` hides the column** -- and it keeps its place in the list, so the numbers the program uses (`Cell`, `SetCell`, `SortColumn`, `HeaderClick`) are the ones it declared, and a column that comes back does not shift the ones after it. **`Editor` makes the cells fields**, and is a kind's name or `{ Kind, ... }`: `"Text"`; `{ Kind: "Number", Min, Max, Step, Decimals }`, answering with a point and rounding a half away from zero; `"Date"`, a field with a calendar whose day is `YYYY-MM-DD` (the arrows move the day, Enter or Space picks it); `{ Kind: "Check", ActiveText, InactiveText }`, a tick holding one of the two (`"true"`/`"false"`); `{ Kind: "Combo", Items }`; and `"Custom"`, which opens nothing and raises `CellEditor`. The kinds are `Widget.PropertyOptions("TableView", "Columns.Editor")`. A click or F2 opens a cell, Enter or the focus leaving commits, Escape gives up, and `CellEdit` decides. **A cell is still text** -- every kind reads it and writes it back. `Editable: true` is `Editor: "Text"`. `Link: true` makes each cell a link -- underlined, a pointer over it, a focus stop, Enter -- whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **A column is edited or a link, never both**, and a misspelt option is refused by name |
+| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible, Tree }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack. **`Visible: false` hides the column** -- and it keeps its place in the list, so the numbers the program uses (`Cell`, `SetCell`, `SortColumn`, `HeaderClick`) are the ones it declared, and a column that comes back does not shift the ones after it. **`Editor` makes the cells fields**, and is a kind's name or `{ Kind, ... }`: `"Text"`; `{ Kind: "Number", Min, Max, Step, Decimals }`, answering with a point and rounding a half away from zero; `"Date"`, a field with a calendar whose day is `YYYY-MM-DD` (the arrows move the day, Enter or Space picks it); `{ Kind: "Check", ActiveText, InactiveText }`, a tick holding one of the two (`"true"`/`"false"`); `{ Kind: "Combo", Items }`; and `"Custom"`, which opens nothing and raises `CellEditor`. The kinds are `Widget.PropertyOptions("TableView", "Columns.Editor")`. A click or F2 opens a cell, Enter or the focus leaving commits, Escape gives up, and `CellEdit` decides. **A cell is still text** -- every kind reads it and writes it back. `Editable: true` is `Editor: "Text"`. `Link: true` makes each cell a link -- underlined, a pointer over it, a focus stop, Enter -- whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **`Tree: true` puts a tree's expander** -- the arrow and the indent -- in that column instead of the first; only where it is drawn moves, every index stays the declared one. One column at most says it, a flat table keeps it for when it becomes a tree, and a marked column that is `Visible: false` hands the expander to the first column shown. **A column is edited or a link, never both**, and a misspelt option is refused by name |
 | `ColumnLines` | rules between the columns. Default `false` |
 | `RowLines` | rules between the rows. Default `true` |
 
@@ -566,6 +566,27 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 
 **A parent goes in before its children**: `Parent` names a key, and a key that
 nothing has added yet is not there to go under.
+
+**The expander -- the arrow and the indent -- is in the first column, unless a
+column says `Tree: true`.** A plan that shows its Id first marks the name:
+
+```js
+this.Tasks.Columns = [
+    { Text: "Id",       Width: 40,  Alignment: "Right" },
+    { Text: "Tarea",    Width: 280, Editor: "Text", Tree: true },
+    { Text: "Duración", Width: 84,  Alignment: "Right" },
+];
+```
+
+Only where the outline is drawn moves: `Cell`, `Data(row, column)`,
+`CellEdit`, `HeaderClick`, `SortColumn` and the keyboard still count the
+columns as declared, so the name above is column 1. One column at most says
+it -- two are a `TypeError`, and the columns stay as they were. A flat table
+takes it and uses it the day its first `Key` arrives. **A marked column that is
+`Visible: false` hands the expander to the first column shown**, and gets it
+back when it is shown again: an outline that vanished with a column would leave
+the rows with no way to open. Declaring `Columns` again moves the expander and
+keeps the rows, and which of them were open.
 
 **In a tree, a row is addressed by its key** — `Cell(key, column)`,
 `SetCell(key, …)`, `SetIcon(key, …)`, `SetStyle(key, …)`, `Row(key)`, and
