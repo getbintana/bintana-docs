@@ -24,6 +24,7 @@ not repeated here.
 |---|---|---|
 | `AutoExpand` | opens a node as it arrives, and again when it gains a child after being closed by hand | [a tree](#a-tree) |
 | `ColumnLines` | rules between the columns | [the columns](#the-columns) |
+| `ColumnOrder` (ro) | the declared column indices, in the order the view shows them -- `[0, 1, 2]` until a heading is dragged or `MoveColumn` is called | [moving a column](#moving-a-column) |
 | `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible, Tree }` | [the columns](#the-columns) |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws | [the rows](#the-rows-it-holds), [on demand](#on-demand-a-table-that-holds-nothing) |
 | `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none | [the current cell](#the-current-cell) |
@@ -36,6 +37,7 @@ not repeated here.
 | `Key` | the selected node's key; assigning selects it alone, opening the way to it | [a tree](#a-tree) |
 | `MultiSelect` | more than one row at a time, in a flat table or a tree, set before the rows or after them | [the selection](#the-selection) |
 | `SelectedKeys` | every selected node's key, in the order shown -- `[]` for none, and one key without `MultiSelect` | [a tree](#a-tree) |
+| `Reorderable` | lets the person drag a heading to another place | [moving a column](#moving-a-column) |
 | `RowHeight` (ro) | how tall one row is, as GTK measured it | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `RowLines` | rules between the rows | [the columns](#the-columns) |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
@@ -62,6 +64,7 @@ not repeated here.
 | `ExpandAll()` | opens every node | [a tree](#a-tree) |
 | `ExpandNode(key)` | opens or closes it | [a tree](#a-tree) |
 | `Expanded(key)` | whether it is open | [a tree](#a-tree) |
+| `MoveColumn(column, position)` | puts the declared column at that place of the view, `0` the first: what a drag does, from code, and raising nothing | [moving a column](#moving-a-column) |
 | `RemoveRow(index)` | takes that row out | [the rows](#the-rows-it-holds) |
 | `RemoveNode(key)` | takes that node out, **and the subtree with it** | [a tree](#a-tree) |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one | [the rows](#the-rows-it-holds) |
@@ -82,6 +85,7 @@ not repeated here.
 | `Activate()` | raises `Activate` for that visible position, as a double click would; the selected row with no argument | [the selection](#the-selection) |
 | `CellChange(row, column)` | the current cell moved; `null` and `-1` say it was cleared | [the current cell](#the-current-cell) |
 | `Data(row, column)` | a cell is needed — **the answer is the return value** | [on demand](#on-demand-a-table-that-holds-nothing) |
+| `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
@@ -191,9 +195,44 @@ give the short ones beside it a fixed width (a size, a date, an amount), and
 right-align the numbers.
 
 A width is where a column **starts**, not a cage: the user can drag the edge
-between two headings. What they cannot do is reorder the columns, because the
-order is the form's design and a layout the user rearranges is one the form
-cannot then reason about.
+between two headings -- and, with `Reorderable`, the heading itself to another
+place ([moving a column](#moving-a-column)).
+
+## Moving a column
+
+| | |
+|---|---|
+| `Reorderable` | lets the person drag a heading to another place. **Only where the column is drawn moves**: every index stays the declared one -- `Cell`, `Data(row, column)`, `CellEdit`, `HeaderClick`, `Sort` -- and `ColumnOrder` says the places. A drop raises `ColumnMove`; assigning `Columns` again puts the columns back in the declared order. Default `false` |
+| `ColumnOrder` (ro) | the declared column indices, in the order the view shows them -- `[0, 1, 2]` until a heading is dragged or `MoveColumn` is called. What a program keeps to give the person their order back: replay it with `MoveColumn(ColumnOrder[i], i)` from the first place to the last |
+| `MoveColumn(column, position)` | puts the declared column at that place of the view, `0` the first: what a drag does, from code, and raising nothing. The indices stay the declared ones |
+| **event** `ColumnMove(column, position)` | the person dragged a heading to another place: `column` is its declared index and `position` its place in the view now. Raised with `Reorderable`, after the move; `ColumnOrder` is the whole order. Not raised by `MoveColumn` |
+
+**A column has an index and a place, and every member speaks of the index.**
+The index is where it was declared in `Columns`, and it is what the row's
+values, `Cell`, `Data(row, column)`, `CellEdit`, `HeaderClick` and `Sort` all
+say; the place is only where it is drawn. So a program never has to translate:
+the person can put "Fin" before "Inicio" and `Cell(row, 3)` is still "Fin".
+
+The order is **the person's, not the form's**: a `.form` carries `Reorderable`
+and never the order, and assigning `Columns` again puts the declared order
+back. A program that wants the order kept saves `ColumnOrder` and gives it back
+the next time:
+
+```js
+Tasks_ColumnMove(column, position) {
+    Settings.Set("tasks.order", this.Tasks.ColumnOrder);
+}
+
+restoreOrder() {
+    const order = Settings.Get("tasks.order", null);
+    if (order && order.length === this.Tasks.Columns.length)
+        order.forEach((column, place) => this.Tasks.MoveColumn(column, place));
+}
+```
+
+A hidden column keeps its place and moves like any other. A tree's expander is
+on a column, not on a place, so it goes with the column it is on -- the one
+marked `Tree`, or the first declared.
 
 Re-declaring `Columns` rebuilds the headings and **keeps the rows**. A row holds
 the values it was given, not a copy cut to the columns that existed at the time:
@@ -695,8 +734,6 @@ editors', and the same two panes locked together is
 - **No editing in place.** A cell is text the program put there; a table is for
   showing rows and choosing one. Editing belongs on a form beside it, which is
   also where the validation and the undo are.
-- **No columns the user can reorder.** They can drag a heading's edge to widen
-  one — a declared width is where it starts — but the order is the form's.
 - **No grouping, no totals, no frozen columns.** A report is
   [`report`](../../llm/report.md), which has bands, groups and totals and goes out
   as a PDF.
