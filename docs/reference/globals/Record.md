@@ -120,11 +120,12 @@ two behaviours are deliberate and they are not the same call.
 XML is a **document** and not a value — attributes, element order, namespaces
 and mixed content have nowhere to go in a plain object — so a record maps onto
 an element by declaring it. `static Xml` names the element; every field names
-its own with `as`/`Naming`, and three options cover what XML adds:
+its own with `as`/`Naming`, and four options cover what XML adds:
 
 | | |
 |---|---|
 | `attribute: true` | the field is an attribute of the element, not a child — `Field.Text({ attribute: true })` |
+| `always: true` | the field is written even at its starting value — for a format where an absent element means something other than `def`: MSPDI's resource `<Type>` absent is Work, so `Field.Int({ def: 1, always: true })` |
 | `in: "Tasks"` | a list lives under that wrapper: `<Tasks><Task>…</Task></Tasks>` |
 | `element: "Tag"` | the item name of a list of values — a record already knows its own, from its `Root` |
 
@@ -135,7 +136,7 @@ class Task extends Record {
         UID:       Field.Int({ key: true }),
         Name:      Field.Text(),
         Start:     Field.DateTime(),
-        Milestone: Field.Bool(),                 // written true/false; 0/1 read
+        Milestone: Field.Bool(),                 // written true/false (1/0 with Booleans: "digits"); both read
         Links:     Field.List(Link),             // <PredecessorLink> repeated
     };
 }
@@ -171,7 +172,8 @@ interchange file needs:
   `<UID>0</UID>` is a UID — or by position, unmatched elements are removed, new
   ones are added, and the array's order is the element order afterwards;
 - a field at its starting value has its element removed rather than written —
-  **except a `key`, which is identity and is written whatever it holds**, so
+  **except a `key`, which is identity and is written whatever it holds**, and a
+  field declared `always: true`, which both verbs write at any value, so
   the summary task's `UID 0` survives and the unmodelled children of the
   element it matched stay with it — and an empty list takes its wrapper with it
   when nothing else is in it.
@@ -189,6 +191,13 @@ A missing element is then inserted before the first sibling the sequence puts
 after it, modelled or not, and `ToXml` writes in that order. Without `Order`
 the order is the fields' declaration order, and an element whose successors
 are all unmodelled is appended past elements the schema puts later.
+
+**A boolean is written `true`/`false`, or `1`/`0` in a shape that declares
+`static Xml = { …, Booleans: "digits" }`** — MS Project's spelling, and the
+one Project 2108 reads right: it took `<IsNull>false</IsNull>` for a blank row.
+Both spellings are read either way, and a `0` the file already had is not
+rewritten. The option is per shape, as `Namespace` is, so each class of a
+format that spells them so declares it.
 
 **LoadXml is lenient, like `Load`**, and reports what the shape does not model:
 an unknown element or attribute goes on `Problems` with its path, a bad value

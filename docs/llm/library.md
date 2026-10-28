@@ -1594,7 +1594,7 @@ class Task extends Record {
         UID:       Field.Int({ key: true }),               // the identity, for SaveXml
         Name:      Field.Text(),
         Start:     Field.DateTime(),
-        Milestone: Field.Bool(),                           // written true/false; 0/1 read
+        Milestone: Field.Bool(),                           // true/false, or 1/0 with Booleans: "digits"
         Links:     Field.List(Link),                       // <PredecessorLink> repeated
     };
 }
@@ -1633,6 +1633,19 @@ const fresh = p.ToXml(true);                              // a new element, ever
   unmodelled children of the element it matched stay with it. `Table`'s *an int
   key of 0 is a row never saved* (`Save` inserts) is the database's rule and
   does not reach XML.
+- **`always: true` writes a value even at its starting value**, by both
+  verbs, where any other field has its element removed. It is for a format
+  whose absent element means something other than the field's `def`: MSPDI's
+  resource `<Type>` absent is Work (1), so a Material one (0, an int's start)
+  lost its element and came back Work. `def` is what an absent element reads
+  as, `always` that it is written regardless: `Field.Int({ def: 1, always:
+  true })`. Only on a value, not on a list or a record; anything but `true`
+  refuses.
+- **`static Xml.Booleans: "digits"` writes a boolean `1`/`0`** instead of
+  `true`/`false` -- MS Project's spelling, and the only one Project 2108 reads
+  right (`<IsNull>false</IsNull>` was a blank row there). Both are read either
+  way, and a `0` already in the file is not rewritten. Per shape, like
+  `Namespace`; anything but `"digits"` refuses.
 - **A shape that models only part of an `xsd:sequence` declares `Order`**: the
   type's element names in the schema's order — the ones the shape never reads
   included, they are the anchors — and **every element the shape writes has to

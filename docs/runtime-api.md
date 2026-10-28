@@ -2580,7 +2580,7 @@ class Task extends Record {
         UID:       Field.Int({ key: true }),               // the identity SaveXml matches by
         Name:      Field.Text(),
         Start:     Field.DateTime(),
-        Milestone: Field.Bool(),                           // true/false out; true/false/1/0 in
+        Milestone: Field.Bool(),                           // true/false out (1/0 with Booleans: "digits"); both in
         Links:     Field.List(Link),                       // repeated, no wrapper
     };
 }
@@ -2604,7 +2604,11 @@ const fresh = p.ToXml(true);                           // a new element, every f
 
 **`ToXml` is `Serialize` and `LoadXml` is `Load`.** `ToXml()` omits what is at
 its starting value — **a `key` excepted: identity is written either way, and so
-is `SaveXml`** — and `ToXml(true)` writes every field, which a schema whose
+is `SaveXml`**, and so is a field declared `always: true`, for a format where an
+absent element means something other than `def` (MSPDI's resource `<Type>`:
+`Field.Int({ def: 1, always: true })`), and a boolean is `true`/`false` unless
+the shape declares `static Xml.Booleans: "digits"`, which writes `1`/`0` as MS
+Project does — and `ToXml(true)` writes every field, which a schema whose
 elements are not `minOccurs="0"` needs. `LoadXml` reads a document or element,
 checks the root's name and namespace (a **list**, because an official schema and
 the files it describes can disagree about the URI and both be right), takes what
