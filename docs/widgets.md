@@ -377,6 +377,23 @@ state; and it is the **form's** event and no other control's — what a theme
 change costs is the icons and colours an application chose for itself, and that
 is a decision a form made. `Form_Resize` is the same shape for the same reason.
 
+A form also says what happens to its window that the program did not do:
+**`Activate`** and **`Deactivate`** (the window gained or lost the user's
+attention — a click, alt-tab, or **a dialog this form opened**, which takes it
+too, so a form that pauses a timer on `Deactivate` pauses it behind its own
+dialogs as well) and **`StateChange`** (`Maximized` or `FullScreen` changed, by
+the title bar, a key or the program; it carries nothing, the handler reads the
+two properties). They are raised **only while the window is on screen**: a window
+being closed or put away loses its activity on the way out, and no JavaScript
+runs in a signal that is part of hiding. Measured on an `Xvfb` with `xfwm4`:
+showing a second form gives `A deactivate` then `B activate`, and `Maximized =
+true` then `false` gives one `StateChange` each. **Nothing activates a window on
+a display with no window manager**, so none of the three fires there.
+
+**There is no `Move`.** GTK4 gives a window no position it could report — on
+Wayland the compositor places it, and `Remember` has no position for the same
+reason.
+
 The settings object belongs to the display and outlives every window on it, so
 the handlers go through `bta_widget_watch`: one left behind would fire on a freed
 form the next time somebody switched themes.

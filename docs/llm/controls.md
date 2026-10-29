@@ -1531,6 +1531,9 @@ The window. See [forms.md](forms.md#form-the-window) for the behaviour a table c
 | **event** `Close()` | it is closing. **Returning `true` keeps it open** — which is where *save before closing?* lives. **Returning `true` keeps it open**; returning nothing lets it go |
 | **event** `Resize(width, height)` | the size GTK settled on — the same numbers `Bounds()` gives. Fires when the window is first given a size too |
 | **event** `ThemeChange()` | the desktop changed the theme. [`Dark`](../reference/widgets/Widget.md#how-it-looks) read inside the handler is already the new answer; **it may fire twice for one change**, so a handler re-reads and restyles rather than counting |
+| **event** `Activate()` | the window became the one the user is working in: a click on it, alt-tab, or a dialog of its own closing. Where a form re-reads what another program may have changed, or resumes what `Deactivate` paused |
+| **event** `Deactivate()` | the window stopped being that one — another program's window, or **a dialog this form opened**. Raised only while the window is on screen, never as it closes |
+| **event** `StateChange()` | [`Maximized`](../reference/widgets/Form.md) or [`FullScreen`](../reference/widgets/Form.md) changed, by the title bar, a key or the program itself. Carries nothing: read the two properties. **May fire twice for one gesture** |
 
 ### And on a `Form`
 
