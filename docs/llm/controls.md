@@ -235,6 +235,7 @@ is what `bta_emit` really passes, counted from the call — not from prose.
 |---|---|
 | **event** `MouseDown(x, y, button, ctrl, shift)` | coordinates are relative to the widget |
 | **event** `MouseUp(x, y, button, ctrl, shift)` | and came up |
+| **event** `MouseCancel(x, y)` | the press that began with a `MouseDown` is not going to end in a `MouseUp`: something took it -- a second finger, a drag and drop that began from this control, a scroller that claimed a touch drag. Drop what the press was doing; `x` and `y` are the last point it was seen at. Raised once per press, and never without a `MouseDown` before it |
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |
