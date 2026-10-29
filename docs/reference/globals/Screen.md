@@ -24,7 +24,7 @@ Screen.Monitors()               // [{ X, Y, Width, Height, Scale, Name }, …]
 | `Width` (ro) | the width of the monitor the application's **active window** is on — the first one the display lists before any window is shown, and `0` with no display at all |
 | `Height` (ro) | its height, likewise |
 | `Scale` (ro) | that monitor's scale factor, `1` unless the panel is HiDPI |
-| `Touch` (ro) | whether the display has a touch screen at all (the seat reports one), which is not whether the person is using it: a laptop with one is `true` under a mouse |
+| `Touch` (ro) | whether the display has a touch screen at all (the seat reports one), which is not whether the person is using it: a laptop with one is `true` under a mouse. It is for choosing bigger targets, never for hiding the mouse's way |
 
 **The numbers are the same pixels a form's `Width` is** — logical ones, with the
 scale answered separately — so `Screen.Width / 2` is a window width and not a
