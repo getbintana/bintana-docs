@@ -163,6 +163,7 @@ members, twice — once in its summary and once where it is explained.
 | [Lock](globals/Lock.md) | taking turns, by name, when more than one thread writes |
 | [Logger](globals/Logger.md) | what a program writes down for itself |
 | [Message](globals/Message.md) | telling the user something, with no question attached |
+| [Network](globals/Network.md) | whether there is a network, whether it reaches the internet, and whether one host answers |
 | [Notification](globals/Notification.md) | telling the user something while they are looking at another window |
 | [Printer](globals/Printer.md) | what this machine can print on, and how a drawing gets there |
 | [Popover](globals/Popover.md) | a control floated over another, opened by a verb and in no form's tree |

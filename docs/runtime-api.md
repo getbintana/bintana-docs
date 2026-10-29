@@ -773,6 +773,31 @@ not be able to delete anything.
 
 With no display (or before the application is up) they print to stderr.
 
+## Network
+
+Whether there is a network, whether it reaches the internet, whether it is
+metered, and for one host whether it answers. **Advice, not a guarantee**: the
+answer to *can I reach my server* is a request to it.
+
+```js
+Network.Connectivity   // "Unknown", "None", "Local", "Routed", "Limited", "Portal", "Full"
+Network.Online         // Connectivity === "Full"
+Network.Metered
+Network.OnChange = () => { if (Network.Online) retry(); };
+Network.Reach("cam.local", 554, (ok, why) => …);   // why: "", NotFound, Refused, Unreachable, Timeout, NotAllowed, Error
+Network.Probe((r) => …);                            // { Connectivity: Full | Portal | Limited | None, Url, Why }
+```
+
+**`"Routed"` is the honest answer of a machine that cannot check** — Linux
+without NetworkManager, NetworkManager with its connectivity check off,
+Windows, macOS: a way out exists and nobody checked it reaches the internet, so
+`Online` is `false`. `"Portal"` comes only from NetworkManager with the check
+on, or from `Probe`, which does the check itself: a plain-HTTP request to a URL
+that answers `204` (Google's `generate_204` unless `Url` says otherwise),
+without following a redirect. `"Unknown"` lasts a few milliseconds inside
+Flatpak, until the portal's first answer; `OnChange` says when it is known.
+`Reach` opens a real connection (the portal asks, inside Flatpak).
+
 ## Notification
 
 `Notification.Send(title, [body], [options])` and `Withdraw(id)`, in

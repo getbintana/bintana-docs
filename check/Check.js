@@ -455,6 +455,7 @@ const GLOBAL_PAGE_OWNERS = {
     Http:        ["Http", "HttpClient", "Multipart"],
     HttpServer:  ["HttpServer", "HttpRequest"],
     Locale:      ["Locale"],
+    Network:     ["Network"],
     Notification: ["Notification"],
     Logger:      ["Logger"],
     Printer:     ["Printer"],

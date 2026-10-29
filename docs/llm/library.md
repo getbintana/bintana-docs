@@ -134,6 +134,17 @@ Message.Error("Cannot open {0}: {1}", path, e.message);
 
 A question that needs an answer is a form: [forms.md](forms.md#a-dialog-that-asks-something).
 
+## Network
+
+`Connectivity` (`"Unknown"`, `"None"`, `"Local"`, `"Routed"`, `"Limited"`,
+`"Portal"`, `"Full"`), `Online` (`"Full"` only), `Metered`, `OnChange = () => …`
+(read again inside). `Reach(host, port, cb(ok, why), [{ Timeout }])` — a real
+connection; `why` is `""`, `NotFound`, `Refused`, `Unreachable`, `Timeout`,
+`NotAllowed` or `Error`. `Probe(cb({ Connectivity, Url, Why }), [{ Url, Timeout }])`
+finds a captive portal with a plain-HTTP request to a `204` URL (needs `Http`).
+**A machine that cannot check says `"Routed"`, so `Online` is `false` there**;
+decide with `Reach` or `Probe`. Advice, never a guarantee.
+
 ## Notification
 
 A desktop notification: for when the window is **not what the user is looking
