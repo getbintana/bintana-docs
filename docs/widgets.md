@@ -498,6 +498,34 @@ control that reacts to the wheel and does not consume it both zooms *and* scroll
 its parent. Nothing is consumed by default, which is what keeps a widget inside a
 scroller from breaking scrolling by existing.
 
+
+**A finger is a mouse that sometimes says more.** A tap is a click and a one-finger
+drag is a mouse drag, so nothing has to change for a program to be usable on a
+touch screen. Four things a mouse cannot say:
+
+- `LongPress(x, y)` -- a press held still for about half a second, from any
+  pointer. A touch's or a pen's long press **also opens the control's `PopupMenu`**
+  (the nearest one outward, as the secondary button does), so a menu that is the
+  only road to a command is reachable with a finger; a mouse's does not.
+- `MouseCancel(x, y)` -- the press that began with `MouseDown` will not end in a
+  `MouseUp`: something took it -- a second finger, a drag and drop begun from the
+  control, the long press that opened a menu. **A program that tracks a drag by
+  hand drops it here**; one that files the result in `MouseUp` would otherwise
+  file what was abandoned. Raised once per press, and never without a `MouseDown`.
+- `Gestures = true` turns on, **for that control**, `Swipe(vx, vy)` (a one-finger
+  flick, in pixels per second) and `Transform(phase, dx, dy, scale, angle, x, y)`:
+  two fingers as **one stream** for pan, zoom and rotate, each number a change
+  since `"Begin"` (`scale` is `1` at the start, `angle` is degrees, clockwise).
+  Off by default, since it costs controllers, and the two fingers are claimed by
+  the control so a scroller above does not also take them.
+- `Screen.Touch` says whether the display has a touch screen at all. It is for
+  choosing bigger targets, never for hiding the mouse's way.
+
+**What reaches a program depends on the platform's toolkit.** On Linux a second
+finger arrives and `Transform` is raised. On Windows, measured in a guest, GTK
+delivers one finger as a mouse and no second finger at all: `Transform` is never
+raised there, and a pinch needs the wheel road `MouseWheel` already is. A program
+that zooms with `Transform` keeps its wheel handler.
 `KeyRelease` takes the same arguments as `KeyPress`, and the two are **not
 symmetric** -- deliberately, and the asymmetry is worth knowing before pairing
 them. Bubble phase means the focused widget refuses first, and a `GtkText`

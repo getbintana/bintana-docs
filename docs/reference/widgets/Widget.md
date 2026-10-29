@@ -25,6 +25,7 @@ in the section.
 | | | |
 |---|---|---|
 | `AcceptDrop` | receives a drop from **this application**, which arrives as `Drop(data, x, y)` | [drag and drop](#drag-and-drop) |
+| `Gestures` | listens for two-finger gestures and flicks | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)` | [drag and drop](#drag-and-drop) |
 | `Action` | the **command** this control points at, or `""` | [commands, menus and keys](#commands-menus-and-keys) |
 | `AccessibleDescription` | what a screen reader adds after the name -- the sentence of advice that would be too long to be a name | [accessibility](#accessibility) |
@@ -116,6 +117,8 @@ in the section.
 | `MouseUp(x, y, button, ctrl, shift)` | and came up | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `MouseCancel(x, y)` | the press that began with a `MouseDown` is not going to end in a `MouseUp`: something took it -- a second finger, a drag and drop that began from this control, a scroller that claimed a touch drag. Drop what the press was doing; `x` and `y` are the last point it was seen at. Raised once per press, and never without a `MouseDown` before it | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
+| `Transform(phase, dx, dy, scale, angle, x, y)` | x | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
+| `Swipe(vx, vy)` | x | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `MouseWheel(dx, dy)` | the wheel turned. **`true` consumes it** | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 
 **And what `rad.js` adds**, on every widget just the same — `PropertyNames()`,
@@ -369,6 +372,9 @@ Every widget raises these, with coordinates **relative to itself**:
 | **event** `MouseUp(x, y, button, ctrl, shift)` | and came up |
 | **event** `MouseCancel(x, y)` | the press that began with a `MouseDown` is not going to end in a `MouseUp`: something took it -- a second finger, a drag and drop that began from this control, a scroller that claimed a touch drag. Drop what the press was doing; `x` and `y` are the last point it was seen at. Raised once per press, and never without a `MouseDown` before it |
 | **event** `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here |
+| **event** `Transform(phase, dx, dy, scale, angle, x, y)` | two fingers, as **one stream** for pan, zoom and rotate, while `Gestures` is on. `phase` is `"Begin"`, `"Update"` or `"End"`; the rest are the change **since `Begin`** -- `dx`/`dy` how far the centre between the fingers moved, `scale` how much farther apart they are (`1` at the start, `2` twice as far), `angle` how far they turned in degrees (positive is clockwise) -- and `x`/`y` is that centre, in the control's own coordinates. The first finger's click ends in `MouseCancel`. **Only where the toolkit delivers a second finger**: Linux does; the Windows backend, measured, delivers one finger as a mouse |
+| **event** `Swipe(vx, vy)` | a one-finger flick, as it lifts, while `Gestures` is on: the velocity in pixels per second. A mouse drag released while moving is one too |
+| `Gestures` | listens for two-finger gestures and flicks: `Transform` and `Swipe` are raised only while it is `true`. Off by default -- it adds three controllers -- and claims two fingers on this control so a scroller or a click above does not also take them |
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |
