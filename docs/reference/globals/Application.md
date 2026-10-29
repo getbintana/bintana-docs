@@ -17,6 +17,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `HasCommand(name)` | whether that program is on the PATH | [asking about the machine](#asking-about-the-machine) |
 | `HasIcon(name)` | whether that icon will actually **draw** something | [asking about the machine](#asking-about-the-machine) |
 | `Id` | from `project.json`: the application's identity in reverse DNS — `io.github.you.App` | [the project](#the-project) |
+| `Inhibit(reason, [what])` | keep the session from doing something while work runs — a backup, an export, a long download | [keeping the session awake](#keeping-the-session-awake) |
 | `Icons([contains])` | every icon name available, sorted, narrowed by substring — what an icon picker is built from | [asking about the machine](#asking-about-the-machine) |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once | [libraries](#libraries) |
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`** | [libraries](#libraries) |
@@ -184,6 +185,37 @@ there is nothing to find, so every run is its own instance, as every project alw
 was. A handler that throws is reported like any other handler and the window still
 comes forward.
 
+## Keeping the session awake
+
+```js
+const hold = Application.Inhibit("Backing up 3 GB", ["Suspend", "Logout"]);
+if (!hold.Active) Message.Warning("The machine may suspend during the backup.");
+// ... when it is done, or failed:
+hold.Release();
+```
+
+| | |
+|---|---|
+| `Inhibit(reason, [what])` | keep the session from doing something while work runs — a backup, an export, a long download. `what` is any of `"Suspend"`, `"Idle"` (the screen blanking), `"Logout"`, `"Switch"` (switching user), and `["Suspend"]` when left out; `reason` is what the desktop shows the user. Answers `{ Active, By, Release() }`: **`Active` says whether this machine agreed**, and `false` is an answer, never a throw — a console project, or a platform that cannot hold all of `what` (macOS holds only `"Logout"`, Windows has no `"Switch"`), asks nothing and answers `false`. `By` is `"Portal"` on Linux, `"PowerRequest"` on Windows, `"AppKit"` on macOS, `""` when not active. **On Linux the portal's refusal is not visible**: `Active` is *asked*, and a desktop whose portal has no Inhibit (XFCE's, by default) refuses it silently. `Release()` lets go, and twice is harmless; quitting releases everything |
+| `.Active` | **whether this machine agreed**. `false` is an answer, never a throw: a console project asks nothing, and neither does a platform that cannot hold all of `what` |
+| `.By` | who was asked: `"Portal"` on Linux, `"PowerRequest"` on Windows, `"AppKit"` on macOS; `""` when not active |
+| `.Release()` | let go. Twice is harmless, and quitting releases everything |
+
+**GTK does the asking**, and what it can hold depends on the platform:
+
+| platform | asks | holds |
+|---|---|---|
+| Linux, Flatpak or not | the Inhibit portal | whatever the desktop's portal backend implements |
+| Windows | `PowerSetRequest` | `Suspend`, `Idle`, `Logout` — not `Switch` |
+| macOS | the application's own termination | `Logout` only |
+
+**On Linux, `Active` means *asked*, not *agreed*.** GTK answers before the
+portal does, and a desktop whose portal backend cannot inhibit refuses
+silently: `xdg-desktop-portal-gtk` inhibits through GNOME's session manager,
+and elsewhere only `Idle`, through `org.freedesktop.ScreenSaver` if anything
+owns it — on a default XFCE nothing does. Asking logind and the desktop's
+power manager directly is planned.
+
 ## Ending
 
 | | |
@@ -204,6 +236,9 @@ window going and the main loop running out, or this.
 - **An icon is missing on one machine.** Ask `HasIcon`, and keep a fallback —
   the icon theme is the user's, not the application's.
 - **`Exec` threw on a machine without the tool.** `HasCommand` first.
+- **The laptop suspended in the middle of a backup.** Nothing said `Inhibit`;
+  and where it was said, `Active` was `false`, or it was Linux with a portal
+  that refuses quietly — see [keeping the session awake](#keeping-the-session-awake).
 
 ## See also
 

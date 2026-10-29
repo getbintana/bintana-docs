@@ -210,6 +210,7 @@ boundary is the process: the IDE already runs a project as a child.
 | `Libraries([project])` | the names of every library those six places offer, sorted and deduplicated — a name found twice is the one nearest the project, which is the one `uses` would load. The other direction of the same lookup: one resolves a name, the other says which names there are, which is what an IDE offering them to tick had no way to ask |
 | `Replacements()` | every name this language takes away, and what to write instead, keyed by the name that went — `{ setTimeout: "Timer.After(delay, tick) — the delay comes first", "Object.assign": "{ ...a, ...b }", … }`. **`""` where there is no word for that thing here**, which is an answer rather than a gap in the table. An editor asks it of an identifier nobody can find, so a beginner meets `Timer` at the token rather than a `ReferenceError` at the next run |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`**: see below |
+| `Inhibit(reason, [what])` | keeps the session from suspending, blanking, logging out or switching user; answers `{ Active, By, Release() }` |
 | `Quit(code)` | quits the main loop with that exit status |
 
 **Two versions, and they are two questions.** `Application.Version` is the
