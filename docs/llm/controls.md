@@ -243,7 +243,7 @@ is what `bta_emit` really passes, counted from the call — not from prose.
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |
-| **event** `MouseWheel(dx, dy)` | how far the wheel turned, in GTK's units: one notch is `1.0` on a wheel and a fraction on a touchpad. **Returning `true` consumes it**, which stops the scroller around it from also moving |
+| **event** `MouseWheel(dx, dy, touch)` | how far the wheel turned, in GTK's units: one notch is `1.0` on a wheel and a fraction on a touchpad. `touch` is `true` for **fingers** -- a touchpad's two-finger scroll -- and `false` for a wheel: a notch means *a step*, fingers mean *move the content*. GTK does not say which, so it is **inferred**: a fraction, or one in the last 200 ms. **Returning `true` consumes it**, which stops the scroller around it from also moving |
 | **event** `DblClick(x, y, button, ctrl, shift)` | two clicks |
 | **event** `KeyPress(key, ctrl, shift, alt)` | a key went down. **Returning `true` consumes it.** A control that edits text claims a printable key, so on a `TextBox` `b` arrives only as `KeyRelease` |
 | **event** `KeyRelease(key, ctrl, shift, alt)` | and came up. Nothing here is consumable |

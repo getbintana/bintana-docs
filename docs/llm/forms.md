@@ -172,7 +172,7 @@ class MainForm extends Form {
 ### Events on every widget
 
 `MouseDown(x, y, button, ctrl, shift)`, `MouseUp(…)`, `MouseCancel(x, y)`, `LongPress(x, y)`, `Transform(…)`, `Swipe(vx, vy, fingers)`, `MouseMove(…)`,
-`MouseEnter(x, y)`, `MouseLeave()`, `MouseWheel(dx, dy)`,
+`MouseEnter(x, y)`, `MouseLeave()`, `MouseWheel(dx, dy, touch)`,
 `DblClick(x, y, button, ctrl, shift)`, `KeyPress(key, ctrl, shift, alt)`,
 `KeyRelease(…)`, `GotFocus()`, `LostFocus()`, `Drop(data, x, y)`,
 `DragEnter(data, x, y)`, `DragOver(data, x, y)`, `DragLeave()`,

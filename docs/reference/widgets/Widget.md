@@ -119,7 +119,7 @@ in the section.
 | `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `Transform(phase, dx, dy, scale, angle, x, y)` | x | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `Swipe(vx, vy, fingers)` | x | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
-| `MouseWheel(dx, dy)` | the wheel turned. **`true` consumes it** | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
+| `MouseWheel(dx, dy, touch)` | x | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 
 **And what `rad.js` adds**, on every widget just the same — `PropertyNames()`,
 `Serialize()`, `Apply(properties)`, `Declared(name)`, `Fill(…)`, `Dump()`,
@@ -378,7 +378,7 @@ Every widget raises these, with coordinates **relative to itself**:
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |
-| **event** `MouseWheel(dx, dy)` | how far the wheel turned, in GTK's units: one notch is `1.0` on a wheel and a fraction on a touchpad. **Returning `true` consumes it**, which stops the scroller around it from also moving |
+| **event** `MouseWheel(dx, dy, touch)` | how far the wheel turned, in GTK's units: one notch is `1.0` on a wheel and a fraction on a touchpad. `touch` is `true` for **fingers** -- a touchpad's two-finger scroll -- and `false` for a wheel: a notch means *a step*, fingers mean *move the content*. GTK does not say which, so it is **inferred**: a fraction, or one in the last 200 ms. **Returning `true` consumes it**, which stops the scroller around it from also moving |
 | **event** `DblClick(x, y, button, ctrl, shift)` | two clicks |
 | **event** `KeyPress(key, ctrl, shift, alt)` | a key went down. **Returning `true` consumes it.** A control that edits text claims a printable key, so on a `TextBox` `b` arrives only as `KeyRelease` |
 | **event** `KeyRelease(key, ctrl, shift, alt)` | and came up. Nothing here is consumable |

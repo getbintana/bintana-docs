@@ -490,13 +490,20 @@ Coordinates are relative to the widget. `DblClick` arrives *after* the second
 there is no move event for the pointer having left. What wants them is a control
 that highlights under the pointer -- the enter/leave pair is the whole of a hover.
 
-`MouseWheel(dx, dy)` reports both axes, in the notches GTK gives:
+`MouseWheel(dx, dy, touch)` reports both axes, in the notches GTK gives:
 `dy` is -1 for a notch up and 1 for down. **Returning `true` consumes it**, and
 that return matters more here than on the other events: a wheel event nobody
 claims keeps travelling outwards to whatever scroller contains the widget, so a
 control that reacts to the wheel and does not consume it both zooms *and* scrolls
 its parent. Nothing is consumed by default, which is what keeps a widget inside a
 scroller from breaking scrolling by existing.
+
+`touch` is the third argument, `true` when the scroll came from **fingers on a touchpad**
+and `false` from a wheel: a notch means *a step* (zoom one level), two fingers mean
+*move the content* (pan), and a program that zooms with the pinch has nothing left
+to give two fingers but that. GTK does not say which, so the runtime **infers** it: a
+wheel turns whole notches, a pad reports fractions, and a whole number inside a pad's
+stream (it is dense) is still the pad.
 
 
 **A finger is a mouse that sometimes says more.** A tap is a click and a one-finger
