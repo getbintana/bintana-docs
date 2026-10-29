@@ -512,7 +512,7 @@ touch screen. Four things a mouse cannot say:
   control, the long press that opened a menu. **A program that tracks a drag by
   hand drops it here**; one that files the result in `MouseUp` would otherwise
   file what was abandoned. Raised once per press, and never without a `MouseDown`.
-- `Gestures = true` turns on, **for that control**, `Swipe(vx, vy)` (a one-finger
+- `Gestures = true` turns on, **for that control**, `Swipe(vx, vy, fingers)` (a flick, with one, three or four fingers: a touchpad's three- and four-finger swipe is the same event; two fingers moving are `Transform`'s pan. A one-finger
   flick, in pixels per second) and `Transform(phase, dx, dy, scale, angle, x, y)`:
   two fingers as **one stream** for pan, zoom and rotate, each number a change
   since `"Begin"` (`scale` is `1` at the start, `angle` is degrees, clockwise).
