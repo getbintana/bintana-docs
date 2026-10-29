@@ -2961,6 +2961,51 @@ Before this, an elastic form arrived piled at the origin with negative
 coordinates, which is the concrete sense in which the IDE could not be written in
 itself: its own window is a column of boxes and splits.
 
+### From coordinates to boxes
+
+*Format › Arrange in boxes* takes controls placed by hand and gives back the
+rows, columns and grids they were a drawing of -- the step from a `Fixed` form,
+where N controls are N anchoring decisions, to one that adapts to a translation,
+a bigger font or a wider window. Two gestures, one command:
+
+| selected | what happens |
+|---|---|
+| nothing (a `Fixed` form) | **the form itself becomes the box**: its `Arrangement` turns `Vertical` or `Horizontal`, the inset it was drawn with becomes its `Margin` |
+| one `Panel` placed by coordinate | the same, for that panel; its inset becomes `Padding` |
+| two or more siblings in a `Fixed` | they are wrapped in a new container **where they were**, and the rest of the form stays drawn — one region at a time |
+
+How the drawing is read (`ide/modules/Arrange.js`, which takes rectangles and
+answers a tree, with no form in it):
+
+- **Bands, recursively** -- the XY-cut of document analysis: rows wherever
+  nothing straddles the gap between them, each row into columns the same way.
+- **Consecutive rows with the same columns, lined up, become a `Grid`**: the
+  block of labels and fields every data-entry form has.
+- **A gap three times the others (and at least 24 px) splits a row or a column**
+  into a start group and an end group, and the end group expands and keeps to the
+  end: the *Help ... OK Cancel* row, and buttons at the bottom of a column.
+- **Where each control sits in its cell is read from where it was**: one that
+  spanned the band fills it, one that touched an edge keeps to that edge, one in
+  the middle is centred.
+- **What grows is read from the class**: a list, an editor, a table, a picture
+  takes the room along its box; a field (`TextBox`, `ComboBox`, `SpinBox` ...) in
+  the last column of a grid, or in a row, takes the width.
+- **Controls that overlap on both axes cannot be cut**, so they stay placed by
+  coordinate in a `Panel` of their own -- the console says how many -- and a
+  selection made only of those is refused.
+
+It is done on the `.form`: the snapshot undo keeps is rewritten and restored, so
+**it is one undo**, and every control keeps its name -- and with it the
+handlers its form's code holds. Spacing is the smallest gap that was drawn,
+so nothing comes out further apart than it was.
+
+What does not survive is a drawing smaller than the controls: a `TextBox` drawn
+24 tall is 32 by nature, which a coordinate let it overflow and a box does not,
+so the rows under it come down by the difference. And a child that fills a grid
+cell gets its drawn size as `MinWidth`/`MinHeight`, because under `Fill` the
+runtime asks GTK for the minimum and not for `Width` -- without it a label
+column drawn 80 wide collapses to its text.
+
 ### The tab order, as a list
 
 `TabIndex` is a number in the property grid, and a tab order is a relation —
