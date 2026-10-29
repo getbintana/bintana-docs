@@ -314,7 +314,7 @@ claims them for its default widget, which is what `Button.Default` is for.
 ## Form: the window
 
 `Text` (alias `Caption`), `Icon`, `Modal`, `Resizable`, `Maximized`,
-`FullScreen`, `HideOnClose`, `Decorated`, `DragToMove`, plus everything a
+`FullScreen`, `HideOnClose`, `Remember`, `Decorated`, `DragToMove`, plus everything a
 container has.
 Read-only: `Controls`, `Menus`, `DefaultButton`, `CancelButton`.
 Methods: `Show()`, `Close()`, `Center()`, `Minimize()`, `Serialize()`,
@@ -340,6 +340,12 @@ Events: `Open`, `Close`, `Resize(width, height)`.
 - `Maximized` and `FullScreen` read `false` until there is a window; setting one
   before `Show()` applies it when the window appears. Keep them out of the
   `.form`.
+- **`Remember: true` gives the window back as it was left** — its size, whether
+  it was maximised, and where each *named* `Split` sat — from `Settings`, under
+  `window.<FormClass>`. It is restored **before** `Form_Open`, so a handler
+  that sizes the window still wins, and written when the window closes or
+  `Application.Quit()` runs. The size kept is the last one seen un-maximised.
+  There is no position: GTK4 cannot place its own window.
 - `Resizable: false` bounds the *user*, not the layout: the contents still drive
   the window's size, so a translated caption still opens it wider.
 - `Center()` is a no-op on Wayland — the compositor places windows.

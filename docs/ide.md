@@ -1354,6 +1354,46 @@ matters because the child is the runtime running somebody's program.
 A real terminal is still one tab away: see [*the terminal
 tab*](#the-terminal-tab).
 
+### Preview: the form as somebody else sees it
+
+*Form → Preview…* (`Ctrl+Shift+V`) runs **the form in the active tab on its
+own**, the way a person with another desktop will see it:
+
+| | |
+|---|---|
+| Language | *As written*, or one of the project's catalogues in `po/` |
+| Text size | as the desktop says, 125%, 150% or 200% — what *Large Text* does |
+| Theme | as the desktop says, light or dark |
+| Right to left | the direction an Arabic or Hebrew desktop lays out in |
+
+A form drawn by coordinates breaks in exactly the combinations its author never
+sees: a translation a third longer, a larger text, a colour that only reads on
+one theme, a `Fixed` surface that does not mirror. This is the cheapest way to
+look.
+
+**It runs the real form and draws nothing of its own**: the runtime takes the
+four as options of a run — `bintana --form <Class> --text-scale 1.5 --theme
+dark --rtl` with `LANGUAGE=es` — and the console shows that line. It is a child
+**beside Run, not instead of it**: it neither clears the console nor takes the
+Stop button, a second preview replaces the first, and closing the IDE closes it.
+The chosen run configuration's arguments and environment still apply, so a
+project that needs them to start still starts. What was chosen is offered again
+next time.
+
+### Tests
+
+*File → New test…* writes `tests/<Name>Test.js` with one test that fails until
+it is written — a template that passes says something untrue. *Project → Run
+tests* (`Ctrl+Shift+T`) runs `bintana test --json` on the project with the
+chosen run configuration, and the **Tests** page of the bottom panel fills with
+a row per test: failures first, each with its message, the passing ones with
+their time. The tab says how many failed. Double-click a failure to go to its
+line. What the run prints that is not a result goes to Output.
+
+The runtime runs the tests and the IDE reads its answer, so what the IDE shows
+is what CI gets. `tests/` is not in `sources` and Check does not ask for it to
+be: a normal run never loads it. See [`Test`](reference/globals/Test.md).
+
 ### From the error to the line
 
 A traceback names a place -- `at Boom_Click (/path/Form1.js:42:30)` -- and
@@ -1648,7 +1688,7 @@ one has its name, a manifest lists a source that is not there, a `.js` sits on
 disk that nothing loads. Those are just as wrong in a file nobody has open, and
 until this nothing looked.
 
-**Seven checks, and every one of them was measured before it was written** — by
+**Nine checks, and every one of them was measured before it was written** — by
 writing it wrong on purpose and watching what the runtime did:
 
 | Written | What happens |
@@ -1660,6 +1700,7 @@ writing it wrong on purpose and watching what the runtime did:
 | a `.js` `sources` does not list | never loaded; the symptom is a `ReferenceError` in another file |
 | a key nothing reads | ignored — `"format"` was in one of this repository's own examples |
 | source that does not compile | refused at the first line, **in every `.js` and not only in the ones with a `.form` beside them** — a module is most of a project, and the save-time check reads the tab in front of you, so a module was read by nobody at any point and its mistake arrived as a `ReferenceError` in whichever *other* file called it |
+| a handler whose control is gone | `Btn1_Click()` after `Btn1` was renamed or deleted in the designer is called by nobody. Reported when the half after the underscore is **an event some control raises** — so `save_draft` is a helper and stays quiet — and not for a name the file builds itself (`this.Btn1 =` or `"Btn1"` in it), which binds by `Name` like a declared one |
 | a call to a name this language took | `setTimeout(fn, 100)` says `setTimeout is not part of this language: use Timer.After(delay, tick) — the delay comes first`. The table is the runtime's own (`Application.Replacements()`), built out of the rows it deletes the names with, and the check is asked of **call targets and nothing else** — a member on somebody else's object, a declaration, a key and a mention inside a string are all quiet, because a check that reports those is a check somebody switches off |
 
 The collision pair is the subtle one, and it is why the test is `in` against a

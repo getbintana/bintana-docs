@@ -420,6 +420,29 @@ JavaScript interpreter handed to the caller.** Which rules out the easy answer
 
 It is not built, and nothing in the tree waits on it: the four completions worth
 having need none of it (see [ide.md](ide.md#what-the-editor-proposes)).
+
+### Running it another way
+
+Options go **before** the project directory; whatever follows it is the
+project's, as `Arguments`. `bintana --help` lists them all.
+
+| Option | |
+|---|---|
+| `--strict` | a control refuses a property its class does not have |
+| `--debug` | stop before the project runs and wait for the IDE's debugger |
+| `--profile <file>` | write a Sysprof capture of the runtime's own marks |
+| `--form <Class>` | open that form instead of `startup`, as an instance of its own even in a single-instance project. A project that declares `main` is refused |
+| `--text-scale <factor>` | text as the desktop's Large Text makes it — `1.25`, `1.5`, `2` (0.5 to 4). It multiplies `gtk-xft-dpi`, so a form is seen as a person with that setting sees it |
+| `--theme dark\|light` | the theme's dark or light variant; `Dark` answers it |
+| `--rtl` | lay out right to left. Boxes mirror; a `Fixed` form does not, which is what looking at it this way shows |
+
+`bintana test [--json] <project> [filter]` runs the project's own tests instead
+of the project: see [Test](#test).
+
+The last four options are what the IDE's **Form › Preview** runs: one form, in another
+language (`LANGUAGE=es`), a larger text, the other variant or the other
+direction, without walking the program to it.
+
 ## Environment
 
 The context a program was started in: its environment, its directory, and the few
@@ -1518,6 +1541,66 @@ answers *what o'clock*, which is a different question with a different answer fo
 the same number; and the colons and leading zeros of `2:15:00,05` are the same in
 every language. The one part that is not is the mark before the hundredths, which
 is `Locale.DecimalPoint`.
+
+## UndoStack
+
+What Edit › Undo takes back. **A step is two functions** — what to do and what
+to take back — not a snapshot of the document, so it costs what the edit costs.
+
+```js
+const undo = new UndoStack();                   // keeps 100 steps; new UndoStack(0) keeps all
+undo.Do("Move card", () => card.Move(x, y), () => card.Move(ox, oy));
+undo.Add("Typing", () => { f.Text = now; }, () => { f.Text = before; });  // already happened
+undo.Group("Paste", () => { for (const c of cards) undo.Do("add", ...); });  // one step
+undo.Undo(); undo.Redo();                       // false when there was nothing
+undo.MarkClean();                               // after a save; Modified is false again
+undo.OnChange = () => { this.MnuUndo.Enabled = undo.CanUndo; };
+```
+
+| | |
+|---|---|
+| `Do(text, redo, undo)` | runs `redo`, then records the step. A `redo` that throws records nothing |
+| `Add(text, redo, undo)` | records a change that already happened, without running it |
+| `Group(text, fn)` | every step inside `fn` becomes one; a throw takes back what it had done |
+| `Undo()`, `Redo()` | take back / do again; `false` when there was nothing. An `undo` that throws stays on the list |
+| `CanUndo`, `CanRedo`, `UndoText`, `RedoText` | what the Edit menu shows |
+| `Modified`, `MarkClean()` | whether the document differs from the last save, by position in the list |
+| `Limit` | how many steps are kept, oldest first to go; `0` for no limit |
+| `Clear()` | forgets both lists |
+| `OnChange` | called after every change to either list |
+
+**A new step after an `Undo` forgets the redo list**, as every editor does. A
+step that calls `Do` from inside its own `redo` or `undo` is refused: it would
+record the undo itself.
+
+## Test
+
+A project's own tests: `tests/<Name>Test.js`, one class per file named like it,
+extending `Test`, each `test…` method one test. `bintana test <project>
+[filter]` loads the project as a run does, then the tests, and calls each method
+on a new instance with `Setup()` before and `Teardown()` after; it ends `0` when
+all passed and `1` when one did not. `--json` prints one line per test (`Event`,
+`Class`, `Name`, `Ok`, `File`, `Line`, `Ms`, `Message`) and a `Done` line.
+
+```js
+class InvoiceTest extends Test {
+    testTotal()  { this.Eq(new Invoice([10, 5]).Total, 15); }
+    testRefuse() { this.Throws(() => new Invoice([-1])); }
+    testLater()  { load(); this.Until(() => loaded, () => this.Check(ok)); }
+}
+```
+
+| | |
+|---|---|
+| `Eq(got, want, [what])` | same value; arrays and plain objects by JSON; `Decimal`/`Day` by text |
+| `Check(cond, [what])` | `cond` is `true` |
+| `Throws(fn, [what])` | `fn` throws; answers what it threw |
+| `Fail(message)` | fails now |
+| `Until(cond, then, [{ Ms, What }])` | the one way to wait: counted, and a failure naming `What` after `Ms` (5000) |
+| `Setup()`, `Teardown()` | before and after each test |
+
+**A test fails alone**, an uncaught error in a callback while it runs included.
+**A normal run never loads `tests/`.**
 
 ## Profile
 

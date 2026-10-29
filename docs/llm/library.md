@@ -24,7 +24,7 @@ Every name here is a global: ambient, always present, no import.
 | `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm`. **A top-level `class` is a lexical binding and not a property of the global object**, so a library's and a project's classes are *not* in it -- nor what a module exports, which is on the global object and left out on purpose: it is the program's and not the runtime's -- read those out of the sources, which is what the IDE does. It exists because the alternative is a hand-written list of global names, and there are a hundred and sixty-four of them |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once. The other direction of the lookup: `LibraryPath` resolves a name you already know, this is what a dialog that offers a choice needs |
 | `Replacements()` | every name this language takes away, and what to write instead. It is a bag keyed by the name that went: `{ setTimeout: "Timer.After(delay, tick) — the delay comes first", "Object.assign": "{ ...a, ...b }", … }`. **`""` where there is no word for that thing here**, which is an answer rather than a gap in the table. An editor asks it of an identifier nobody can find, so a beginner meets `Timer` at the token rather than a `ReferenceError` at the next run |
-| `OnError` | assign `(message, stack) => …` to take over uncaught errors |
+| `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`**. Without it an uncaught error goes to the terminal and to a window of the runtime's own; with it, to the handler instead. An error raised inside the handler reaches only the terminal. `null` until assigned |
 | `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success; `Quit()` is `0`. **An uncaught error makes a `main` project exit `1` unless `Quit` said otherwise** — a traceback that leaves the status at `0` is a failure a runner reads as success too |
 
 `BTA_VERSION` is the **runtime's** version, and is not
@@ -673,7 +673,7 @@ back through `Load`.
 
 **A worker is this language, not a subset of it.** Its context is built the
 way the main one is — the same `init` functions, then the same `rad.js` — so
-`Decimal`, `Bytes`, `Dictionary`, `Regex`, `Stopwatch`, `Record`, `Field` and
+`Decimal`, `Bytes`, `Dictionary`, `Regex`, `Stopwatch`, `UndoStack`, `Record`, `Field` and
 `Table` are all there, with `print`, `Logger`, `Day`/`Time`, `Hash`,
 `File`/`Directory` for reading, `Database`/`Sqlite`, and an `Application` that
 answers facts.
@@ -930,6 +930,32 @@ wrong or negative.
 
 **A tick decides when to repaint; what is painted comes from `Elapsed`.** Adding
 100 per 100 ms tick falls behind and never catches up.
+
+## UndoStack
+
+What Edit › Undo takes back. A step is two functions, `redo` and `undo`, not a
+snapshot.
+
+`new UndoStack([limit])` (default 100, `0` no limit). `Do(text, redo, undo)` runs
+and records; `Add(text, redo, undo)` records a change that already happened;
+`Group(text, fn)` makes every step inside one; `Undo()`/`Redo()` answer `false`
+when there was nothing. `CanUndo`, `CanRedo`, `UndoText`, `RedoText`, `Limit`,
+`Clear()`. `MarkClean()` after a save, and `Modified` says whether the document
+differs from it. `OnChange` is called after every change.
+
+**A new step after an `Undo` forgets the redo list.** A `redo` that throws in
+`Do` records nothing; an `undo` that throws stays on the list; a step cannot
+record another from inside itself.
+
+## Test
+
+A project's own tests, run by `bintana test <project> [filter]` (`--json` for
+one line per test). `tests/<Name>Test.js`, one class per file named like it,
+`extends Test`; each `test…` method is a test, on a new instance, with
+`Setup()`/`Teardown()` around it. Assertions: `Eq(got, want, [what])`,
+`Check(cond, [what])`, `Throws(fn, [what])` (answers the error), `Fail(msg)`.
+`Until(cond, then, [{ Ms, What }])` is the only way to wait. Ends `0` when all
+passed, `1` otherwise. A normal run never loads `tests/`.
 
 ## Profile
 

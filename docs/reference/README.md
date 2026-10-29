@@ -174,9 +174,11 @@ members, twice — once in its summary and once where it is explained.
 | [Settings](globals/Settings.md) | what the application remembers between runs |
 | [Stopwatch](globals/Stopwatch.md) | how long something took |
 | [Task](globals/Task.md) | a class that runs in a thread of its own, and answers once |
+| [Test](globals/Test.md) | a project's own tests, run by `bintana test` |
 | [Text](globals/Text.md) | what a string measures, asked where there is no painter |
 | [Time](globals/Time.md) | the clock half of [`Day`](globals/Day.md), and the same bargain |
 | [Timer](globals/Timer.md) | doing something later, or repeatedly |
+| [UndoStack](globals/UndoStack.md) | what Edit › Undo takes back, as pairs of functions |
 | [Zip](globals/Zip.md) | reading the container every office document, ebook and jar is |
 
 ### libraries/

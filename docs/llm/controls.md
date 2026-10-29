@@ -1518,6 +1518,7 @@ The window. See [forms.md](forms.md#form-the-window) for the behaviour a table c
 | `Icon` | the window's icon, for a task list or a dock. A name the theme lacks is not shown but **is kept**, so a `.form` round-trips |
 | `Maximized` | a **state**: reads `false` until there is a window; set before `Show()` it applies when the window appears. **Keep it out of the `.form`** |
 | `Modal` | blocks its parent. Made transient for the active window on `Show()` |
+| `Remember` | the window comes back as the person left it: its size, whether it was maximised and where each named `Split` divider sat, kept in `Settings` under `window.<FormClass>`. Restored before `Form_Open`, so a handler that sizes the window itself still wins; written when the window closes or `Application.Quit` runs. **There is no position**: GTK4 cannot place its own window. Default `false` |
 | `Resizable` | bounds the **user**, not the layout: the contents still drive the size, so a longer translation still opens it wider. Default `true` |
 | `Text` | the window title. **Translated**. `Caption` is an alias |
 | `DefaultButton` (ro) | the button Enter presses, resolved from whichever declared `Default`. **`null` inside `Form_Open`** — it is settled after that handler |

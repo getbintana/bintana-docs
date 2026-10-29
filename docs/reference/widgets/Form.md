@@ -20,6 +20,7 @@ dispatches every event to a method. A form is also a
 | `Icon` | the window's icon, for a task list or a dock | [how it appears](#how-it-appears) |
 | `Maximized` | a **state**: reads `false` until there is a window; set before `Show()` it applies when the window appears | [how it appears](#how-it-appears) |
 | `Modal` | blocks its parent | [showing and closing](#showing-and-closing) |
+| `Remember` | the window comes back as the person left it: its size, whether it was maximised and where each named `Split` divider sat, kept in `Settings` under `window.<FormClass>` | [how it appears](#how-it-appears) |
 | `Resizable` | bounds the **user**, not the layout: the contents still drive the size, so a longer translation still opens it wider | [how it appears](#how-it-appears) |
 | `Text` | the window title | [how it appears](#how-it-appears) |
 | `Center()` | **a no-op on Wayland**: the compositor places windows. [`Screen`](../../llm/library.md#screen) answers how big the desktop is, which is a different question from where a window goes | [how it appears](#how-it-appears) |
@@ -83,6 +84,7 @@ A field that should press the default button on Enter says so itself with
 | `FullScreen` | the same, for the whole screen |
 | `Decorated` | whether the desktop draws a title bar and a frame. `false` is a window of only its contents — a clock, a splash, a palette — which **cannot be moved by the user** unless it also says `DragToMove`. With a `Background` of `"rgba(0,0,0,0)"` the desktop shows through wherever nothing is drawn, on a compositing desktop. Default `true` |
 | `DragToMove` | a press dragged anywhere on the form that **no control claims** moves the window, as a header bar does. A press that does not move past the desktop's threshold is still a click — `MouseDown`, `DblClick` and a `Button`'s `Click` arrive — and a `TextBox` claims its drag and still selects; a drag that starts on a `Button` moves the window, the same as in GTK's own header bars. What a window with `Decorated` `false` needs to be movable at all. Default `false` |
+| `Remember` | the window comes back as the person left it: its size, whether it was maximised and where each named `Split` divider sat, kept in `Settings` under `window.<FormClass>`. Restored before `Form_Open`, so a handler that sizes the window itself still wins; written when the window closes or `Application.Quit` runs. **There is no position**: GTK4 cannot place its own window. Default `false` |
 | `Minimize()` | a verb because there is nothing to read back — GTK reports nothing about a minimised window |
 | `Center()` | **a no-op on Wayland**: the compositor places windows. [`Screen`](../../llm/library.md#screen) answers how big the desktop is, which is a different question from where a window goes |
 | **event** `Resize(width, height)` | the size GTK settled on — the same numbers `Bounds()` gives. Fires when the window is first given a size too |

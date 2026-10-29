@@ -21,7 +21,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once | [libraries](#libraries) |
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`** | [libraries](#libraries) |
 | `Name` | from `project.json` | [the project](#the-project) |
-| `OnError` | assign `(message, stack) => …` to take over uncaught errors | [when something throws](#when-something-throws) |
+| `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`** | [when something throws](#when-something-throws) |
 | `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again | [a second run](#a-second-run) |
 | `Quit(code)` | quit with that exit status | [ending](#ending) |
 | `Replacements()` | every name this language takes away, and what to write instead | [asking about the machine](#asking-about-the-machine) |
@@ -143,7 +143,7 @@ hand-written table of fourteen global names**, which was missing about eighteen 
 
 | | |
 |---|---|
-| `OnError` | assign `(message, stack) => …` and uncaught errors arrive there instead of ending the program |
+| `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`**. Without it an uncaught error goes to the terminal and to a window of the runtime's own; with it, to the handler instead. An error raised inside the handler reaches only the terminal. `null` until assigned |
 
 For an application that wants to log them, show them, or keep going. A test
 suite assigns it to fail loudly; the IDE assigns it to put the error in its log
