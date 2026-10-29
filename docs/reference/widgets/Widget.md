@@ -115,6 +115,7 @@ in the section.
 | `MouseMove(x, y, button, ctrl, shift)` | it moved over it; `button` is `0` | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `MouseUp(x, y, button, ctrl, shift)` | and came up | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `MouseCancel(x, y)` | the press that began with a `MouseDown` is not going to end in a `MouseUp`: something took it -- a second finger, a drag and drop that began from this control, a scroller that claimed a touch drag. Drop what the press was doing; `x` and `y` are the last point it was seen at. Raised once per press, and never without a `MouseDown` before it | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
+| `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 | `MouseWheel(dx, dy)` | the wheel turned. **`true` consumes it** | [the mouse and the keyboard](#the-mouse-and-the-keyboard) |
 
 **And what `rad.js` adds**, on every widget just the same — `PropertyNames()`,
@@ -367,6 +368,7 @@ Every widget raises these, with coordinates **relative to itself**:
 | **event** `MouseDown(x, y, button, ctrl, shift)` | coordinates are relative to the widget |
 | **event** `MouseUp(x, y, button, ctrl, shift)` | and came up |
 | **event** `MouseCancel(x, y)` | the press that began with a `MouseDown` is not going to end in a `MouseUp`: something took it -- a second finger, a drag and drop that began from this control, a scroller that claimed a touch drag. Drop what the press was doing; `x` and `y` are the last point it was seen at. Raised once per press, and never without a `MouseDown` before it |
+| **event** `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here |
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |

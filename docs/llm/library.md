@@ -1405,6 +1405,7 @@ Screen.Monitors()               // [{ X, Y, Width, Height, Scale, Name }, …]
 |---|---|
 | `Width`, `Height` (ro) | the monitor the application's active window is on; the first one the display lists before any window is shown, and `0` with no display at all |
 | `Scale` (ro) | that monitor's scale factor, `1` unless the panel is HiDPI |
+| `Touch` (ro) | whether the display has a touch screen at all (the seat reports one), which is not whether the person is using it: a laptop with one is `true` under a mouse. It is for choosing bigger targets, never for hiding the mouse's way |
 | `Monitors()` (ro) | every monitor: `X`/`Y` are where it sits in the desktop's coordinates, `Width`/`Height`/`Scale` are its own, and `Name` is the connector — `"HDMI-1"`, `"eDP-1"` — **a key to remember a choice by, not prose to show** |
 
 **The numbers are the same pixels a form's `Width` is** — logical ones, with the
