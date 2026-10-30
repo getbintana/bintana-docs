@@ -2137,7 +2137,10 @@ the line *changes*, so two statements it runs together share one -- `let total =
 mark beside a line like that is a lie the programmer then acts on, so the
 runtime answers where it really landed and the mark follows, with a line in the
 log saying what moved and why. It is what every editor does with a click on a
-blank line.
+blank line. **It stays in its function**: one on a closing brace goes back to
+that function's last line that can stop, not forward into the next function,
+and one past the last line of the file that can stop is taken off, with a line
+in the log saying so.
 
 **Breakpoints go down before the program runs.** `--debug` stops the runtime
 after the globals are installed and before a line of the project is read, and
@@ -2215,16 +2218,9 @@ would be a second answer to a question that has one.
 
 ### What it cannot do yet
 
-- **A program being debugged runs two to five times slower** than one that is
+- **A program being debugged runs two to four times slower** than one that is
   run: the runtime is asked at every new line whether to stop. A program run
   with *Run* pays nothing for the debugger existing.
-- **A breakpoint past the last statement of a function moves into the next
-  one.** What it moves to is the first line *of the file* that can stop at or
-  after the one asked for, and the file is all the debugger knows about: a
-  breakpoint on a closing brace has nothing left in that function to move to.
-  It is visible rather than silent -- the mark moves and the log says so -- but
-  landing in the next method is a surprise. Fixing it wants the line ranges per
-  function and not just the set.
 - **A loop written entirely on one line stops once.** `for (let i = 0; i < 3;
   i++) total += i;` never leaves its line, and what the debugger watches is the
   line changing. Telling those apart wants the pc rather than the line.
