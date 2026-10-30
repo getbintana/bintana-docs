@@ -1407,6 +1407,7 @@ as everywhere.
 
 - `Dialog.SelectFolder(title, [options], cb)`
 - `Dialog.OpenFile(title, [options], cb)`
+- `Dialog.OpenFiles(title, [options], cb)` — several at once; the callback is handed an array of paths
 - `Dialog.SaveFile(title, [options], cb)`
 - `Dialog.Color(title, current, cb)`
 

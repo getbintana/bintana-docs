@@ -54,7 +54,7 @@ with `[object Object]`, and is now a refusal that says so.
 | `Directory(path)` | `/a/b/c.js` → `/a/b` | [paths](#paths) |
 | `Extension(path)` | `js` — no dot, `""` when there is none | [paths](#paths) |
 | `IsExtension(path, ext)` | whether the name ends in that extension, **case-insensitively** | [paths](#paths) |
-| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses | [paths](#paths) |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised** | [paths](#paths) |
 | `Name(path)` | `/a/b/c.js` → `c.js` | [paths](#paths) |
 | `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself | [paths](#paths) |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` | [paths](#paths) |
@@ -153,7 +153,7 @@ and giving a file verb two meanings would be the wrong place to put it.
 
 | | |
 |---|---|
-| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
 | `Absolute(path)` | the path resolved against the working directory |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
 | `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |

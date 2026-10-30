@@ -9,6 +9,7 @@ choosers.
 |---|---|---|
 | `Color(title, current, cb)` | the desktop's colour chooser, opening on `current` | [a colour](#a-colour) |
 | `OpenFile(title, [options], cb)` | the file chooser, for something that exists | [a file or a folder](#a-file-or-a-folder) |
+| `OpenFiles(title, [options], cb)` | the file chooser letting several be picked at once: the callback is handed **an array of paths**, and is not called when the person cancels | [a file or a folder](#a-file-or-a-folder) |
 | `SaveFile(title, [options], cb)` | the same, for somewhere to write | [a file or a folder](#a-file-or-a-folder) |
 | `SelectFolder(title, [options], cb)` | for a directory | [a file or a folder](#a-file-or-a-folder) |
 
@@ -17,6 +18,7 @@ choosers.
 | | |
 |---|---|
 | `OpenFile(title, [options], cb)` | the file chooser, for something that exists |
+| `OpenFiles(title, [options], cb)` | the file chooser letting several be picked at once: the callback is handed **an array of paths**, and is not called when the person cancels. The same options as `OpenFile` |
 | `SaveFile(title, [options], cb)` | the same, for somewhere to write |
 | `SelectFolder(title, [options], cb)` | for a directory |
 
@@ -31,6 +33,11 @@ Dialog.SaveFile(Locale.Text("Save as"),
     { Folder: Application.Directory, Name: "note.txt",
       Filters: [[Locale.Text("Text"), "*.txt"], [Locale.Text("All files"), "*"]] },
     (path) => File.Save(path, this.Editor.Text));
+
+// several at once: one dialog, and the callback is handed them all
+Dialog.OpenFiles(Locale.Text("Open the statements"),
+    { Filters: [[Locale.Text("Spreadsheets"), "*.xlsx *.csv"]] },
+    (paths) => { for (const path of paths) this.Import(path); });
 ```
 
 **The callback is required — passing none throws — and it is not called when the

@@ -295,7 +295,8 @@ made a folder called `undefined`. The one exception is the question:
 | `Info(path)` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond |
 | `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
 | `Open(path)` | hands the file to whatever the desktop opens that kind with. **It answers before the file is open**: launching is asynchronous and the program that opens it is somebody else's, so what this promises is that the request was made. A file that is not there is refused *here*, which is the failure a caller can do something about |
-| `Join(a, b, …)`, `Absolute(path)` | |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
+| `Absolute(path)` | the path resolved against the working directory |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
 | `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
@@ -755,6 +756,7 @@ as everywhere.
 ## Dialog
 
 - `Dialog.OpenFile(title, [options], cb)`
+- `Dialog.OpenFiles(title, [options], cb)` — several at once; the callback is handed an array of paths
 - `Dialog.SaveFile(title, [options], cb)`
 - `Dialog.SelectFolder(title, [options], cb)`
 - `Dialog.Color(title, current, cb)`
