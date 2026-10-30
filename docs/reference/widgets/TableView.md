@@ -68,6 +68,7 @@ not repeated here.
 | `RemoveRow(index)` | takes that row out | [the rows](#the-rows-it-holds) |
 | `RemoveNode(key)` | takes that node out, **and the subtree with it** | [a tree](#a-tree) |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one | [the rows](#the-rows-it-holds) |
+| `Refilter()` | says the answer to `Filter` may have changed, and asks it again of every row | [filtering](#filtering) |
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared | [the rows](#the-rows-it-holds) |
 | `Select(index)` | move the selection from code | [the selection](#the-selection) |
 | `SelectAll()` | with `MultiSelect` | [the selection](#the-selection) |
@@ -85,6 +86,7 @@ not repeated here.
 | `Activate()` | raises `Activate` for that visible position, as a double click would; the selected row with no argument | [the selection](#the-selection) |
 | `CellChange(row, column)` | the current cell moved; `null` and `-1` say it was cleared | [the current cell](#the-current-cell) |
 | `Data(row, column)` | a cell is needed — **the answer is the return value** | [on demand](#on-demand-a-table-that-holds-nothing) |
+| `Filter(row)` | asked of each row — **returning `false` hides it** | [filtering](#filtering) |
 | `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
@@ -345,6 +347,35 @@ application's. `CellEdit` says so in its `how`, so **an edit that ends with one
 is reported even when the text did not change**: the whole message is *this edit
 is over, move on*. Enter arrives as `KeyPress` before the view activates the
 row, so a grid can use it without the row's dialog opening instead.
+
+## Filtering
+
+| | |
+|---|---|
+| `Refilter()` | says the answer to `Filter` may have changed, and asks it again of every row. The whole of the API on this side: what the handler answers from -- a search field, a tick -- is the program's, and nothing here can see it change. A tree and a table answering `Data` refuse it |
+| **event** `Filter(row)` | asked of each row as it arrives and on `Refilter()`. **Returning `false` hides the row**; no handler shows every one. **A hidden row is still a row**: `Count` counts it, and `Index`, `Selection`, `Select`, `Cell` and every event number by it, so an index means the same row whatever is typed in a search. A lookup and nothing else: it runs while the table is told about rows. A flat table that holds its rows -- not a tree, not one answering `Data` |
+
+```js
+// a search box over the table: the answer is the return value
+Grid_Filter(row) {
+    return this.Search.Text === "" ||
+           this.Grid.Cell(row, 0).toLowerCase().includes(this.Search.Text.toLowerCase());
+}
+Search_Change() { this.Grid.Refilter(); }
+```
+
+**A hidden row is still a row.** `Count` counts it, and `Index`, `Selection`,
+`Select`, `Cell` and every event number by it -- so an index means the same row
+whatever is typed in the search, and a program that keeps its data beside the
+table keeps it by the same numbers. A hidden row cannot be selected or revealed
+(`Select` and `Reveal` answer `false`). Rows added while a filter is on are
+asked as they arrive, and a sort asks every row again. With no handler every
+row shows.
+
+**A lookup and nothing else**: `Filter` runs while the table is being told
+about rows, so it reads -- `Cell`, a field, the program's own data -- and
+changes nothing. A tree and a table answering `Data` are not filtered, and
+`Refilter()` refuses there, saying why.
 
 ## Sorting
 
