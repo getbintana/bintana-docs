@@ -2141,6 +2141,16 @@ object is rendered **by what is in it** -- `{ nombre: "Ana", saldo: 31 }`, one
 level and a handful of fields -- because `[object Object]` is what a debugger
 shows when it has given up.
 
+**And a value with fields in it opens.** A triangle beside the row opens it onto
+its fields, a level in, each of which opens in turn -- `client`, then
+`client.address`, then `client.address.city`. An array opens onto its first 200
+items and counts the rest. What is open stays open as the program is stepped,
+and is asked again at every stop, since what is inside a value is the
+program's and has moved on. A watch that holds an object opens the same way.
+Each row is reached by an expression the runtime evaluates where the frame
+stands, exactly as a watch is, so the panel never shows a value from a stop
+that is over.
+
 **And the box under it asks.** An expression typed there is answered where the
 program is standing, in the frame that is chosen; the answer goes to the log,
 the way Visual Basic's immediate window keeps a conversation rather than one
@@ -2181,20 +2191,22 @@ would be a second answer to a question that has one.
 
 ### What it cannot do yet
 
-- **The hook costs what it costs.** A branch per opcode is +12 to +16 % with the
-  debugger off, measured; the fix is stage 5 of the plan -- patching the
-  bytecode where a breakpoint is armed, which costs nothing while none is.
+- **A program being debugged runs two to five times slower** than one that is
+  run: the runtime is asked at every new line whether to stop. A program run
+  with *Run* pays nothing for the debugger existing.
+- **It cannot stop when a value changes.** A breakpoint is a line; to find the
+  line that changes a field, a condition on a breakpoint near it, or a
+  logpoint, is what there is.
 - **A breakpoint past the last statement of a function moves into the next
   one.** What it moves to is the first line *of the file* that can stop at or
   after the one asked for, and the file is all the debugger knows about: a
   breakpoint on a closing brace has nothing left in that function to move to.
   It is visible rather than silent -- the mark moves and the log says so -- but
   landing in the next method is a surprise. Fixing it wants the line ranges per
-  function and not just the set, which is the same table stage 5 needs.
+  function and not just the set.
 - **A loop written entirely on one line stops once.** `for (let i = 0; i < 3;
   i++) total += i;` never leaves its line, and what the debugger watches is the
-  line changing. Telling those apart wants the pc rather than the line, which is
-  stage 5 of the plan.
+  line changing. Telling those apart wants the pc rather than the line.
 
 ## The terminal tab
 
