@@ -31,4 +31,7 @@ if [[ -z $BINTANA || ! -x $BINTANA ]]; then
     exit 2
 fi
 
-exec "$BINTANA" check "$PWD"
+# `./check` and not `check`: the runtime has a `check` subcommand now, and a
+# bare word would be read as it rather than as the project directory beside this
+# script.
+exec "$BINTANA" ./check "$PWD"
