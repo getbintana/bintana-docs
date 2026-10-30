@@ -1354,6 +1354,20 @@ matters because the child is the runtime running somebody's program.
 A real terminal is still one tab away: see [*the terminal
 tab*](#the-terminal-tab).
 
+### Run with profiling
+
+*Project → Run with profiling* is *Run* with `--profile <file>` added, the file
+in the temporary directory and not in the project: a capture is a measurement of
+one run, not a file of the program. The run is otherwise the same one -- the
+same configuration, arguments, directory and environment. The capture holds the
+runtime's own marks: the start-up, each script loaded, each form built, each
+event dispatched, each `Draw` and each `Task`, and every `Profile.Begin`/`End`,
+`Mark` and `Counter` the program makes ([`Profile`](reference/globals/Profile.md)). When
+the run ends the log names the file, and it opens in Sysprof, which is what reads
+the format; with no Sysprof installed the path is the answer. A runtime built
+without `sysprof-capture` refuses `--profile` with a sentence, and that sentence
+is what the log shows.
+
 ### Preview: the form as somebody else sees it
 
 *Form → Preview…* (`Ctrl+Shift+V`) runs **the form in the active tab on its
@@ -2151,6 +2165,16 @@ Each row is reached by an expression the runtime evaluates where the frame
 stands, exactly as a watch is, so the panel never shows a value from a stop
 that is over.
 
+**And a field can stop the program when it changes.** Activate a field that
+has nothing inside it -- `client.balance` -- and it wears a dot: the next time
+the program writes a *different* value into it, it stops **on the line that
+wrote it**, in the function that did, and the log says what it was and what it
+is. Activating it again takes the watch off. It watches that object, the one
+`client` was when you asked, not whatever `client` names later -- which is what
+a watchpoint is in every debugger. A field the object only inherits, one that
+is a getter and one that cannot be redefined are refused, with the reason in
+the log. The program pays nothing for it anywhere but at that field.
+
 **And the box under it asks.** An expression typed there is answered where the
 program is standing, in the frame that is chosen; the answer goes to the log,
 the way Visual Basic's immediate window keeps a conversation rather than one
@@ -2194,9 +2218,6 @@ would be a second answer to a question that has one.
 - **A program being debugged runs two to five times slower** than one that is
   run: the runtime is asked at every new line whether to stop. A program run
   with *Run* pays nothing for the debugger existing.
-- **It cannot stop when a value changes.** A breakpoint is a line; to find the
-  line that changes a field, a condition on a breakpoint near it, or a
-  logpoint, is what there is.
 - **A breakpoint past the last statement of a function moves into the next
   one.** What it moves to is the first line *of the file* that can stop at or
   after the one asked for, and the file is all the debugger knows about: a
