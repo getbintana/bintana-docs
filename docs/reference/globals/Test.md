@@ -27,7 +27,7 @@ bintana test --json myproject       # one JSON line per test, which the IDE read
 | | | |
 |---|---|---|
 | `Check(cond, [what])` | fails the test unless `cond` is true | [asserting](#asserting) |
-| `Eq(got, want, [what])` | fails the test unless `got` equals `want` -- the same value, or for arrays and plain objects the same JSON, or for a `Decimal` or a `Day` the same text | [asserting](#asserting) |
+| `Eq(got, want, [what])` | fails the test unless `got` equals `want` -- the same value, or for arrays and plain objects the same JSON, a `Date` with the same instant, or a `Decimal` with the same text (a `Day` is already a string, so it compares as one) | [asserting](#asserting) |
 | `Fail(message)` | fails the test now, with that message | [asserting](#asserting) |
 | `Setup()` | runs before each test method, on the instance it runs on; override it | [the run](#the-run) |
 | `Teardown()` | runs after each test method, passed or not; override it | [the run](#the-run) |

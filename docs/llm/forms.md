@@ -114,6 +114,10 @@ A child node:
 - `Arrangement` first, which is what the serialiser writes and the habit to
   keep, so that the coordinates and sizes after it are read in the layout they
   were meant for.
+- A property a class **defers** is applied after `children`, whatever its place
+  in the file. `ListBox.Index` and `ComboBox.Index` are the two: the selection
+  needs the rows `Items` brings, and the serialiser writes `Index` first because
+  it sorts. `Widget.DeferredProperties(type)` is the list when you need to know.
 
 A form with no `.form` file is legal; it is built from code.
 

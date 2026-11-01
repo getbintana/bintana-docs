@@ -374,7 +374,7 @@ Every widget raises these, with coordinates **relative to itself**:
 | **event** `LongPress(x, y)` | a press held still for about half a second, with **any** pointer, at the point it began. A touch or a pen's long press also opens the control's `PopupMenu` (the nearest one outward, as the secondary button does) and cancels the click that would follow; a mouse's does not open it -- it has a button for that -- so a program that wants one on a held mouse opens it here |
 | **event** `Transform(phase, dx, dy, scale, angle, x, y)` | two fingers, as **one stream** for pan, zoom and rotate, while `Gestures` is on. `phase` is `"Begin"`, `"Update"` or `"End"`; the rest are the change **since `Begin`** -- `dx`/`dy` how far the centre between the fingers moved, `scale` how much farther apart they are (`1` at the start, `2` twice as far), `angle` how far they turned in degrees (positive is clockwise) -- and `x`/`y` is that centre, in the control's own coordinates (on a touchpad the pointer does not move, so the centre starts at the pointer and follows the fingers' drift: the pivot to zoom about). The first finger's click ends in `MouseCancel`. **Only where the toolkit delivers a second finger**: Linux does; the Windows backend, measured, delivers one finger as a mouse |
 | **event** `Swipe(vx, vy, fingers)` | a flick as the fingers lift, while `Gestures` is on, **at 100 pixels per second or more** (GTK reports a swipe at the end of every press, a tap included, with a velocity of nothing): the velocity in pixels per second (a touchpad's are its own, accelerated units: a fast flick reads in the tens of thousands) and **how many fingers made it** -- `1` (a mouse drag released while moving is one too), `3` or `4`; two fingers moving are `Transform`'s pan. A touchpad's three- and four-finger swipe is the same event, its velocity taken from the last 100 ms of the gesture; **there is no long press with fingers on a touchpad on X11**, which has no hold gesture |
-| `Gestures` | listens for two-finger gestures and flicks: `Transform` and `Swipe` are raised only while it is `true`. Off by default -- it adds three controllers -- and claims two fingers on this control so a scroller or a click above does not also take them |
+| `Gestures` | listens for two-finger gestures and flicks: `Transform` and `Swipe` are raised only while it is `true`. Off by default -- it adds six controllers -- and claims two fingers on this control so a scroller or a click above does not also take them |
 | **event** `MouseMove(x, y, button, ctrl, shift)` | the pointer moved over it. `button` is `0` here |
 | **event** `MouseEnter(x, y)` | the question motion cannot answer: there is no `MouseMove` for having left |
 | **event** `MouseLeave()` | and left — the question motion cannot answer, since there is no `MouseMove` for having gone |
@@ -467,6 +467,7 @@ no control — a palette, a property grid, an extractor:
 
 ```js
 Widget.PropertyNames("Button")         // what a control can be set to
+Widget.DeferredProperties("ListBox")   // ["Index"] — applied after its children
 Widget.Methods("Button")               // what it can be asked to do
 Widget.EventNames("Button")            // what it raises, most derived first
 Widget.TextProperties("Button")        // which properties hold prose

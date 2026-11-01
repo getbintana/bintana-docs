@@ -379,6 +379,12 @@ A child node:
   for. Re-arranging a container that already holds children is legal and keeps
   them (see [widgets.md](widgets.md#panel-and-the-boxes)); what the ordering buys
   is that a `Fixed` node's `X`/`Y` are not applied to a box on the way in.
+  **A property a class declares as deferred is applied after `children`,
+  whatever place it has in the file**: `ListBox.Index` and `ComboBox.Index`
+  select a row, and the rows arrive with `Items` — the serialiser writes `Index`
+  first because it sorts, and the loader puts it right. `Widget.DeferredProperties(type)`
+  is the list, so the order is the class's answer and not a rule each file has
+  to remember.
 - `children` nest to any depth. A container's children are added to it, not to the
   form.
 - `design` is the other dictionary a node may carry: see below.

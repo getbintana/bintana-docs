@@ -101,6 +101,7 @@ disagree.
 | | |
 |---|---|
 | `Widget.PropertyNames(type)` → array | the properties a control of that class can be **set to** |
+| `Widget.DeferredProperties(type)` → array | the properties a `.form` applies **after the class's children are built**, in the order it declares them. A property can need the data the children bring: `ListBox.Index` selects a row, and there are no rows until `Items` has been applied -- while the serialiser writes `Index` first because it sorts. This is the answer both loaders read (`bta_form.c` for a form file, `forms.js`'s `AddNode` for a node a designer builds), so the class states the order once. `[]` for a class with no deferred property, and for a name this runtime has no class row for -- a project component, which the JavaScript loader builds |
 | `Widget.Methods(type)` → array | its methods, **most derived first**, and not its `constructor` |
 | `Widget.EventNames(type, [options])` → array | the events it raises, **most derived first**: `[0]` is the one a double click in the designer writes a handler for |
 | `Widget.TextProperties(type)` → array | which of this control's properties hold prose, which is what the catalogue collects and what a designer offers to translate |
@@ -162,7 +163,7 @@ Every control and every container has all of this.
 | Member | |
 |---|---|
 | `AcceptDrop` | receives a drop from **this application**, which arrives as `Drop(data, x, y)` |
-| `Gestures` | listens for two-finger gestures and flicks: `Transform` and `Swipe` are raised only while it is `true`. Off by default -- it adds three controllers -- and claims two fingers on this control so a scroller or a click above does not also take them |
+| `Gestures` | listens for two-finger gestures and flicks: `Transform` and `Swipe` are raised only while it is `true`. Off by default -- it adds six controllers -- and claims two fingers on this control so a scroller or a click above does not also take them |
 | `AcceptFiles` | receives files dragged in from **the desktop**, which arrive as `FileDrop(paths, x, y)`. Independent of `AcceptDrop`: a control may take one, the other, or both |
 | `Background` | any CSS colour — a value, not a reference: `"@view_bg_color"` is one too, and is refused. **For a ground, `Style` is what to reach for**: a theme paints a surface with a class, and a control that has to be on the same ground as another one wears the same class. `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
 | `Border` | width, style and colour in one string: `"2 dashed #3584e4"` |
