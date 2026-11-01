@@ -174,7 +174,14 @@ and that is the whole rule — not reading against writing:
 |---|---|
 | every widget, `Dialog`, `Message`, `Clipboard`, `Screen`, menus, printing | GTK off the main thread is a crash, not an error |
 | `Exec`, `File.Watch`, `Timer`, the asynchronous half of `Http` | the source would fire on the main thread holding this context |
-| `Settings`, `Locale` | process state the main thread owns |
+| `Settings` | process state the main thread owns |
+
+**`Locale` is there whole, with a catalogue of its own.** It is built from the
+project's and its libraries' `po/` files and pinned to the language the
+application had when `Start` was called; a language change on the main thread
+does not move the words under a running task. `Locale.Current` inside a task
+reloads only that task's catalogue. `Locale.Read`/`Write` are there too — they
+are the catalogue editor's pair and touch no catalogue at all.
 
 A task computes and reports; what is drawn happens where the answer arrives.
 

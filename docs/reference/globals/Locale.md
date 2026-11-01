@@ -115,11 +115,13 @@ never had one.
 rows.sort((a, b) => Locale.Compare(a.Name, b.Name));
 ```
 
-**A [`Task`](Task.md) gets this half and not the catalogue**: `Compare`,
-`Matches`, `Number`, `Date`, `Currency`, `Parse` and `DecimalPoint` read the
-process locale, which every thread inherits, while `Text`, `Plural`, `Context`,
-`Current`, `Available` and `Read`/`Write` read the table the main thread fills
-and reloads. So a worker sorts ten thousand names and does not translate one.
+**A [`Task`](Task.md) gets the whole `Locale`, in a catalogue of its own.**
+The worker builds it from the same `po/` directories, pinned to the language
+the application had when `Start` was called; `Locale.Current` inside the task
+reloads only that task's copy, and changing the language on the main thread
+does not move the words under a running task. So a worker can sort ten thousand
+names *and* translate the report it is writing — and `Read`/`Write` are there
+too, because they are file I/O and touch no catalogue.
 
 ## What goes wrong
 

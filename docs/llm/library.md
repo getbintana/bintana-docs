@@ -215,12 +215,12 @@ Locale.Compare("Ñanculeo", "Ortiz")
 Locale.Matches("Echeverría", "ver")   // true
 ```
 
-**In a `Task`, `Locale` is the facts and not the catalogue**: `Number`, `Date`,
-`Currency`, `Parse`, `Compare`, `Matches` and `DecimalPoint` are there, because
-they read the process locale that every thread inherits, while `Text`, `Plural`,
-`Context`, `Current`, `Available` and `Read`/`Write` are not, because they read
-a table the main thread fills and reloads. Ordering ten thousand names is the
-work a worker is started for; translating one is not.
+**In a `Task`, `Locale` is the whole object and its catalogue is the worker's
+own.** It is built from the same `po/` directories and pinned to the language
+the application had when `Start` was called: `Locale.Text`/`Plural`/`Context`
+translate, `Read`/`Write` read and write a `.po` as data, and `Locale.Current`
+inside the task reloads only that task's catalogue. Changing the language on the
+main thread does not move the words under a running task.
 
 **The options object is the same one a `DecimalBox` keeps as its format** —
 `{ Decimals, Group, Prefix, Suffix, Symbol, Before, Space, Currency }` — so a
@@ -695,12 +695,12 @@ answers facts.
 writes. Gone: every widget and `Dialog`/`Message`/`Clipboard`/`Screen` (GTK
 off the main thread is a crash), `Exec`, `File.Watch`, `Timer` and async
 `Http` (the source would fire on the main thread holding this context), and
-`Settings` (process state the main thread owns). **`Locale` is there with its
-facts and not its catalogue**: `Compare`, `Matches`, `Number`, `Date`,
-`Currency`, `Parse` and `DecimalPoint` read the process locale, which every
-thread inherits, while `Text`/`Plural`/`Context`/`Current`/`Available` read a
-table the main thread fills and reloads — so a worker orders ten thousand
-names, which is what it was started for, and cannot translate one.
+`Settings` (process state the main thread owns). **`Locale` is there whole, in
+a catalogue of its own**: it is built from the same `po/` directories and
+pinned to the language the application had when `Start` was called, so
+`Text`/`Plural`/`Context`/`Read`/`Write` work, `Locale.Current` inside the task
+reloads only that task's copy, and a language change on the main thread does
+not move the words under a running task.
 
 **And the debugger does not reach in here.** `bintana --debug` installs its hook
 on the program's own runtime; a worker's is a second `JSRuntime` on a second
