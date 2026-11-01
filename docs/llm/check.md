@@ -54,7 +54,7 @@ IDE:
 
 | Class | |
 |---|---|
-| `Check` | the pass over the project. `new Check(host).run()` answers every finding and reports them through the host; `forget()` takes them back |
+| `Check` | the pass over the project. `new Check(host).run()` answers every finding and reports them through the host; `forget()` takes them back; `applyFix(finding)` applies the one repair a finding carries (a caption's `Label.For`), which is what `bintana check --fix` and the IDE's *Fix* both call |
 | `Names` | the member and handler checks, and the taken-away-name table. It asks the host for a component's events (`componentEvents(type)`) and for the owners of an exported name (`owners()`) |
 | `Accessibility` | the three rules over a `.form`'s JSON, with `level(json)` and `kind(level)` |
 | `ProjectFile` | `project.json` as a record: the keys it may hold, validation, and `Kind` |

@@ -1515,6 +1515,22 @@ would be a second set of those four decisions. `Activate` and not `Select`, so
 that walking the list with the arrow keys to read it does not open a file per
 row — the same mistake `Cursor` would have been on the log.
 
+### The one repair a row can apply
+
+One kind of row carries a repair and not a suggestion: a field whose caption
+sits immediately above it and has no `For`. The check writes the pair into the
+finding (`Fix: { label, field }`), and the same method the command line runs
+(`bintana check --fix`) is the panel's secondary-click *Fix* — disabled until a
+row with one is selected, so the menu says what it is about before it opens.
+There is one `Check.applyFix`, so the bytes a shell writes and the bytes the
+panel writes cannot disagree.
+
+A form open with unsaved changes is refused rather than overwritten: the pass
+reads the disk, and a repair applied now would fix the old file only for the tab
+to write its buffer back. Save the form first; the row is still there. After a
+successful repair the open tab is brought up to the file, and the project check
+runs again, which is what takes the row away.
+
 ## The names a file uses, checked while it is written
 
 `Live`, and **it is not a live syntax check** — refusing to be one is the
