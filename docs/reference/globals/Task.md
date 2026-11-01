@@ -57,9 +57,13 @@ Whatever `data` holds must be plain — see below.
 
 Exactly once, however the job went:
 
-- `Run` returned → `Done(result)`.
+- `Run` returned → `Done(result)`. **A `Run` with no `return` answers
+  `Done(null)`** — a task whose work is its effect has nothing to report, and
+  that is not a message with an `undefined` in it.
 - `Run` threw → `Error(message, stack)`, the two halves
-  `Application.OnError` takes.
+  `Application.OnError` takes. An `Error` carries its message and stack; a
+  thrown string is the message, a thrown object is its JSON when it has one,
+  and anything else is `String(value)` with an empty stack.
 - `Stop()` was called → `Error("Task: cancelled")` and `Cancelled` reads
   `true`.
 - the `Timeout` fired → `Error("Task: timed out after N ms")` and
@@ -155,6 +159,9 @@ functions, class instances, cycles, `undefined`, non-finite numbers, `Bytes`.
 A `Record` crosses as what `Serialize` writes and comes back through `Load`.
 Integers past 2⁵³ lose precision in transit — cross those as text or as
 `Decimal`.
+
+The one `undefined` that is not a message is a `Run` that returns nothing: the
+answer is `null` (see [Answering](#answering)), not a value with a hole in it.
 
 ## What a worker sees
 

@@ -26,6 +26,11 @@ the view paints it with `Painter`, so a QR works where no widget can be made —
 a console project, a `Task`, a `Report`'s `DrawPage` — which is why the two are
 separate classes and not one.
 
+**A `Task` imports the encoder and not the view**: `import { QrCode } from "qr"`
+in the task's file. `QrView` is a script beside it, and the module loader skips
+a script in a worker — which is also why the encoder can be a module without
+the view dragging `Component` in.
+
 ## QrCode
 
 One static verb builds it; everything else is reading what it built.

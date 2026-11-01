@@ -15,6 +15,10 @@ Xlsx.Write("clients.xlsx", [{
 }]);
 ```
 
+**A `Task` can use it too**: `xlsx` is a module with no widget in it, so a
+worker reaches it with `import { Xlsx } from "xlsx"` and writes the workbook on
+its own thread. There is no display and no callback in the path.
+
 **It writes, and only writes.** There is no reader here — `examples/sheets` is
 the other half, and it is an example because a reader is not what this library
 promises. The name is the format and not the program: `xlsx` is the extension of
