@@ -103,9 +103,20 @@ A child node:
 | `type` | a class name: a runtime control, or one of the project's own components |
 | `name` | becomes `Widget.Name`, is exposed as `this.<name>`, and prefixes its handlers. Must be a valid identifier **in ASCII** — `A-Z`, `a-z`, `_`, `$` and then digits, which is narrower than the JavaScript underneath, where `año` is a legal name and here is not; the same holds for a node's `type`, for `startup`/`entry` and for a `Task` class — unique on the form, and **not something a `Form` already answers to** — `Actions`, `Menus`, `Controls`, `DefaultButton` and `CancelButton` are read-only, so a control called one of them binds to nothing and the form refuses to load, saying which. The same rule holds for a **menu item** and a **command**: all three blocks bind what they name on the form, by name, in the same way |
 | `properties` | applied **in the order written** |
-| `children` | nested, to any depth. A container's children are added to it |
+| `children` | nested, at most **128** deep. A container's children are added to it |
 | `design` | what the *designer* shows instead; unreachable from a running application |
 | `strip` | `"Start"` or `"End"`, on a child of a `Notebook` only: puts it in the tab strip instead of making it a page |
+
+**A file the loader cannot read is refused, not half-built.** The root is a
+JSON object — a list, a scalar or `null` is an error with the file's name, not
+an empty window. `properties` is an object; `children`, `menus` and `actions`
+are lists; every entry of `children` is an object with a `type`; a control's
+name is an ASCII identifier and a menu item's or command's is a GLib action
+name (letters, digits, `-` and `.` — no underscore), because it becomes
+`form.<name>`; and a tree nests at most 128 deep. A missing key and `null` both
+mean *not written*.
+`bintana check` reports the same shapes as errors, one row per problem, and
+keeps reading the rest of the project.
 
 **Order inside `properties` can matter.** Two rules cover it:
 

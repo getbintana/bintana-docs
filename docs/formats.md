@@ -385,9 +385,24 @@ A child node:
   first because it sorts, and the loader puts it right. `Widget.DeferredProperties(type)`
   is the list, so the order is the class's answer and not a rule each file has
   to remember.
-- `children` nest to any depth. A container's children are added to it, not to the
-  form.
+- `children` nest to at most **128** deep. A container's children are added to
+  it, not to the form.
 - `design` is the other dictionary a node may carry: see below.
+
+**A file that is not a form is refused, not half-read.** The root has to be a
+JSON object: a list, a scalar or `null` is an error naming the file, not an
+empty window. `properties` is an object; `children`, `menus` and `actions` are
+lists; every entry of `children` is an object with a `type`; and a tree nests at
+most 128 deep. A control's name is an ASCII identifier; a menu item's or a
+command's must be a **GLib action name** — letters, digits, `-` and `.`, so an
+underscore is refused there and a hyphen accepted — because it becomes
+`form.<name>` in a detailed action. A missing key and `null` both mean *not
+written*. The loader says which key and which file, and the application does
+not start; a name GLib cannot use is refused there and not left to GTK, which
+aborts the process on `form.a b` and warns *Don't know how to handle this item*
+on `form.M_1`. `bintana check` reports the same shapes as errors,
+one row per problem, and goes on with the rest of the project instead of
+stopping the pass.
 
 **Every name the runtime looks something up by is ASCII**, and that is narrower
 than the language it is written in: QuickJS accepts `Peón` as an identifier and
