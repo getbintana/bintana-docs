@@ -1092,9 +1092,11 @@ No road writes one: saving, saving everything, the IDE's own rewrites of a sourc
 
 Saving a `.js` compiles it -- `Application.CheckSource`, which does not run it --
 and where it stopped making sense becomes a mark in the editor's gutter, on the
-line, carrying the compiler's own message as its tooltip. The console gets the
-same thing as `<file>:<line>: <message>`, where `SOURCE_LINK` makes it clickable:
-the mark is for the file one is looking at, the line for the file one is not.
+line, and a `Diagnostic` under the word the parser was at, both carrying the
+compiler's own message as the tooltip. The console gets the same thing as
+`<file>:<line>: <message>`, where `SOURCE_LINK` makes it clickable: the mark and
+the underline are for the file one is looking at, the line for the file one is
+not.
 
 **On save and not on every keystroke.** Half a line is not a syntax error, and an
 editor that says so while one is still typing it is an editor nobody leaves
@@ -1480,7 +1482,7 @@ seen:
 
 | What found it | Where it went before | Where it goes now |
 |---|---|---|
-| `TabSet.checkSyntax`, on save | a gutter mark, and a line in the log | both, and a row |
+| `TabSet.checkSyntax`, on save | a gutter mark, and a line in the log | both, an underline, and a row |
 | `Strings`'s lint, on a translation pass | `Logger.Warning` | a row per warning |
 | `Runner.findErrorLine`, after a failed run | the file opened at the line | that, and a row |
 
