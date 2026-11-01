@@ -33,6 +33,9 @@ are made of.
 | `Mark(line, kind, [text])` | a gutter mark | [marks](#marks) |
 | `InsertSnippet(template)` | text with places to move through, put at the cursor **in place of the selection** | [snippets](#snippets) |
 | `Marks([kind])` | **a record per mark**, in line order | [marks](#marks) |
+| `Diagnostic(line, column, length, kind, text)` | underlines `length` characters from `column` on `line` — both 1-based, as `Select` and `GotoLine` count — with `kind` `Error` `Warning` or `Info`, and shows `text` in a tooltip where the pointer rests on it | [diagnostics](#diagnostics) |
+| `ClearDiagnostics([kind])` | takes them all off, or only one kind | [diagnostics](#diagnostics) |
+| `Diagnostics([kind])` | **a record per diagnostic**, in the order added | [diagnostics](#diagnostics) |
 | `Replace(text)` | the match the cursor is standing on | [search](#search) |
 | `ReplaceAll(text)` | every match, and how many | [search](#search) |
 | `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one | [search](#search) |
@@ -202,6 +205,26 @@ What they are *for* is yours: an error from a compiler, a breakpoint, the line a
 search came from. The IDE marks the line an exception names, which is how a
 message in its log becomes a place in a file — and its *Changes* window is these
 three.
+
+## Diagnostics
+
+A `Mark` says *this line*; a `Diagnostic` says *this word*, underlines it and
+puts the sentence in a tooltip where the pointer rests on it. `line` and
+`column` are 1-based, as `Select` and `GotoLine` count, and `length` is in
+characters, so an emoji earlier in the line does not move the range.
+
+| | |
+|---|---|
+| `Diagnostic(line, column, length, kind, text)` | underlines `length` characters from `column` on `line` — both 1-based, as `Select` and `GotoLine` count — with `kind` `Error` `Warning` or `Info`, and shows `text` in a tooltip where the pointer rests on it. The range moves with the text; **clear and add them again after an edit**, as `Live` does on its pause. Several may share a line |
+| `ClearDiagnostics([kind])` | takes them all off, or only one kind. How many went |
+| `Diagnostics([kind])` | **a record per diagnostic**, in the order added: `{ Line, Column, Length, Kind, Text }`. The reader that makes an underline assertable, as `Marks` does for the gutter |
+
+```js
+editor.Diagnostic(3, 9, 11, "Warning", "Button has no Txt");
+```
+
+The IDE's own check does exactly that on its pause: the gutter says line 3, and
+the word `this.Btn.Txt` carries the sentence.
 
 ## Completion
 
