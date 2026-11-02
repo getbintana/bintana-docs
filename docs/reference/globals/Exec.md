@@ -12,6 +12,11 @@ Exec(["git", "status", "--short"],
 file name with spaces cannot turn into a command. stdout and stderr are merged,
 read asynchronously and split into lines, and both callbacks are optional.
 
+**In a [`Task`](Task.md) only `Exec.Wait` exists.** `Exec(...)` itself is a
+function there too, and it throws: the callback spelling hangs its sources on
+the main loop. `Exec.Wait` runs on the worker thread and `Stop()` cancels it,
+killing the child.
+
 ## Every member
 
 `Exec` is a function, and what it hands back is a handle.

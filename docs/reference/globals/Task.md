@@ -142,11 +142,17 @@ A run that saw the flag and returned politely is **still a cancelled run** —
 the caller asked and it stopped, so the ending is `Error` with `Cancelled`
 set. What changes is how much of the work survives.
 
-The one case no flag reaches is a worker blocked in native code, since the
-interrupt only fires between opcodes. Teardown waits **two seconds** for each
-live task and then closes anyway, saying so on stderr: the program exits, and
-the thread is left adrift rather than joined, because freeing memory a live
-thread still writes to is worse than leaking it on the last line.
+The flag alone does not reach native code. Each job also carries a
+`GCancellable`, and `Stop`, `Timeout` and `KillAfter` cancel it:
+`Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` stop
+where they are and the run ends as cancelled. The directory walk, `File.Hash`
+and the compressors do not take one yet; those still wait for the flag or for
+`KillAfter` to end them between opcodes.
+
+Teardown waits **two seconds** for each live task and then closes anyway,
+saying so on stderr: the program exits, and the thread is left adrift rather
+than joined, because freeing memory a live thread still writes to is worse
+than leaking it on the last line.
 
 ## Messages
 

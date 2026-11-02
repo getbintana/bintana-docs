@@ -6,6 +6,11 @@ A native HTTP client, and a server of its own.
 shared default client. Everything has a **callback** spelling and a **blocking**
 one, and which to reach for is the first decision on this page.
 
+**In a [`Task`](Task.md) only the `*Wait` verbs exist**, each on a session of
+the worker thread and linked to the task's `GCancellable` — `Stop()` cancels a
+flight that has not answered. `Http.Client`, `Server` and the callback
+spellings are not there: their sources belong to the main loop.
+
 ```js
 const c = Http.Client({ BaseUrl: "https://api.example.com/v1", Timeout: 60000 });
 c.Get("/users", {}, (r) => print(r.Body.ToText()), (e) => print(e.Message));

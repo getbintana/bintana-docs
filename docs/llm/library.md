@@ -678,6 +678,12 @@ stopped task reports `Cancelled` rather than going quiet, the way a stopped
 way `examples/usage` does: a generation counter, and the old run's answers are
 dropped where they arrive.
 
+**`Stop` reaches a blocking call too.** Each task owns a `GCancellable`, and
+`Stop`, `Timeout` and `KillAfter` cancel it: `Exec.Wait`, `Http.*Wait` and
+`File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` return instead of holding the
+thread. A directory walk, `File.Hash` and the compressors still do not take
+one.
+
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
 (same class, same file, so `(10/3)*3` is `10` on both sides), and `Bytes`,
