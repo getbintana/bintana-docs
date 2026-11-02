@@ -28,6 +28,12 @@ The example is `examples/markdown`: a file on the left as a table of contents,
 the document on the right, drag a `.md` onto it, and the whole thing out as one
 PDF.
 
+**Not in a `Task`.** The library's only module is the control — `Markdown
+extends Component` — and it parses while it lays out, so importing it in a
+worker refuses on `Component`. A task that wants the parsed document waits for
+the parser to be a module of its own, with a consumer that asks for it; until
+then this library is a viewer and only a viewer.
+
 ## Markdown
 
 One class. Every property redraws when it is assigned, and every one is
