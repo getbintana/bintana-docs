@@ -50,6 +50,15 @@ signal — `Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Tra
 and `Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree` — stop when it is
 raised, the same way `Task.Stop()` stops them.
 
+It goes one way. Raising the token stops every task holding it, but one
+task's `Stop()`, `Timeout` or `KillAfter` ends that task alone: the token is
+not raised, and its siblings go on. A `Run` started with a shared token learns
+of its own `Stop()` from `this.Stopping`, not from `this.Cancellable.Cancelled`.
+[`examples/downloads`](https://github.com/getbintana/bintana/tree/main/examples/downloads)
+is the whole of it: a ✕ per download, a timeout, and a Cancel all.
+Over HTTP/2 a blocked `Http.*Wait` notices any of these late: see
+[cancelling over HTTP/2](Http.md#cancelling-over-http2).
+
 A task started without a `Cancellable` gets one of its own, so `this.Cancellable`
 is never `null` inside `Run`; `Task.Stop()` raises that one.
 

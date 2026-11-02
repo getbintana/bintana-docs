@@ -671,7 +671,8 @@ t.Start({ roots: subs });
 `Task` itself is abstract: `new Task()` throws, and so does starting a class
 the project has no file for. Options: `{ Timeout }` in milliseconds, absent
 waits forever; `Cancellable` is a shared [`Cancellable`](https://github.com/getbintana/bintana-docs/blob/main/docs/reference/globals/Cancellable.md)
-that is `this.Cancellable` inside `Run`; `Task.Max([limit])` is the ceiling on
+that is `this.Cancellable` inside `Run` -- raising it stops every task holding
+it, while one task's `Stop()` or `Timeout` ends that task alone; `Task.Max([limit])` is the ceiling on
 live tasks.
 
 **One answer, exactly once.** `Done` xor `Error`, however the job went — a
@@ -1923,7 +1924,12 @@ Both callbacks are handed the request's own **handle as a second argument**,
 so a form with more than one request in the air can tell whose answer arrived:
 `Stop()` asks rather than undoes, and a cancelled request still answers a turn
 later. The handle answers `Running`, `TimedOut`, `Url`, `Method` and `Stop()`
-(cancelling calls `onError` with `Kind: "Cancelled"`). Per-request `opts` carry
+(cancelling calls `onError` with `Kind: "Cancelled"`). Over HTTP/2 -- most
+`https://` servers -- libsoup notices a cancel only when the server next sends
+something, so `Stop()` and `Timeout` end the request late, or never against a
+server that does not answer; `Environment.Set("SOUP_FORCE_HTTP1", "1")` before
+the first request makes them prompt for the whole process ([cancelling over
+HTTP/2](../reference/globals/Http.md#cancelling-over-http2)). Per-request `opts` carry
 `Headers`, `Query: {k:v}` (appended escaped), `Body`, `ContentType`, `Timeout`,
 `FollowRedirects`, `Auth` — and naming any of them is what makes an object
 options rather than a JSON body. A repeated response header keeps the last of

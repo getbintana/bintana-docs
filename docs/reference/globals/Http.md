@@ -8,7 +8,8 @@ one, and which to reach for is the first decision on this page.
 
 **In a [`Task`](Task.md) only the `*Wait` verbs exist**, each on a session of
 the worker thread and linked to the task's cancellation signal — `Stop()`
-cancels a flight that has not answered. `Http.Client`, `Server` and the callback
+cancels a flight that has not answered (over HTTP/2, only when the server next
+sends something: see [cancelling over HTTP/2](#cancelling-over-http2)). `Http.Client`, `Server` and the callback
 spellings are not there: their sources belong to the main loop.
 
 ```js
@@ -263,6 +264,44 @@ Sent as the body of a `Post`/`Put`/`Patch`, which sets **its own**
 |---|---|
 | `Server([opts])` | a listener of its own, for a static file server, a local API, a callback endpoint. Everything about it is on [`HttpServer`](HttpServer.md) |
 
+## Cancelling over HTTP/2
+
+**Over HTTP/2, a cancelled request ends when the server next sends something,
+not when it is cancelled.** Almost every `https://` server today speaks HTTP/2,
+and libsoup (3.6 to 3.8 at least) does not watch the cancellation signal of a
+request that is waiting on an HTTP/2 stream: it looks at it only when a frame
+arrives for that stream. So `Stop()`, `Timeout`, `{ Cancellable }`,
+`Task.Stop()` and a task's `Timeout` all report the right ending, but **late** --
+when the response comes:
+
+| `https://httpbin.org/delay/6`, cancelled at 1.5 s | ends at |
+|---|---|
+| HTTP/2 (what the server offers) | about 7 s, with the response |
+| HTTP/1.1 | 1.5 s |
+
+A server that accepts the request and never answers keeps it waiting for good,
+and a `Task` blocked in that `…Wait` is not ended by `Stop()` or its `Timeout`.
+Plain `http://` is HTTP/1.1 and unaffected.
+
+**When cancelling has to be prompt** -- a download manager with a stop button, a
+task with a deadline -- ask libsoup for HTTP/1.1, before the first request:
+
+```js
+Form_Open() {
+    Environment.Set("SOUP_FORCE_HTTP1", "1");   // before any Http call, once
+    // ...
+}
+```
+
+libsoup reads the variable **once, at the first connection the process
+makes**, and from then on it holds for every request on every thread, tasks
+included; setting it later changes nothing. It can equally come from outside:
+`SOUP_FORCE_HTTP1=1` in the launcher or the desktop entry's `Exec`. The cost is
+HTTP/2's multiplexing: requests to one host go over several connections instead
+of one, which an application making a handful of requests does not notice.
+[`examples/downloads`](https://github.com/getbintana/bintana/tree/main/examples/downloads)
+does it.
+
 ## What goes wrong
 
 - **A 404 did not reach `onError`.** It is an answer: `Status` in `onDone`.
@@ -270,6 +309,8 @@ Sent as the body of a `Post`/`Put`/`Patch`, which sets **its own**
   is what makes it options.
 - **`Stop()` did not stop it.** It asks; the answer arrives a turn later as
   `Cancelled`.
+- **`Stop()` or `Timeout` answered seconds late, or never.** The server speaks
+  HTTP/2: see [cancelling over HTTP/2](#cancelling-over-http2).
 - **The window froze.** A `…Wait` in a form.
 - **A login did not stick.** `Cookies: true` on the client.
 - **`MaxConns` threw.** Constructor-only.
