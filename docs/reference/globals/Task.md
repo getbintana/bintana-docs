@@ -36,6 +36,7 @@ and work that repeats is a new `Task`.
 | `Running` | `false` once it has ended | [answering](#answering) |
 | `Cancelled` | whether `Stop()` is what ended it | [ending](#ending) |
 | `TimedOut` | whether the guard is what ended it | [ending](#ending) |
+| `Task.Max([limit])` (static) | the most tasks alive at once, `0` (the default) for no limit | [starting](#starting) |
 
 `Task` itself is abstract — `new Task()` throws, and `Start` throws for a
 class the project has no file for, for a class with no `Run(msg)`, and for a
@@ -51,7 +52,9 @@ or its libraries, the project shadowing a library. Two files claiming one
 name is refused naming the name; the class must be self-contained in its file.
 
 `Timeout` is milliseconds before the run is aborted, absent waits forever.
-Whatever `data` holds must be plain — see below.
+`Task.Max([limit])` is a ceiling on live tasks, refused rather than queued;
+set it before fanning out, and `0` restores no limit. Whatever `data` holds
+must be plain — see below.
 
 ## Answering
 
@@ -154,11 +157,12 @@ which crosses as its own digits (`{$decimal: "19.99"}`) and arrives as a real
 same file. `(10/3)*3` is `10` in a worker exactly as it is outside one, and
 `Round`, `Trim`, `Abs` and `Split` are all there.
 
-Refused out loud, because `JSON.stringify` would silently drop or null them:
-functions, class instances, cycles, `undefined`, non-finite numbers, `Bytes`.
-A `Record` crosses as what `Serialize` writes and comes back through `Load`.
-Integers past 2⁵³ lose precision in transit — cross those as text or as
-`Decimal`.
+`Bytes` cross too, as base64 under their own tag, and arrive as a real `Bytes`
+with the same class on both sides. Refused out loud, because `JSON.stringify`
+would silently drop or null them: functions, class instances, cycles,
+`undefined` and non-finite numbers. A `Record` crosses as what `Serialize`
+writes and comes back through `Load`. Integers past 2⁵³ lose precision in
+transit — cross those as text or as `Decimal`.
 
 The one `undefined` that is not a message is a `Run` that returns nothing: the
 answer is `null` (see [Answering](#answering)), not a value with a hole in it.
@@ -180,8 +184,14 @@ and that is the whole rule — not reading against writing:
 | Not there | Because |
 |---|---|
 | every widget, `Dialog`, `Message`, `Clipboard`, `Screen`, menus, printing | GTK off the main thread is a crash, not an error |
-| `Exec`, `File.Watch`, `Timer`, the asynchronous half of `Http` | the source would fire on the main thread holding this context |
-| `Settings` | process state the main thread owns |
+| `File.Watch`, `Timer`, the callback spelling of `Exec` and `Http` | the source would fire on the main thread holding this context |
+
+**Process state is readable and not writable.** `Environment` is there without
+`Set` and with `CurrentDirectory` as the value at `Start`; `Settings.Get`,
+`Has` and `Keys` are there, and `Settings.Set`/`Delete`/`Clear` refuse with a
+sentence. The
+blocking `Exec.Wait` and `Http.*Wait` are there too: they run on the worker's
+own thread, with a session or a child of its own, and answer once.
 
 **`Locale` is there whole, with a catalogue of its own.** It is built from the
 project's and its libraries' `po/` files and pinned to the language the
@@ -193,10 +203,11 @@ are the catalogue editor's pair and touch no catalogue at all.
 **A library crosses only when the file a worker imports is pure.** `xlsx` and
 `qr`'s encoder are modules with no widget in them, so a task imports them. A
 library of several modules declares the subset a task may evaluate in its
-`project.json`'s `worker` list. `markdown` does not have one yet: its only
+`project.json`'s `worker` list. `markdown` declares an **empty** one: its only
 module is the control (`Markdown extends Component`), and it parses while it
-lays out — importing it in a task refuses. `report` and `charts` have no module
-to import at all, and their documents would need `Drawing`/`Text` besides.
+lays out, so importing it in a task refuses with that sentence. `report` and
+`charts` have no module to import at all, and their documents would need
+`Drawing`/`Text` besides.
 
 A task computes and reports; what is drawn happens where the answer arrives.
 

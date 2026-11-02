@@ -6,6 +6,11 @@ Anything JSON carries, kept in
 `Application.ConfigDirectory/settings.json` and **written on every change** — so
 there is nothing to flush and nothing lost when a program ends badly.
 
+**A [`Task`](Task.md) can read this and cannot write it**: `Get`, `Has`, `Keys`
+and `Path` are there, while `Set`, `Delete` and `Clear` refuse. Their cache is
+per runtime, and writing it from a worker would lose whatever the main thread
+saved in between; a task reports the value and lets the main thread store it.
+
 ## Every member
 
 | | | |

@@ -5,6 +5,11 @@ The context the program was started in.
 The variables it inherited, the directory it was started from, and the handful of
 facts about the machine and the person running it.
 
+**In a [`Task`](Task.md) this is read-only**: `Set` is absent, and
+`CurrentDirectory` has no setter and answers the directory at `Start`. A task
+that needs to change the process's state reports the value and lets the main
+thread do it.
+
 ## Every member
 
 | | | |

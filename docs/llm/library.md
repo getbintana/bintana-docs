@@ -665,10 +665,11 @@ t.Start({ roots: subs });
 | `Running` | `false` once it has ended — written before `Done`/`Error` run, like `Exec`'s |
 | `Cancelled` | whether `Stop()` is what ended it |
 | `TimedOut` | whether the guard is what ended it |
+| `Task.Max([limit])` (static) | the most tasks alive at once, `0` (the default) for no limit. A `Start` over it is refused rather than queued; the program waits for an answer or raises it. With no argument it answers the ceiling; with one it sets it and answers the new value. One thread and one runtime per task is what makes a ceiling worth having |
 
 `Task` itself is abstract: `new Task()` throws, and so does starting a class
 the project has no file for. Options: `{ Timeout }` in milliseconds, absent
-waits forever.
+waits forever; `Task.Max([limit])` is the ceiling on live tasks.
 
 **One answer, exactly once.** `Done` xor `Error`, however the job went — a
 stopped task reports `Cancelled` rather than going quiet, the way a stopped
@@ -679,10 +680,10 @@ dropped where they arrive.
 
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
-(same class, same file, so `(10/3)*3` is `10` on both sides). Functions, class
-instances, cycles, `undefined` and `Bytes` are refused out loud rather than
-silently subsetted; a `Record` crosses as what `Serialize` writes and comes
-back through `Load`.
+(same class, same file, so `(10/3)*3` is `10` on both sides), and `Bytes`,
+which cross as base64 and arrive as a real `Bytes`. Functions, class instances,
+cycles and `undefined` are refused out loud rather than silently subsetted; a
+`Record` crosses as what `Serialize` writes and comes back through `Load`.
 
 **A worker is this language, not a subset of it.** Its context is built the
 way the main one is — the same `init` functions, then the same `rad.js` — so
@@ -693,14 +694,18 @@ answers facts.
 
 **What it lacks is what would leave a callback on the main loop** — not what
 writes. Gone: every widget and `Dialog`/`Message`/`Clipboard`/`Screen` (GTK
-off the main thread is a crash), `Exec`, `File.Watch`, `Timer` and async
-`Http` (the source would fire on the main thread holding this context), and
-`Settings` (process state the main thread owns). **`Locale` is there whole, in
-a catalogue of its own**: it is built from the same `po/` directories and
-pinned to the language the application had when `Start` was called, so
-`Text`/`Plural`/`Context`/`Read`/`Write` work, `Locale.Current` inside the task
-reloads only that task's copy, and a language change on the main thread does
-not move the words under a running task.
+off the main thread is a crash), `File.Watch`, `Timer`, and the callback
+spelling of `Exec` and `Http` (the source would fire on the main thread
+holding this context). **Process state is readable and not writable**:
+`Environment` has no `Set` and its `CurrentDirectory` is the value at `Start`;
+`Settings.Get`/`Has`/`Keys` are there and `Settings.Set`/`Delete`/`Clear`
+refuse. The blocking
+`Exec.Wait` and `Http.*Wait` are there, on the worker's own thread and session.
+**`Locale` is there whole, in a catalogue of its own**: it is built from the
+same `po/` directories and pinned to the language the application had when
+`Start` was called, so `Text`/`Plural`/`Context`/`Read`/`Write` work,
+`Locale.Current` inside the task reloads only that task's copy, and a language
+change on the main thread does not move the words under a running task.
 
 **And the debugger does not reach in here.** `bintana --debug` installs its hook
 on the program's own runtime; a worker's is a second `JSRuntime` on a second
