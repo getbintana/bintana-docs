@@ -382,7 +382,8 @@ A child node:
   **A property a class declares as deferred is applied after `children`,
   whatever place it has in the file**: `ListBox.Index` and `ComboBox.Index`
   select a row, and the rows arrive with `Items` — the serialiser writes `Index`
-  first because it sorts, and the loader puts it right. `Widget.DeferredProperties(type)`
+  first because it sorts, and the loader puts it right. `RowList.Index` is the
+  same, and its rows are its `children`. `Widget.DeferredProperties(type)`
   is the list, so the order is the class's answer and not a rule each file has
   to remember.
 - `children` nest to at most **128** deep. A container's children are added to
