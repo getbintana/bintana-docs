@@ -1353,7 +1353,7 @@ concurrency costs is the **lost update** — read, change, write from two
 threads and the first change never happened — and no automatic lock reaches
 it, because the gap is between two calls and only the program knows which two.
 `Lock.Hold(name, fn)` is what orders those, named rather than held because the
-two runtimes share no heap; see [`docs/plans/task-plan.md`](https://github.com/getbintana/bintana/blob/main/docs/plans/task-plan.md).
+two runtimes share no heap; see [`docs/notes/task-threads.md`](https://github.com/getbintana/bintana/blob/main/docs/notes/task-threads.md).
 [`examples/usage`](https://github.com/getbintana/bintana/tree/main/examples/usage) is the shape running today: N tasks
 sizing N subtrees, one window adding up.
 
