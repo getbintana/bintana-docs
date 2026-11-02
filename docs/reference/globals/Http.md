@@ -180,7 +180,8 @@ A `…Wait` call also takes a [`Cancellable`](Cancellable.md) as its **last
 argument** — after the options, or in their place — that cancels the flight
 when it is raised: `Http.GetWait(url, { Timeout: 5000 }, stop)`. Inside a
 task, hand it `this.Cancellable`, so `Task.Stop()` and the task's `Timeout`
-reach a request that has not answered. A call handed none is not cancelled.
+reach a request that has not answered. A call handed none is not cancelled by
+`Stop()` asking; the task's `Timeout` and `KillAfter` end it all the same.
 
 ## The client
 
@@ -191,7 +192,7 @@ reach a request that has not answered. A call handed none is not cancelled.
 | `Headers` | sent with every request this client makes — an API key, an `Accept` |
 | `Timeout` | ms before a request is given up on; `0` waits forever for the callback verbs. The blocking ones use it when it is not zero and otherwise give up after 30 s — `{ Timeout: 0 }` on the call is the explicit *wait forever* |
 | `FollowRedirects` | follow a `3xx`. Default `true` |
-| `Http1` | ask for HTTP/1.1 rather than HTTP/2. Default `false`. Over HTTP/2 libsoup notices a cancel only when the server next sends something, so a `Stop`, a `Timeout` or a `Cancellable` ends a request late; a program whose requests must stop when told sets this. `{ Http1 }` on one call does the same for that call |
+| `Http1` | ask for HTTP/1.1 rather than HTTP/2. Default `false`. Over HTTP/2 libsoup notices a cancel only when the server next sends something, so a `Stop`, a `Timeout` or a `Cancellable` ends a request late; a program whose requests must stop when told sets this. `{ Http1 }` on one call does the same for that call. Needs libsoup 3.4; before it a request asking is refused, naming `SOUP_FORCE_HTTP1` |
 | `Language` | the `Accept-Language` it asks with |
 | `Proxy` | what to go through |
 | `Auth` | `{ User, Password }`, Basic and preemptive; reads back `null` when none is set. An explicit `Authorization` header wins over it, and an explicit `Content-Type` header wins over the one the body's shape implies |
@@ -297,7 +298,9 @@ const api = Http.Client({ BaseUrl: base, Http1: true });  // every call it makes
 ```
 
 Stopped at 1.5 s, the request above ends at 1.5 s; without `Http1`, when the
-server answers. The cost is HTTP/2's multiplexing for those requests: several
+server answers. `Http1` needs libsoup 3.4 or newer: on an older one a request
+asking for it is refused with a sentence that names the process-wide road
+below. The cost is HTTP/2's multiplexing for those requests: several
 connections to one host instead of one, which an application making a handful
 of requests does not notice.
 [`examples/downloads`](https://github.com/getbintana/bintana/tree/main/examples/downloads)

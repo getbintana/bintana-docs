@@ -110,7 +110,7 @@ nobody wrote. `Report` on the proxy (outside `Run`) is refused.
 
 | | |
 |---|---|
-| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns. Answers whether there was a live job to ask |
+| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns; at `KillAfter` every blocking call ends, handed it or not, as at the `Timeout`. Answers whether there was a live job to ask |
 | `Stopping` | inside `Run`: `true` once `Stop()` has asked, so the job can `Report` what it has and return. Delphi's `Terminated`, BackgroundWorker's `CancellationPending` |
 
 **Asked first, and only then enforced.** `Stop()` raises a flag and lets the
@@ -162,10 +162,13 @@ Run(msg) {
 }
 ```
 
-**A call handed nothing is not cancelled**, so a `Run` that saw `Stopping` can
-still wind down with blocking calls — read back what it wrote, run the
-command that tidies up — before `KillAfter`. A call blocked without the
-signal holds the thread until it returns. `File.Hash`, `Gzip`'s
+**A call handed nothing is not cancelled by the asking**, so a `Run` that saw
+`Stopping` can still wind down with blocking calls — read back what it wrote,
+run the command that tidies up — before `KillAfter`. **The insisting reaches
+every call**: when the `Timeout` runs out or `KillAfter` comes, a blocking call
+ends whether it was handed the signal or not, so a deadline ends the task even
+in code that never passes `this.Cancellable`. Quitting the application ends
+them all the same way, children included. `File.Hash`, `Gzip`'s
 `Compress`/`Decompress`/`CompressFile`/`DecompressFile` and
 `ZipArchive.ExtractAll` take one too, and stop between two 64 KB blocks or two
 entries.

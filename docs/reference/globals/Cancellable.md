@@ -56,10 +56,17 @@ The blocking calls that take one, always last — `Exec.Wait`, `Http.*Wait`,
 `Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree`, `Gzip`'s
 `Compress`/`Decompress`/`CompressFile`/`DecompressFile` and
 `ZipArchive.ExtractAll` — throw `cancelled` when it is raised, also part-way:
-the streaming ones ask it between two 64 KB blocks or two entries. **One that was not handed it goes on**,
-which is what a `Run` winding down after `Stopping` relies on: it can still
-read the file it wrote or run the command that tidies up. On the main thread
-the same calls take a token of the program's own.
+the streaming ones ask it between two 64 KB blocks or two entries. **One that was
+not handed it goes on** while a stop is only asked, which is what a `Run`
+winding down after `Stopping` relies on: it can still read the file it wrote or
+run the command that tidies up. When the task's `Timeout` runs out or its
+`KillAfter` comes, every blocking call ends, handed a token or not. On the main
+thread the same calls take a token of the program's own.
+
+**Last, and nowhere else.** A token before the options —
+`Exec.Wait(argv, token, opts)` — is refused rather than read as the options;
+a trailing `undefined` after it does not hide it; and `{ Cancellable: null }`
+is no token, as it always was.
 
 It goes one way. Raising the shared token stops every task holding it, but
 one task's `Stop()`, `Timeout` or `KillAfter` raises only that task's own

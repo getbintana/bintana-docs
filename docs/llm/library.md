@@ -657,7 +657,7 @@ t.Start({ roots: subs });
 | | |
 |---|---|
 | `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one; raised already, `Run` is not called and the task ends `Cancelled` |
-| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns. Answers whether there was a live job to ask |
+| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns; at `KillAfter` every blocking call ends, handed it or not, as at the `Timeout`. Answers whether there was a live job to ask |
 | `Report(value)` | the worker's voice, called from `Run`; arrives as `Progress`. `this.Report` on a proxy is refused |
 | `Stopping` | inside `Run`: `true` once `Stop()` has asked, so the job can `Report` what it has and return. Delphi's `Terminated`, BackgroundWorker's `CancellationPending` |
 | `Done` | assign `(result) => …`. Called once, with what `Run` returned |
@@ -688,8 +688,9 @@ raise it at once. A blocking call given it as its **last argument** --
 `Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash`,
 `Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree` -- throws `cancelled`
 instead of holding the thread: `Http.GetWait(url, this.Cancellable)`. A call
-given none is not cancelled, so a `Run` that saw `Stopping` can still read and
-run things while it winds down. A token is never an option: `{ Cancellable }`
+given none is not cancelled by `Stop()` asking, so a `Run` that saw `Stopping`
+can still read and run things while it winds down; when the `Timeout` runs out
+or `KillAfter` comes, every blocking call ends, given the token or not. A token is never an option: `{ Cancellable }`
 is refused. `File.Hash`, `Gzip`'s four verbs and `ZipArchive.ExtractAll` take
 one too, and stop between two blocks or two entries.
 
