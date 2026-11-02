@@ -277,7 +277,7 @@ made a folder called `undefined`. The one exception is the question:
 
 | | |
 |---|---|
-| `Load(path)` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string |
+| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A `Cancellable` last ends a read that is stuck |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 | `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
@@ -286,13 +286,13 @@ made a folder called `undefined`. The one exception is the question:
 | `SaveXml(path, node)` | the canonical XML shape, atomically, honouring neither locale nor encoding guesses |
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
 | `Delete(path)` | a file, or an **empty** directory. Throws on failure |
-| `Trash(path)` | to the desktop's trash, whole for a folder. Throws where there is no trash |
+| `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 | `Rename(from, to)` | also moves; refuses to clobber |
-| `LoadBytes(path)` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text |
+| `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 | `Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video |
-| `Copy(from, to)` | **byte for byte**, so it works on images; refuses to clobber |
-| `Info(path)` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond |
+| `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
 | `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
 | `Open(path)` | hands the file to whatever the desktop opens that kind with. **It answers before the file is open**: launching is asynchronous and the program that opens it is somebody else's, so what this promises is that the request was made. A file that is not there is refused *here*, which is the failure a caller can do something about |
 | `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
@@ -447,13 +447,13 @@ is installed in a worker too, so a big file can be parsed off the main thread.
 
 | | |
 |---|---|
-| `List(path, [pattern])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows |
-| `Files(path, [pattern-or-options])` | the **full paths** of the files, sorted |
-| `Folders(path, [pattern-or-options])` | the same for the directories |
+| `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows. A `Cancellable` last stops the listing |
+| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A `Cancellable` last stops the walk |
+| `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories |
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
 
 Every path is a string, refused otherwise — see [File](#file).
-| `Copy(from, to)`, `Delete(path)`, `DeleteTree(path)` | |
+| `Copy(from, to, [cancellable])`, `Delete(path)`, `DeleteTree(path, [cancellable])` | |
 
 ```js
 Directory.Files(dir)
@@ -656,8 +656,8 @@ t.Start({ roots: subs });
 
 | | |
 |---|---|
-| `Start(data, [options])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task` |
-| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Answers whether there was a live job to ask |
+| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one |
+| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns. Answers whether there was a live job to ask |
 | `Report(value)` | the worker's voice, called from `Run`; arrives as `Progress`. `this.Report` on a proxy is refused |
 | `Stopping` | inside `Run`: `true` once `Stop()` has asked, so the job can `Report` what it has and return. Delphi's `Terminated`, BackgroundWorker's `CancellationPending` |
 | `Done` | assign `(result) => …`. Called once, with what `Run` returned |
@@ -670,10 +670,10 @@ t.Start({ roots: subs });
 
 `Task` itself is abstract: `new Task()` throws, and so does starting a class
 the project has no file for. Options: `{ Timeout }` in milliseconds, absent
-waits forever; `Cancellable` is a shared [`Cancellable`](https://github.com/getbintana/bintana-docs/blob/main/docs/reference/globals/Cancellable.md)
-that is `this.Cancellable` inside `Run` -- raising it stops every task holding
-it, while one task's `Stop()` or `Timeout` ends that task alone; `Task.Max([limit])` is the ceiling on
-live tasks.
+waits forever. A [`Cancellable`](https://github.com/getbintana/bintana-docs/blob/main/docs/reference/globals/Cancellable.md)
+given **last**, `t.Start(msg, opts, stop)`, is shared -- raising it stops every
+task started with it, while one task's `Stop()` or `Timeout` ends that task
+alone; `Task.Max([limit])` is the ceiling on live tasks.
 
 **One answer, exactly once.** `Done` xor `Error`, however the job went — a
 stopped task reports `Cancelled` rather than going quiet, the way a stopped
@@ -682,11 +682,15 @@ stopped task reports `Cancelled` rather than going quiet, the way a stopped
 way `examples/usage` does: a generation counter, and the old run's answers are
 dropped where they arrive.
 
-**`Stop` reaches a blocking call too.** Each task owns a cancellation signal,
-and `Stop`, `Timeout` and `KillAfter` raise it: `Exec.Wait`, `Http.*Wait` and
-`File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` return instead of holding the
-thread. A directory walk, `File.Hash` and the compressors still do not take
-one.
+**`Stop` reaches a blocking call it was handed to.** Each task owns a
+cancellation signal, `this.Cancellable`, and `Stop`, `Timeout` and `KillAfter`
+raise it at once. A blocking call given it as its **last argument** --
+`Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash`,
+`Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree` -- throws `cancelled`
+instead of holding the thread: `Http.GetWait(url, this.Cancellable)`. A call
+given none is not cancelled, so a `Run` that saw `Stopping` can still read and
+run things while it winds down. A token is never an option: `{ Cancellable }`
+is refused. `File.Hash` and the compressors do not take one.
 
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
@@ -1904,10 +1908,10 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `Put(url, body, [opts], onDone, [onError])`, `Patch(…)` | with body, like `Post` |
 | `Delete(url, [opts], onDone, [onError])`, `Head(…)` | no body, like `Get` |
 | `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `onLine(line, handle)` once per text line, the newline stripped, blank lines included. Method-first like `Request`, so a `POST` whose answer comes in pieces needs no second name |
-| `RequestWait(method, url, [body], [opts])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed |
-| `GetWait(url, [opts])`, `PostWait(url, body, [opts])` | same, per verb |
-| `PutWait(url, body, [opts])`, `PatchWait(…)` | same, with body |
-| `DeleteWait(url, [opts])`, `HeadWait(…)` | same, no body |
+| `RequestWait(method, url, [body], [opts], [cancellable])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed. A `Cancellable` last ends the flight when raised -- in a task, `this.Cancellable` is how `Stop` reaches it |
+| `GetWait(url, [opts], [cancellable])`, `PostWait(url, body, [opts], [cancellable])` | same, per verb |
+| `PutWait(url, body, [opts], [cancellable])`, `PatchWait(…)` | same, with body |
+| `DeleteWait(url, [opts], [cancellable])`, `HeadWait(…)` | same, no body |
 | `UserAgent` | sent as-is; `""` sends none — and some servers answer the nameless with an error |
 | `Log` | `"none"` unless told: `"minimal"`, `"headers"` or `"body"` sends the traffic through `Logger` at `Debug` — so `Logger.Level = "Debug"` shows it and a `Handler` takes it; a `Wait`'s never reaches a `Handler`, since its context is private and its caller is blocked |
 | `Cookies` | `false` unless told: `true` keeps a jar of the session's own, so a login answers the next request |

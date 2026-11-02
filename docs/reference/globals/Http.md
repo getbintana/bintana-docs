@@ -7,7 +7,7 @@ shared default client. Everything has a **callback** spelling and a **blocking**
 one, and which to reach for is the first decision on this page.
 
 **In a [`Task`](Task.md) only the `*Wait` verbs exist**, each on a session of
-the worker thread and linked to the task's cancellation signal — `Stop()`
+the worker thread. Handed `this.Cancellable` as their last argument, `Stop()`
 cancels a flight that has not answered (over HTTP/2, only when the server next
 sends something: see [cancelling over HTTP/2](#cancelling-over-http2)). `Http.Client`, `Server` and the callback
 spellings are not there: their sources belong to the main loop.
@@ -34,13 +34,13 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `Patch(url, body, [opts], onDone, [onError])` | the same, for part of one | [the verbs](#the-verbs) |
 | `Request(method, url, [body], [opts], onDone, [onError])` | any verb | [the verbs](#the-verbs) |
 | `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives** | [following a stream](#following-a-stream) |
-| `GetWait(url, [opts])` | the blocking `Get` | [waiting](#waiting) |
-| `HeadWait(url, [opts])` | the blocking `Head` | [waiting](#waiting) |
-| `DeleteWait(url, [opts])` | the blocking `Delete` | [waiting](#waiting) |
-| `PostWait(url, body, [opts])` | the blocking `Post` | [waiting](#waiting) |
-| `PutWait(url, body, [opts])` | the blocking `Put` | [waiting](#waiting) |
-| `PatchWait(url, body, [opts])` | the blocking `Patch` | [waiting](#waiting) |
-| `RequestWait(method, url, [body], [opts])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed | [waiting](#waiting) |
+| `GetWait(url, [opts], [cancellable])` | the blocking `Get` | [waiting](#waiting) |
+| `HeadWait(url, [opts], [cancellable])` | the blocking `Head` | [waiting](#waiting) |
+| `DeleteWait(url, [opts], [cancellable])` | the blocking `Delete` | [waiting](#waiting) |
+| `PostWait(url, body, [opts], [cancellable])` | the blocking `Post` | [waiting](#waiting) |
+| `PutWait(url, body, [opts], [cancellable])` | the blocking `Put` | [waiting](#waiting) |
+| `PatchWait(url, body, [opts], [cancellable])` | the blocking `Patch` | [waiting](#waiting) |
+| `RequestWait(method, url, [body], [opts], [cancellable])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed | [waiting](#waiting) |
 
 **On a client**
 
@@ -159,13 +159,13 @@ rather than arriving as mojibake, the same bargain `ToText()` makes.
 
 | | |
 |---|---|
-| `GetWait(url, [opts])` | the blocking `Get` |
-| `HeadWait(url, [opts])` | the blocking `Head` |
-| `DeleteWait(url, [opts])` | the blocking `Delete` |
-| `PostWait(url, body, [opts])` | the blocking `Post` |
-| `PutWait(url, body, [opts])` | the blocking `Put` |
-| `PatchWait(url, body, [opts])` | the blocking `Patch` |
-| `RequestWait(method, url, [body], [opts])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed |
+| `GetWait(url, [opts], [cancellable])` | the blocking `Get` |
+| `HeadWait(url, [opts], [cancellable])` | the blocking `Head` |
+| `DeleteWait(url, [opts], [cancellable])` | the blocking `Delete` |
+| `PostWait(url, body, [opts], [cancellable])` | the blocking `Post` |
+| `PutWait(url, body, [opts], [cancellable])` | the blocking `Put` |
+| `PatchWait(url, body, [opts], [cancellable])` | the blocking `Patch` |
+| `RequestWait(method, url, [body], [opts], [cancellable])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed. A `Cancellable` last ends the flight when raised -- in a task, `this.Cancellable` is how `Stop` reaches it |
 
 The `…Wait` spelling answers with the record and **throws** on transport failure,
 and what it throws carries the same `Kind` and `Status` the callback would have
@@ -175,9 +175,11 @@ It blocks the main loop, so it is for a console tool, a test, or a check that
 decides what the next line does — never for a window, where the answer is the
 callback form and a [`Spinner`](../widgets/Spinner.md).
 
-A `…Wait` call also takes `{ Cancellable }`: a [`Cancellable`](Cancellable.md)
-that cancels that flight, the same way `Task.Stop()` cancels the signal a
-worker's blocking calls already carry.
+A `…Wait` call also takes a [`Cancellable`](Cancellable.md) as its **last
+argument** — after the options, or in their place — that cancels the flight
+when it is raised: `Http.GetWait(url, { Timeout: 5000 }, stop)`. Inside a
+task, hand it `this.Cancellable`, so `Task.Stop()` and the task's `Timeout`
+reach a request that has not answered. A call handed none is not cancelled.
 
 ## The client
 
@@ -270,7 +272,7 @@ Sent as the body of a `Post`/`Put`/`Patch`, which sets **its own**
 not when it is cancelled.** Almost every `https://` server today speaks HTTP/2,
 and libsoup (3.6 to 3.8 at least) does not watch the cancellation signal of a
 request that is waiting on an HTTP/2 stream: it looks at it only when a frame
-arrives for that stream. So `Stop()`, `Timeout`, `{ Cancellable }`,
+arrives for that stream. So `Stop()`, `Timeout`, a `Cancellable`,
 `Task.Stop()` and a task's `Timeout` all report the right ending, but **late** --
 when the response comes:
 

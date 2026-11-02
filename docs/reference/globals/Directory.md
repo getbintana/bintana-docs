@@ -9,21 +9,21 @@ three verbs. Like [`File`](File.md), all of it is synchronous.
 
 | | | |
 |---|---|---|
-| `Copy(from, to)` | a whole tree | [making and removing](#making-and-removing) |
+| `Copy(from, to, [cancellable])` | a whole tree | [making and removing](#making-and-removing) |
 | `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is | [making and removing](#making-and-removing) |
-| `DeleteTree(path)` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag | [making and removing](#making-and-removing) |
-| `Files(path, [pattern-or-options])` | the **full paths** of the files, sorted | [what is in it](#what-is-in-it) |
-| `Folders(path, [pattern-or-options])` | the same for the directories | [what is in it](#what-is-in-it) |
-| `List(path, [pattern])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows | [what is in it](#what-is-in-it) |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag | [making and removing](#making-and-removing) |
+| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted | [what is in it](#what-is-in-it) |
+| `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories | [what is in it](#what-is-in-it) |
+| `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows | [what is in it](#what-is-in-it) |
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write | [making and removing](#making-and-removing) |
 
 ## What is in it
 
 | | |
 |---|---|
-| `List(path, [pattern])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows |
-| `Files(path, [pattern-or-options])` | the **full paths** of the files, sorted |
-| `Folders(path, [pattern-or-options])` | the same for the directories |
+| `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows. A `Cancellable` last stops the listing |
+| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A `Cancellable` last stops the walk |
+| `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories |
 
 ```js
 Directory.Files(dir)
@@ -41,21 +41,25 @@ way — which is what makes a listing comparable, a test repeatable and a scan's
 output stable in a diff. A symlinked directory is listed and **not entered**; a
 symlink to a file is an ordinary file.
 
-**Inside a task, a walk is cancellable.** `Files`, `Folders` and `List` take
-the job's cancellation signal — `Task.Stop()`, its `Timeout`, or a shared
-[`Cancellable`](Cancellable.md) — and stop where they are, including part-way
-down a recursive walk. A cancelled walk **throws** (`Directory.Files:
-cancelled`, or `cannot list <path>: …`) instead of answering a partial tree.
-On the main thread there is no signal to take and nothing changes.
+**A walk is cancellable.** `Files`, `Folders`, `List`, `Copy` and
+`DeleteTree` take a [`Cancellable`](Cancellable.md) as their last argument and
+stop where they are when it is raised, including part-way down a recursive
+walk. A cancelled walk **throws** (`Directory.Files: cancelled`, or `cannot
+list <path>: …`) instead of answering a partial tree. Inside a task, hand it
+`this.Cancellable`, so `Task.Stop()` and its `Timeout` reach the walk:
+
+```js
+const files = Directory.Files(msg.src, { Recursive: true }, this.Cancellable);
+```
 
 ## Making and removing
 
 | | |
 |---|---|
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
-| `Copy(from, to)` | a whole tree |
+| `Copy(from, to, [cancellable])` | a whole tree. A `Cancellable` last stops it part way, leaving what was copied |
 | `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is |
-| `DeleteTree(path)` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag. A `Cancellable` last stops it part way, leaving what was not yet deleted |
 
 `Copy` and `DeleteTree` walk the tree with the same signal as `Files`, so a
 task stopped halfway leaves what it had not reached. [`File.Trash`](File.md#moving-and-removing)

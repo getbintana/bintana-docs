@@ -26,7 +26,7 @@ and work that repeats is a new `Task`.
 
 | | | |
 |---|---|---|
-| `Start(data, [options])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)` | [starting](#starting) |
+| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)` | [starting](#starting) |
 | `Stop([options])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once) | [ending](#ending) |
 | `Report(value)` | the worker's voice, called from `Run`; arrives as `Progress` | [reporting](#reporting) |
 | `Stopping` | inside `Run` | [ending](#ending) |
@@ -46,16 +46,16 @@ second `Start` on the same task.
 
 | | |
 |---|---|
-| `Start(data, [options])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task` |
+| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one |
 The file is found the way a form is: `<ClassName>.js` anywhere in the project
 or its libraries, the project shadowing a library. Two files claiming one
 name is refused naming the name; the class must be self-contained in its file.
 
 `Timeout` is milliseconds before the run is aborted, absent waits forever.
-`Cancellable` is a shared [`Cancellable`](Cancellable.md): the task is linked
-to that signal, and inside `Run` the same one is `this.Cancellable`. Raising it
-stops every task holding it; one task's `Stop()` or `Timeout` does not raise
-it. A task started without one gets its own, so `this.Cancellable` is never null.
+A [`Cancellable`](Cancellable.md) given last is shared: raising it stops every
+task started with it, while one task's `Stop()` or `Timeout` does not raise
+it. Inside `Run`, `this.Cancellable` is the task's own signal, raised by all
+of those; hand it to a blocking call that should end with the task.
 `Task.Max([limit])` is a ceiling on live tasks, refused rather than queued;
 set it before fanning out, and `0` restores no limit. Whatever `data` holds
 must be plain — see below.
@@ -109,7 +109,7 @@ nobody wrote. `Report` on the proxy (outside `Run`) is refused.
 
 | | |
 |---|---|
-| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Answers whether there was a live job to ask |
+| `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns. Answers whether there was a live job to ask |
 | `Stopping` | inside `Run`: `true` once `Stop()` has asked, so the job can `Report` what it has and return. Delphi's `Terminated`, BackgroundWorker's `CancellationPending` |
 
 **Asked first, and only then enforced.** `Stop()` raises a flag and lets the
@@ -147,12 +147,26 @@ the caller asked and it stopped, so the ending is `Error` with `Cancelled`
 set. What changes is how much of the work survives.
 
 The flag alone does not reach native code. Each job also carries a
-cancellation signal, and `Stop`, `Timeout` and `KillAfter` raise it:
+cancellation signal, `this.Cancellable`, and `Stop`, `Timeout` and `KillAfter`
+raise it **at once**. A blocking call handed it as its last argument —
 `Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` and
 the [`Directory`](Directory.md) walks (`List`, `Files`, `Folders`, `Copy`,
-`DeleteTree`) stop where they are and the run ends as cancelled. `File.Hash`
-and the compressors do not take one yet; those still wait for the flag or for
-`KillAfter` to end them between opcodes.
+`DeleteTree`) — stops where it is and throws, and the run ends as cancelled:
+
+```js
+Run(msg) {
+    const r = Http.GetWait(msg.url, this.Cancellable);   // Stop ends the wait
+    File.SaveBytes(msg.path, r.Body);
+    return { size: r.Body.Length };
+}
+```
+
+**A call handed nothing is not cancelled**, so a `Run` that saw `Stopping` can
+still wind down with blocking calls — read back what it wrote, run the
+command that tidies up — before `KillAfter`. A call blocked without the
+signal holds the thread until it returns. `File.Hash` and the compressors do
+not take one yet; those still wait for the flag or for `KillAfter` to end
+them between opcodes.
 
 Teardown waits **two seconds** for each live task and then closes anyway,
 saying so on stderr: the program exits, and the thread is left adrift rather
@@ -232,8 +246,8 @@ state, a `static` field — and `===` across the boundary is always false. **A
 singleton is therefore per runtime**: each side gets its own. A message, a
 report and an answer carry **copies** of plain data — see
 [Messages](#messages) — and the only state that is shared is the C-backed
-kind: a [`Cancellable`](Cancellable.md)'s signal (two wrappers around one C
-object), or the name a [`Lock`](Lock.md) is held by. A shared service with
+kind: a [`Cancellable`](Cancellable.md)'s signal (raised on one side, seen on
+the other), or the name a [`Lock`](Lock.md) is held by. A shared service with
 methods would need a request/response channel, which the runtime does not
 have: a task can report and answer, not be called back into.
 

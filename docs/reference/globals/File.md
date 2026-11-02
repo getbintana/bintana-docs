@@ -20,8 +20,8 @@ with `[object Object]`, and is now a refusal that says so.
 
 | | | |
 |---|---|---|
-| `Load(path)` | the whole file as a string | [text](#text) |
-| `LoadBytes(path)` | the whole file as [`Bytes`](../../llm/library.md#bytes), untouched — what `Load` cannot do, since it answers text | [bytes](#bytes) |
+| `Load(path, [cancellable])` | the whole file as a string | [text](#text) |
+| `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](../../llm/library.md#bytes), untouched — what `Load` cannot do, since it answers text | [bytes](#bytes) |
 | `LoadJson(path)` | the file, parsed | [json](#json) |
 | `LoadXml(path)` | the file as a [`Xml`](Xml.md) document | [xml](#xml) |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file | [text](#text) |
@@ -34,15 +34,15 @@ with `[object Object]`, and is now a refusal that says so.
 
 | | | |
 |---|---|---|
-| `Copy(from, to)` | **byte for byte**, so it works on images; refuses to clobber | [moving and removing](#moving-and-removing) |
+| `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber | [moving and removing](#moving-and-removing) |
 | `Delete(path)` | a file, or an **empty** directory | [moving and removing](#moving-and-removing) |
 | `Exists(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` | [asking about one](#asking-about-one) |
 | `Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](Hash.md) | [asking about one](#asking-about-one) |
-| `Info(path)` | `{ Size, Modified, Type, Icon, IsDir }`, or `null` | [asking about one](#asking-about-one) |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null` | [asking about one](#asking-about-one) |
 | `IsDir(path)` | whether it is a directory — the question to ask before [`Directory`](Directory.md)'s three verbs, which throw on anything else | [asking about one](#asking-about-one) |
 | `Open(path)` | hands the file to whatever the desktop opens that kind with | [the desktop](#the-desktop) |
 | `Rename(from, to)` | also moves; refuses to clobber | [moving and removing](#moving-and-removing) |
-| `Trash(path)` | to the desktop's trash, whole for a folder | [moving and removing](#moving-and-removing) |
+| `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder | [moving and removing](#moving-and-removing) |
 | `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` | [watching](#watching) |
 
 **Paths, as text**
@@ -63,7 +63,7 @@ with `[object Object]`, and is now a refusal that says so.
 
 | | |
 |---|---|
-| `Load(path)` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string |
+| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A `Cancellable` last ends a read that is stuck |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 
@@ -92,7 +92,7 @@ thing, and [`Xml`](Xml.md) is where that is argued.
 
 | | |
 |---|---|
-| `LoadBytes(path)` | the whole file as [`Bytes`](../../llm/library.md#bytes), untouched — what `Load` cannot do, since it answers text |
+| `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](../../llm/library.md#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 
 For a picture, an archive, anything downloaded: what
@@ -105,7 +105,7 @@ For a picture, an archive, anything downloaded: what
 |---|---|
 | `Exists(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
 | `IsDir(path)` | whether it is a directory — the question to ask before [`Directory`](Directory.md)'s three verbs, which throw on anything else |
-| `Info(path)` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
 | `Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video |
 
 `.Icon` is the one field that needs a display: in a console project it answers
@@ -115,10 +115,10 @@ For a picture, an archive, anything downloaded: what
 
 | | |
 |---|---|
-| `Copy(from, to)` | **byte for byte**, so it works on images; refuses to clobber |
+| `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
 | `Rename(from, to)` | also moves; refuses to clobber |
 | `Delete(path)` | a file, or an **empty** directory. Throws on failure |
-| `Trash(path)` | to the desktop's trash, whole for a folder. Throws where there is no trash |
+| `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 
 **`Trash` is what *Delete* usually should mean.** A program that offers *Delete*
 and means `unlink` is harsher than the desktop it runs on — and one that offers

@@ -14,8 +14,9 @@ read asynchronously and split into lines, and both callbacks are optional.
 
 **In a [`Task`](Task.md) only `Exec.Wait` exists.** `Exec(...)` itself is a
 function there too, and it throws: the callback spelling hangs its sources on
-the main loop. `Exec.Wait` runs on the worker thread and `Stop()` cancels it,
-killing the child.
+the main loop. `Exec.Wait` runs on the worker thread; handed
+`this.Cancellable` as its last argument, `Stop()` cancels it, killing the
+child.
 
 ## Every member
 
@@ -24,7 +25,7 @@ killing the child.
 | | | |
 |---|---|---|
 | `Exec(argv, [options], [onLine], [onExit])` | starts a child and answers a handle | [running one](#running-one) |
-| `Exec.Wait(argv, [options])` | runs it and **waits**, answering what it printed | [waiting for one](#waiting-for-one) |
+| `Exec.Wait(argv, [options], [cancellable])` | runs it and **waits**, answering what it printed | [waiting for one](#waiting-for-one) |
 
 **The handle**: `ProcessId`, `Running`, `ExitCode` (`null` while it runs, `-1`
 for a child stopped by a signal), `TimedOut`, `Stop()`, `Kill()`, `Write(text)`
@@ -40,7 +41,6 @@ and `CloseInput()`.
 | `Timeout` | milliseconds before the child is ended; absent waits forever |
 | `KillAfter` | milliseconds between SIGTERM and SIGKILL, `5000` by default |
 | `Input` | **`Exec.Wait` only**: the text or `Bytes` the child reads, written before its stdin is closed — what makes `Exec.Wait(["sort"], { Input: text })` a filter |
-| `Cancellable` | **`Exec.Wait` only**: a [`Cancellable`](Cancellable.md) that kills the child and answers when it is raised |
 | `Control` | a callback for a **third stream** — descriptor 3 in the child, one line at a time — for a child that speaks a protocol as well as printing |
 
 ## Running one
@@ -79,6 +79,10 @@ For the case that hurts otherwise: a check that decides what the next line of
 code does. It blocks the main loop, so it is for programs that answer in
 milliseconds — `msgfmt`, `git rev-parse`, `which` — and never for one that might
 sit there.
+
+A [`Cancellable`](Cancellable.md) given **last** — after the options, or in
+their place — kills the child and throws when it is raised:
+`Exec.Wait(argv, { Timeout: 9000 }, stop)`. As an option it is refused.
 
 ## A log pane, not a terminal
 
