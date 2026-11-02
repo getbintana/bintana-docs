@@ -666,7 +666,7 @@ t.Start({ roots: subs });
 | `Running` | `false` once it has ended — written before `Done`/`Error` run, like `Exec`'s |
 | `Cancelled` | whether `Stop()` is what ended it |
 | `TimedOut` | whether the guard is what ended it |
-| `Task.Max([limit])` (static) | the most tasks alive at once, `0` (the default) for no limit. A `Start` over it is refused rather than queued; the program waits for an answer or raises it. With no argument it answers the ceiling; with one it sets it and answers the new value. One thread and one runtime per task is what makes a ceiling worth having |
+| `Task.Max([limit])` (static) | the most tasks alive at once, `0` (the default) for no limit. A `Start` over it is refused rather than queued; the program waits for an answer or raises it. With no argument it answers the ceiling; with one it sets it and answers the new value — **a whole number**: a fraction, `NaN`, `Infinity` or a count past 2³¹ is refused and the ceiling stays. One thread and one runtime per task is what makes a ceiling worth having |
 
 `Task` itself is abstract: `new Task()` throws, and so does starting a class
 the project has no file for. Options: `{ Timeout }` in milliseconds, absent
