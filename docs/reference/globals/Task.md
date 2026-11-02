@@ -165,9 +165,10 @@ Run(msg) {
 **A call handed nothing is not cancelled**, so a `Run` that saw `Stopping` can
 still wind down with blocking calls — read back what it wrote, run the
 command that tidies up — before `KillAfter`. A call blocked without the
-signal holds the thread until it returns. `File.Hash` and the compressors do
-not take one yet; those still wait for the flag or for `KillAfter` to end
-them between opcodes.
+signal holds the thread until it returns. `File.Hash`, `Gzip`'s
+`Compress`/`Decompress`/`CompressFile`/`DecompressFile` and
+`ZipArchive.ExtractAll` take one too, and stop between two 64 KB blocks or two
+entries.
 
 Teardown waits **two seconds** for each live task and then closes anyway,
 saying so on stderr: the program exits, and the thread is left adrift rather

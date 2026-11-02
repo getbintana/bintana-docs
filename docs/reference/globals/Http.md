@@ -50,6 +50,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `BaseUrl` | what a relative path in a call is relative to, so the program's requests are one-liners | [the client](#the-client) |
 | `Cookies` | `false` unless told | [the client](#the-client) |
 | `FollowRedirects` | follow a `3xx` | [the client](#the-client) |
+| `Http1` | ask for HTTP/1.1 rather than HTTP/2 | [cancelling over HTTP/2](#cancelling-over-http2) |
 | `Headers` | sent with every request this client makes — an API key, an `Accept` | [the client](#the-client) |
 | `Language` | the `Accept-Language` it asks with | [the client](#the-client) |
 | `Proxy` | what to go through | [the client](#the-client) |
@@ -99,7 +100,7 @@ handle answers `Running`, `TimedOut`, `Url`, `Method` and `Stop()` — and
 later, with `Kind: "Cancelled"`.
 
 Per-request `opts` carry `Headers`, `Query: {k: v}` (appended escaped), `Body`,
-`ContentType`, `Timeout`, `FollowRedirects` and `Auth` — and **naming any of them
+`ContentType`, `Timeout`, `FollowRedirects`, `Auth` and `Http1` — and **naming any of them
 is what makes an object options rather than a JSON body**. A `Query` value of
 `undefined` or `null` is not sent — `{ page: undefined }` used to go out as
 `page=undefined` — and a header or query value that cannot become text is refused
@@ -185,11 +186,12 @@ reach a request that has not answered. A call handed none is not cancelled.
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
 | `BaseUrl` | what a relative path in a call is relative to, so the program's requests are one-liners |
 | `Headers` | sent with every request this client makes — an API key, an `Accept` |
 | `Timeout` | ms before a request is given up on; `0` waits forever for the callback verbs. The blocking ones use it when it is not zero and otherwise give up after 30 s — `{ Timeout: 0 }` on the call is the explicit *wait forever* |
 | `FollowRedirects` | follow a `3xx`. Default `true` |
+| `Http1` | ask for HTTP/1.1 rather than HTTP/2. Default `false`. Over HTTP/2 libsoup notices a cancel only when the server next sends something, so a `Stop`, a `Timeout` or a `Cancellable` ends a request late; a program whose requests must stop when told sets this. `{ Http1 }` on one call does the same for that call |
 | `Language` | the `Accept-Language` it asks with |
 | `Proxy` | what to go through |
 | `Auth` | `{ User, Password }`, Basic and preemptive; reads back `null` when none is set. An explicit `Authorization` header wins over it, and an explicit `Content-Type` header wins over the one the body's shape implies |
@@ -286,23 +288,26 @@ and a `Task` blocked in that `…Wait` is not ended by `Stop()` or its `Timeout`
 Plain `http://` is HTTP/1.1 and unaffected.
 
 **When cancelling has to be prompt** -- a download manager with a stop button, a
-task with a deadline -- ask libsoup for HTTP/1.1, before the first request:
+task with a deadline -- ask for HTTP/1.1 on the requests that need it, with
+`Http1`:
 
 ```js
-Form_Open() {
-    Environment.Set("SOUP_FORCE_HTTP1", "1");   // before any Http call, once
-    // ...
-}
+Http.GetWait(url, { Http1: true }, this.Cancellable);    // one call
+const api = Http.Client({ BaseUrl: base, Http1: true });  // every call it makes
 ```
 
-libsoup reads the variable **once, at the first connection the process
-makes**, and from then on it holds for every request on every thread, tasks
-included; setting it later changes nothing. It can equally come from outside:
-`SOUP_FORCE_HTTP1=1` in the launcher or the desktop entry's `Exec`. The cost is
-HTTP/2's multiplexing: requests to one host go over several connections instead
-of one, which an application making a handful of requests does not notice.
+Stopped at 1.5 s, the request above ends at 1.5 s; without `Http1`, when the
+server answers. The cost is HTTP/2's multiplexing for those requests: several
+connections to one host instead of one, which an application making a handful
+of requests does not notice.
 [`examples/downloads`](https://github.com/getbintana/bintana/tree/main/examples/downloads)
 does it.
+
+For **the whole process**, `Environment.Set("SOUP_FORCE_HTTP1", "1")` before
+the first request does the same for every request on every thread, tasks
+included: libsoup reads the variable once, at the first connection, so setting
+it later changes nothing. It can equally come from outside, in the launcher or
+the desktop entry's `Exec`.
 
 ## What goes wrong
 

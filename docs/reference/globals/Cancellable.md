@@ -52,9 +52,11 @@ class Sizer extends Task {
 ```
 
 The blocking calls that take one, always last — `Exec.Wait`, `Http.*Wait`,
-`File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` and
-`Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree` — throw `cancelled`
-when it is raised, also part-way. **One that was not handed it goes on**,
+`File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash`/`Hash`,
+`Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree`, `Gzip`'s
+`Compress`/`Decompress`/`CompressFile`/`DecompressFile` and
+`ZipArchive.ExtractAll` — throw `cancelled` when it is raised, also part-way:
+the streaming ones ask it between two 64 KB blocks or two entries. **One that was not handed it goes on**,
 which is what a `Run` winding down after `Stopping` relies on: it can still
 read the file it wrote or run the command that tidies up. On the main thread
 the same calls take a token of the program's own.

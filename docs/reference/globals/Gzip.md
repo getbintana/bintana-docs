@@ -14,17 +14,17 @@ Gzip.DecompressFile(path + ".gz", path)
 
 | | | |
 |---|---|---|
-| `Compress(data, [{ Level }])` | `data` (text as its UTF-8, or a [`Bytes`](../../llm/library.md#bytes)) as one gzip member | [values](#values) |
-| `Decompress(bytes, [{ MaxSize }])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip | [values](#values) |
-| `CompressFile(source, destination, [{ Level }])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written | [files](#files) |
-| `DecompressFile(source, destination, [{ MaxSize }])` | the reverse, streamed, with the same ceiling and the same promise about the destination | [files](#files) |
+| `Compress(data, [{ Level }], [cancellable])` | `data` (text as its UTF-8, or a [`Bytes`](../../llm/library.md#bytes)) as one gzip member | [values](#values) |
+| `Decompress(bytes, [{ MaxSize }], [cancellable])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip | [values](#values) |
+| `CompressFile(source, destination, [{ Level }], [cancellable])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written | [files](#files) |
+| `DecompressFile(source, destination, [{ MaxSize }], [cancellable])` | the reverse, streamed, with the same ceiling and the same promise about the destination | [files](#files) |
 
 ## Values
 
 | | |
 |---|---|
-| `Compress(data, [{ Level }])` | `data` (text as its UTF-8, or a [`Bytes`](../../llm/library.md#bytes)) as one gzip member. `Level` is 1 (fast) to 9 (small), 6 unless told. A second option, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a [`Task`](../../llm/library.md#task) |
-| `Decompress(bytes, [{ MaxSize }])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip. The answer may not pass `MaxSize` bytes (256 MiB unless told), because a few kilobytes can inflate to gigabytes. Text comes out as `ToText()` of the answer |
+| `Compress(data, [{ Level }], [cancellable])` | `data` (text as its UTF-8, or a [`Bytes`](../../llm/library.md#bytes)) as one gzip member. `Level` is 1 (fast) to 9 (small), 6 unless told. A second option, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a [`Task`](../../llm/library.md#task), and a `Cancellable` last stops it between two 64 KB chunks |
+| `Decompress(bytes, [{ MaxSize }], [cancellable])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip. The answer may not pass `MaxSize` bytes (256 MiB unless told), because a few kilobytes can inflate to gigabytes. Text comes out as `ToText()` of the answer. A `Cancellable` last stops it |
 
 `Compress(data)` takes text — compressed as its **UTF-8** — or a
 [`Bytes`](Bytes.md), and answers `Bytes`. A number or `undefined` is refused
@@ -70,8 +70,8 @@ not a quiet level 6.
 
 | | |
 |---|---|
-| `CompressFile(source, destination, [{ Level }])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written. The destination appears only when it is whole: a failure leaves no half-written file, and an existing one is untouched |
-| `DecompressFile(source, destination, [{ MaxSize }])` | the reverse, streamed, with the same ceiling and the same promise about the destination. Answers the bytes written |
+| `CompressFile(source, destination, [{ Level }], [cancellable])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written. The destination appears only when it is whole: a failure leaves no half-written file, and an existing one is untouched. A `Cancellable` last stops it between two chunks, with the same promise: the destination is as it was |
+| `DecompressFile(source, destination, [{ MaxSize }], [cancellable])` | the reverse, streamed, with the same ceiling and the same promise about the destination. Answers the bytes written. A `Cancellable` last stops it |
 
 `CompressFile(source, destination)` and `DecompressFile(source, destination)` read
 **64 KB at a time**, so the cost of a video is the buffer and not the video. Both

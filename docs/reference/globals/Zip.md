@@ -29,7 +29,7 @@ out.Finish();
 | `Entries` | what the archive holds | [what is in it](#what-is-in-it) |
 | `Read(name, [{ MaxSize }])` | one entry's bytes | [reading](#reading) |
 | `Extract(name, path, [{ MaxSize }])` | one entry written to a path | [extracting](#extracting) |
-| `ExtractAll(folder, [{ MaxSize }])` | every entry under a folder | [extracting](#extracting) |
+| `ExtractAll(folder, [{ MaxSize }], [cancellable])` | every entry under a folder | [extracting](#extracting) |
 | `Close()` | lets go of the archive | [closing](#closing) |
 | `Add(name, [data], [{ Store, Modified }])` | puts an entry in the archive being written | [writing](#writing) |
 | `AddFile(name, path, [{ Store, Modified }])` | the same for a file, streamed | [writing](#writing) |
@@ -106,7 +106,7 @@ z.Read("big.bin", { MaxSize: 2 ** 30 });          // a gigabyte, for an archive 
 | | |
 |---|---|
 | `Extract(name, path, [{ MaxSize }])` | one entry written to a path |
-| `ExtractAll(folder, [{ MaxSize }])` | every entry under a folder |
+| `ExtractAll(folder, [{ MaxSize }], [cancellable])` | every entry under a folder |
 
 `Extract` writes one entry to the path you give it, atomically, as `File.Save` does; the
 folder it is in must exist. `ExtractAll` makes the folders as it goes and answers how many
@@ -120,6 +120,10 @@ method and the **total size** first, so a refusal leaves the destination as it w
 half an archive. Only files and folders are ever made: there is no mode and no link in what
 this writes, so an archive cannot plant a symlink. One already in the destination is yours,
 as with any extractor.
+
+A [`Cancellable`](Cancellable.md) given last stops `ExtractAll` between two entries — in a
+[`Task`](Task.md), hand it `this.Cancellable`. The files already written stay, each one
+whole, as a stopped `Directory.Copy` leaves what it copied.
 
 ## Closing
 

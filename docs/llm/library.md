@@ -290,7 +290,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Rename(from, to)` | also moves; refuses to clobber |
 | `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
-| `Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video |
+| `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
 | `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
 | `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
@@ -690,7 +690,8 @@ raise it at once. A blocking call given it as its **last argument** --
 instead of holding the thread: `Http.GetWait(url, this.Cancellable)`. A call
 given none is not cancelled, so a `Run` that saw `Stopping` can still read and
 run things while it winds down. A token is never an option: `{ Cancellable }`
-is refused. `File.Hash` and the compressors do not take one.
+is refused. `File.Hash`, `Gzip`'s four verbs and `ZipArchive.ExtractAll` take
+one too, and stop between two blocks or two entries.
 
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
@@ -1028,7 +1029,7 @@ File.Hash(path, "md5")
 | `Md5(v)`, `Sha1(v)`, `Sha256(v)`, `Sha512(v)` | the digest as lower-case hex. `v` is text (hashed as its UTF-8) or a [`Bytes`](#bytes) (hashed as the bytes it is) |
 | `Hmac(key, message, [algorithm])` | the keyed digest (RFC 2104) as lower-case hex, `"Sha256"` unless told. `key` and `message` are text (its UTF-8) or a [`Bytes`](#bytes), and **nothing else**: a number or `undefined` is refused rather than signed as the word it spells. For a signature somebody sent you, **do not compare the answer with `===`** -- that is what `Verify` is for |
 | `Verify(key, message, signature, [algorithm])` | whether `signature` is the keyed digest of `message`, compared in constant time. `signature` is hex (either case) or a [`Bytes`](#bytes) of the raw digest; text that is not hex of the right length is `false`, not an error, since it is what a forged one looks like. Never answers by throwing for a wrong signature |
-| `File.Hash(path, [algorithm])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video |
+| `File.Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
 
 **What is hashed is the text's UTF-8 bytes**, which is what every other tool
 means by the hash of a string: `Hash.Sha256("abc")` is what `sha256sum` says
@@ -1102,10 +1103,10 @@ Gzip.DecompressFile(path + ".gz", path)
 
 | | |
 |---|---|
-| `Compress(data, [{ Level }])` | `data` (text as its UTF-8, or a [`Bytes`](#bytes)) as one gzip member. `Level` is 1 (fast) to 9 (small), 6 unless told. A second option, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a [`Task`](#task) |
-| `Decompress(bytes, [{ MaxSize }])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip. The answer may not pass `MaxSize` bytes (256 MiB unless told), because a few kilobytes can inflate to gigabytes. Text comes out as `ToText()` of the answer |
-| `CompressFile(source, destination, [{ Level }])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written. The destination appears only when it is whole: a failure leaves no half-written file, and an existing one is untouched |
-| `DecompressFile(source, destination, [{ MaxSize }])` | the reverse, streamed, with the same ceiling and the same promise about the destination. Answers the bytes written |
+| `Compress(data, [{ Level }], [cancellable])` | `data` (text as its UTF-8, or a [`Bytes`](#bytes)) as one gzip member. `Level` is 1 (fast) to 9 (small), 6 unless told. A second option, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a [`Task`](#task), and a `Cancellable` last stops it between two 64 KB chunks |
+| `Decompress(bytes, [{ MaxSize }], [cancellable])` | what `bytes` holds, **all of it**: members glued together are read to the end, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not gzip. The answer may not pass `MaxSize` bytes (256 MiB unless told), because a few kilobytes can inflate to gigabytes. Text comes out as `ToText()` of the answer. A `Cancellable` last stops it |
+| `CompressFile(source, destination, [{ Level }], [cancellable])` | gzips a file into another **without loading it**, 64 KB at a time, and answers the bytes written. The destination appears only when it is whole: a failure leaves no half-written file, and an existing one is untouched. A `Cancellable` last stops it between two chunks, with the same promise: the destination is as it was |
+| `DecompressFile(source, destination, [{ MaxSize }], [cancellable])` | the reverse, streamed, with the same ceiling and the same promise about the destination. Answers the bytes written. A `Cancellable` last stops it |
 
 **`Decompress` answers all of it or throws.** Several members glued together
 (`cat a.gz b.gz`, which is valid gzip) are read to the end; a stream that stops
@@ -1188,7 +1189,7 @@ out.Finish();
 | `Entries` | what the archive holds |
 | `Read(name, [{ MaxSize }])` | one entry's bytes |
 | `Extract(name, path, [{ MaxSize }])` | one entry written to a path |
-| `ExtractAll(folder, [{ MaxSize }])` | every entry under a folder |
+| `ExtractAll(folder, [{ MaxSize }], [cancellable])` | every entry under a folder |
 | `Close()` | lets go of the archive |
 | `Add(name, [data], [{ Store, Modified }])` | puts an entry in the archive being written |
 | `AddFile(name, path, [{ Store, Modified }])` | the same for a file, streamed |
@@ -1898,7 +1899,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one |
 | `MaxConns`, `MaxPerHost` | constructor-only (`10`/`2` unless told): soup takes them once, so assigning later throws |
 | `Request(method, url, [body], [opts], onDone, [onError])` | any verb: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`; anything else is refused, in the blocking spelling too |
@@ -1931,11 +1932,11 @@ later. The handle answers `Running`, `TimedOut`, `Url`, `Method` and `Stop()`
 (cancelling calls `onError` with `Kind: "Cancelled"`). Over HTTP/2 -- most
 `https://` servers -- libsoup notices a cancel only when the server next sends
 something, so `Stop()` and `Timeout` end the request late, or never against a
-server that does not answer; `Environment.Set("SOUP_FORCE_HTTP1", "1")` before
-the first request makes them prompt for the whole process ([cancelling over
+server that does not answer; `{ Http1: true }` on the call or the client makes
+them prompt ([cancelling over
 HTTP/2](../reference/globals/Http.md#cancelling-over-http2)). Per-request `opts` carry
 `Headers`, `Query: {k:v}` (appended escaped), `Body`, `ContentType`, `Timeout`,
-`FollowRedirects`, `Auth` — and naming any of them is what makes an object
+`FollowRedirects`, `Auth`, `Http1` — and naming any of them is what makes an object
 options rather than a JSON body. A repeated response header keeps the last of
 them, `Set-Cookie` included, which is what `Cookies: true` is for. A `Query`
 value of `undefined` or `null` is not sent, and a header or query value that
