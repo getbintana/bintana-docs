@@ -1,6 +1,7 @@
-# Dialog — the two questions every program asks
+# Dialog — the two questions every program asks, and who it is
 
-Two classes, both `Form` subclasses, and both are the answer to a gap the runtime
+Three classes, all `Form` subclasses. Two are questions (`Confirm`, `AskText`)
+and the third, `AboutBox`, is the Help menu's last item; the two questions are the answer to a gap the runtime
 declines to close in C: **GTK4's dialogs are fire-and-forget, so there is no
 blocking `MsgBox`**, and [`issues.md`](https://github.com/getbintana/bintana/blob/main/docs/llm/issues.md) records the answer as *"a
 question is a form"*. These are those forms, shipped, so a project writes one call
@@ -100,6 +101,56 @@ the `.form` and is only shown when `Option` is given, so a project that does not
 use it has no disabled control on screen to explain. Asking for it moves the two
 buttons down and grows the window by the same 34 pixels — which is *before*
 `Show()`, so it is the design size being decided rather than a resize reacted to.
+
+## AboutBox
+
+Who the program is, and which version. **Not a question**, so there is no
+callback and the only argument is the options:
+
+```js
+MnuAbout_Click() {
+    AboutBox.Show({
+        Summary:   Locale.Text("A small virtual machine manager on libvirt."),
+        Copyright: "Copyright © 2026 Somebody — MIT License",
+        Website:   "https://example.org/box" });
+}
+```
+
+| Member | |
+|---|---|
+| `Show([options])` | builds the about box, shows it modal, and answers the shown window. The name, version and icon come out of `project.json` unless given; the summary, copyright and website are shown only when given. There is no callback: nothing is asked |
+| `Text` | the window title. **Translated**. `Caption` is an alias |
+| `Modal` | blocks its parent. Made transient for the active window on `Show()` |
+
+## Options of `AboutBox.Show`
+
+| Option | |
+|---|---|
+| `Summary` | a sentence or two of what the program is. Hidden when not given |
+| `Copyright` | the line under it, with the licence. Hidden when not given |
+| `Website` | an address, shown as a link the desktop opens. Hidden when not given |
+| `Icon` | an icon name. **The one named like `Application.Id`** when the project ships it in `icons/` — where its desktop entry looks too — and no picture at all otherwise |
+| `Name` | the big line. `Application.Name` |
+| `Version` | the line under the name, replacing the one the class writes: `Version 1.2, on Bintana 0.3`, or `On Bintana 0.3` when the project declares no `version` |
+| `Title` | the window's title. `About <Name>` |
+
+**What `project.json` already says is not asked again**, and what it cannot say
+is hidden until it is given — so no about box shows an empty line. **The
+version line says both versions**, the program's (`Application.Version`) and the
+runtime's (`BTA_VERSION`): a bug report needs the pair, and showing one where
+the other belongs is the mistake every about box makes once.
+
+`Close` is the only button: `Cancel` in the `.form`, so Escape closes it, and it
+takes the focus after `Show()`, so Enter does too.
+
+**It is `AboutBox` and not `About`**, because a library's classes and a
+project's share one scope: a project with its own `class About` — a perfectly
+ordinary name for one — would stop with `SyntaxError: redeclaration of 'About'`
+the day it named `dialog` in `uses`, and every new project names it.
+
+The default title and version line are written with `Locale.Text` inside the
+library, so they have no msgid in a project's catalogue — the same gap as
+`"Cancel"` above. A project that translates passes `Title` and `Version` itself.
 
 ## What this library does not do
 
