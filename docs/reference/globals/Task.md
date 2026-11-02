@@ -221,6 +221,21 @@ lays out, so importing it in a task refuses with that sentence. `report` and
 
 A task computes and reports; what is drawn happens where the answer arrives.
 
+### No shared heap
+
+**A singleton is per runtime.** The worker builds a runtime of its own, so the
+main thread and a task share no JavaScript heap: a class instance, a module's
+top-level state or a `static` field is not the same object on the two sides,
+and `===` across the boundary is always false. A message, a report and an
+answer carry **copies** of plain data — see [Messages](#messages) — and the
+only state that is shared is the C-backed kind: a [`Cancellable`](Cancellable.md)'s
+signal, or the name a [`Lock`](Lock.md) is held by. A shared service with
+methods would need a request/response channel, which the runtime does not
+have: a task can report and answer, not be called back into.
+
+A task that needs a cache, a configuration or a connection of its own can keep
+it in a module; each run evaluates the module once and gets a fresh one.
+
 ### Writing, and what concurrency actually costs
 
 A worker writes: `File.Save`, `File.Delete`, `File.Rename`, `Directory.Make`
