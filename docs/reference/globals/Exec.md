@@ -82,7 +82,8 @@ sit there.
 
 A [`Cancellable`](Cancellable.md) given **last** — after the options, or in
 their place — kills the child and throws when it is raised:
-`Exec.Wait(argv, { Timeout: 9000 }, stop)`. As an option it is refused.
+`Exec.Wait(argv, { Timeout: 9000 }, stop)`. Raised already, it throws without
+starting the child. As an option it is refused.
 
 ## A log pane, not a terminal
 

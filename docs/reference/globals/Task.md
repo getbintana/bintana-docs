@@ -46,7 +46,7 @@ second `Start` on the same task.
 
 | | |
 |---|---|
-| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one |
+| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one; raised already, `Run` is not called and the task ends `Cancelled` |
 The file is found the way a form is: `<ClassName>.js` anywhere in the project
 or its libraries, the project shadowing a library. Two files claiming one
 name is refused naming the name; the class must be self-contained in its file.
@@ -54,7 +54,8 @@ name is refused naming the name; the class must be self-contained in its file.
 `Timeout` is milliseconds before the run is aborted, absent waits forever.
 A [`Cancellable`](Cancellable.md) given last is shared: raising it stops every
 task started with it, while one task's `Stop()` or `Timeout` does not raise
-it. Inside `Run`, `this.Cancellable` is the task's own signal, raised by all
+it. Raised already when `Start` is called, `Run` is not called at all and the
+task answers `Error` with `Cancelled`, as a stopped one does. Inside `Run`, `this.Cancellable` is the task's own signal, raised by all
 of those; hand it to a blocking call that should end with the task.
 `Task.Max([limit])` is a ceiling on live tasks, refused rather than queued;
 set it before fanning out, and `0` restores no limit. Whatever `data` holds

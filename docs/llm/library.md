@@ -656,7 +656,7 @@ t.Start({ roots: subs });
 
 | | |
 |---|---|
-| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one |
+| `Start(data, [options], [cancellable])` | serialises the message, loads the class's file in a fresh runtime on a fresh thread, builds the class, and calls `Run(msg)`. **Once** — a second `Start` is refused; work that repeats is a new `Task`. A `Cancellable` last stops it when raised, and stops every task given the same one; raised already, `Run` is not called and the task ends `Cancelled` |
 | `Stop([{ KillAfter }])` | **asks** it to end, and enforces `KillAfter` ms later (5000 by default, 0 = at once). Two stages like `Exec`'s guard. Raises `this.Cancellable` at once, so a blocking call `Run` handed it returns. Answers whether there was a live job to ask |
 | `Report(value)` | the worker's voice, called from `Run`; arrives as `Progress`. `this.Report` on a proxy is refused |
 | `Stopping` | inside `Run`: `true` once `Stop()` has asked, so the job can `Report` what it has and return. Delphi's `Terminated`, BackgroundWorker's `CancellationPending` |
