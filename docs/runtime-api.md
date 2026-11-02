@@ -824,15 +824,15 @@ async job shape, held by something the desktop owns past the window that sent it
 
 | | |
 |---|---|
-| `Load(path)` | the whole file as a string; throws if unreadable |
+| `Load(path, [cancellable])` | the whole file as a string; throws if unreadable |
 | `Save(path, text)` | writes it — **atomically**: a temporary beside it, renamed over |
 | `Append(path, text)` | adds to the end, creating the file if it is not there |
 | `Exists(path)`, `IsDir(path)` | |
 | `Delete(path)` | `g_remove`: a file, or an **empty** directory. Throws if it fails |
-| `Trash(path)` | to the desktop's trash, whole for a folder. Throws where there is no trash |
+| `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash |
 | `Rename(from, to)` | also moves; refuses to clobber |
-| `Copy(from, to)` | **byte for byte**, so it works on images; refuses to clobber |
-| `Info(path)` | `{ Size, Modified, Type, Icon, IsDir }`, or `null` when there is no such file |
+| `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null` when there is no such file |
 | `Watch(path, cb)` | `cb(event, path)` when it changes underneath; answers something with `Stop()` |
 | `Open(path)` | hands it to whatever the desktop opens that kind of file with |
 | `Join(a, b, ...)` | builds a path with the platform separator |
@@ -1006,11 +1006,16 @@ streaming are deferred with their triggers named in the plan.
 
 | | |
 |---|---|
-| `List(path, pattern?)` | the **names** in one directory, sorted, no `.` or `..`; the optional pattern is a glob |
-| `Files(path, pattern-or-options?)` | the **full paths** of the files, sorted |
-| `Folders(path, pattern-or-options?)` | the same for directories |
+| `List(path, pattern?, cancellable?)` | the **names** in one directory, sorted, no `.` or `..`; the optional pattern is a glob |
+| `Files(path, pattern-or-options?, cancellable?)` | the **full paths** of the files, sorted |
+| `Folders(path, pattern-or-options?, cancellable?)` | the same for directories |
 | `Make(path)` | creates it and any missing parent |
-| `Copy(from, to)`, `Delete(path)`, `DeleteTree(path)` | |
+| `Copy(from, to, cancellable?)`, `Delete(path)`, `DeleteTree(path, cancellable?)` | |
+
+The blocking verbs of both pages take a [`Cancellable`](reference/globals/Cancellable.md)
+as their **last argument** and stop when it is raised: in a `Task`, the one to
+hand them is `this.Cancellable` (see [Task](#task)). As an option it is refused,
+and anywhere but last too.
 
 `Files` and `Folders` take either a glob or an options object, because the short
 form is what most calls are and it should not have to carry a key to say so:
@@ -1039,8 +1044,10 @@ useless. A directory that cannot be read is skipped rather than ending the walk:
 one unreadable corner of `/usr` must not sink a question about somewhere else.
 
 **That forgiveness is for the directories the walk *finds*, not for the one it was
-handed.** All three throw when the path is not a directory — `cannot list
-<path>` — rather than answering an empty list, because those are two different
+handed.** All three throw when the path is not a directory, cannot be read, or
+breaks off part-way — `cannot list <path>: permission denied`, with the reason —
+rather than answering an empty or a shortened list (`Files` and `Folders`
+answered `[]` for a folder they could not read until November 2026), because those are two different
 answers and a caller that cannot tell them apart shows an empty folder where it
 should have shown a mistake. The one to reach for beforehand is `File.IsDir`,
 which is a question and not an exception. `for...in` over a missing dictionary
@@ -1227,7 +1234,10 @@ The blocking spelling, for the case the callback makes worse rather than better:
 a tool that runs a command it knows ends, looks at what happened, and goes on. It
 takes the same options — `Directory`, `Environment`, `Stderr` — because it is the
 same child started the same way, and it takes **no callbacks**: passing one is
-refused rather than ignored, since it answers with a record instead.
+refused rather than ignored, since it answers with a record instead. A
+[`Cancellable`](reference/globals/Cancellable.md) given last — `Exec.Wait(argv,
+opts, token)` — kills the child and throws when it is raised; raised already, the
+child is never started. In a `Task`, `this.Cancellable` is the one to hand it.
 
 That turns N children in a row into a `for` loop with nothing new in it:
 
@@ -1310,9 +1320,18 @@ t.Start({ roots: subs });
 ```
 
 `Task` itself is abstract: extend it, and `new Sizer()` is the handle.
-`Start(data, [{ Timeout }])` sends the message and starts the thread — once; a
-second `Start` is refused, and work that repeats is a new `Task`. `Stop()`
-asks it to end and answers whether there was still a live job to ask. The
+`Start(data, [{ Timeout }], [cancellable])` sends the message and starts the
+thread — once; a second `Start` is refused, and work that repeats is a new `Task`.
+A `Cancellable` given last is shared: raising it stops every task started with it,
+and raised already, `Run` is never called. `Stop()` asks it to end and answers
+whether there was still a live job to ask.
+
+**Two stages, and two signals.** `Stop()` raises `this.Cancellable` at once and
+sets `Stopping`: a blocking call `Run` handed `this.Cancellable` returns, and one
+it handed nothing goes on, so a `Run` winding down can still read and run things.
+When `KillAfter` comes or the `Timeout` runs out, the task's second, internal
+signal ends **every** blocking call, handed the token or not — a deadline ends the
+task even in code that never passes it. The
 answer arrives exactly once, however the job went: `Done(result)` when `Run`
 returned, `Error(message, stack)` when it threw, when `Stop()` asked
 (`Cancelled`), or when the `Timeout` fired (`TimedOut` reads `true` then).
@@ -1359,9 +1378,11 @@ sizing N subtrees, one window adding up.
 
 Teardown stops and joins every live task before the context goes away: a
 program that quits with work still running exits, but answers that had nowhere
-to arrive never do. A worker blocked in native code (a filesystem that never
-answers, not JS) is the one case no flag reaches — the join waits for the
-disk, and that is said here rather than discovered at midnight.
+to arrive never do. It raises both signals, so a worker blocked in `Exec.Wait`,
+`Http.*Wait` or a file verb returns and its child is ended. What no signal
+reaches is a call the kernel itself does not return from — a read on a network
+filesystem that stopped answering — and for that the join waits two seconds and
+lets the thread go, which is said here rather than discovered at midnight.
 
 ## Lock
 
@@ -1825,7 +1846,9 @@ desktop's language, and an error that reads differently on each machine cannot b
 matched by a program. The file verbs stream 64 KB at a time into a temporary
 beside the destination and rename it over once the stream is whole, so a failure
 leaves nothing. Measured on 47 MB: about 960 ms to compress and 90 ms to inflate,
-which is why the page sends big ones to a `Task`. Only gzip is published; zlib
+which is why the page sends big ones to a `Task` — where a `Cancellable` given
+last, `this.Cancellable`, stops all four between two 64 KB chunks, and a stopped
+file verb removes its temporary. Only gzip is published; zlib
 framing and raw deflate are other names for one algorithm.
 
 ## Keyring
@@ -3033,10 +3056,10 @@ refused rather than breaking the framing silently:
 | `Put(url, body, …)`, `Patch(url, body, …)` | with body, like `Post` |
 | `Delete(url, …)`, `Head(url, …)` | no body, like `Get` |
 | `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `soup_session_send_async` instead of `send_and_read_async`, the `GInputStream` read through a `GDataInputStream` one line at a time, the next read armed only once the callback returns (which is the back-pressure). `onLine(line, handle)` per text line, newline stripped, blank lines included |
-| `RequestWait(method, url, [body], [opts])` | blocking: answers with the record, **throws** on transport failure |
-| `GetWait(url, [opts])`, `PostWait(url, body, [opts])` | blocking per verb |
+| `RequestWait(method, url, [body], [opts], [cancellable])` | blocking: answers with the record, **throws** on transport failure; a `Cancellable` last ends the flight |
+| `GetWait(url, [opts], [cancellable])`, `PostWait(url, body, [opts], [cancellable])` | blocking per verb |
 | `PutWait`, `PatchWait` (with body), `DeleteWait`, `HeadWait` (without) | blocking per verb |
-| Per-request `opts` | `Headers` (merge), `Query: {k:v}` (appended escaped), `Body`, `ContentType`, `Timeout` (guard only), `FollowRedirects` (request wins), `Auth` (request wins over the client's). Naming any of them makes the object options rather than a JSON body, in both spellings |
+| Per-request `opts` | `Headers` (merge), `Query: {k:v}` (appended escaped), `Body`, `ContentType`, `Timeout` (guard only), `FollowRedirects` (request wins), `Auth` (request wins over the client's), `Http1` (ask for HTTP/1.1, where a cancel is seen at once; libsoup 3.4 or newer). Naming any of them makes the object options rather than a JSON body, in both spellings |
 | `new Multipart()` | `Field(name, value)`, `File(name, filename, body, [contentType])` — a body for `Post`/`Put`/`Patch` (a `GET` carrying one is refused, since it would land in the options unheard); `Length` counts the parts, `Part(index)` reads one back as `{ Name, Filename, Type, Data }` |
 
 The handle: `Running`, `TimedOut`, `Url`, `Method`, `Stop()` (→ bool). It is

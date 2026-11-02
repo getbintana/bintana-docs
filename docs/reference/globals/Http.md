@@ -320,7 +320,11 @@ the desktop entry's `Exec`.
 - **`Stop()` did not stop it.** It asks; the answer arrives a turn later as
   `Cancelled`.
 - **`Stop()` or `Timeout` answered seconds late, or never.** The server speaks
-  HTTP/2: see [cancelling over HTTP/2](#cancelling-over-http2).
+  HTTP/2: ask for `{ Http1: true }` on the call or the client — see
+  [cancelling over HTTP/2](#cancelling-over-http2).
+- **A `Task`'s `Stop()` did not reach a `…Wait`.** The call was not handed
+  `this.Cancellable` as its last argument: a stop that only asks reaches the
+  calls that were, and the rest end at `KillAfter`.
 - **The window froze.** A `…Wait` in a form.
 - **A login did not stick.** `Cookies: true` on the client.
 - **`MaxConns` threw.** Constructor-only.
