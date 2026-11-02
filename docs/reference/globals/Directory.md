@@ -22,7 +22,7 @@ three verbs. Like [`File`](File.md), all of it is synchronous.
 | | |
 |---|---|
 | `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows. A `Cancellable` last stops the listing |
-| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A `Cancellable` last stops the walk |
+| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A folder it cannot read throws, as `List` does; one met on the way down is skipped. A `Cancellable` last stops the walk |
 | `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories |
 
 ```js
@@ -40,6 +40,12 @@ onto the folder is asking for `Files`.
 way — which is what makes a listing comparable, a test repeatable and a scan's
 output stable in a diff. A symlinked directory is listed and **not entered**; a
 symlink to a file is an ordinary file.
+
+**A folder that cannot be read throws, and says why** — `cannot list <path>:
+permission denied` from all three, never an empty answer that reads like an
+empty folder. A folder a recursive walk meets on the way down and cannot read
+is **skipped**, so one locked corner does not sink a question about everything
+else. A listing that breaks off part-way throws too, with the reason.
 
 **A walk is cancellable.** `Files`, `Folders`, `List`, `Copy` and
 `DeleteTree` take a [`Cancellable`](Cancellable.md) as their last argument and

@@ -448,7 +448,7 @@ is installed in a worker too, so a big file can be parsed off the main thread.
 | | |
 |---|---|
 | `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows. A `Cancellable` last stops the listing |
-| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A `Cancellable` last stops the walk |
+| `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted. A folder it cannot read throws, as `List` does; one met on the way down is skipped. A `Cancellable` last stops the walk |
 | `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories |
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
 
