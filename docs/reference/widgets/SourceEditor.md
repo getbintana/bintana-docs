@@ -213,11 +213,18 @@ puts the sentence in a tooltip where the pointer rests on it. `line` and
 `column` are 1-based, as `Select` and `GotoLine` count, and `length` is in
 characters, so an emoji earlier in the line does not move the range.
 
+**An underline stays on the line it names.** A `length` past the end of the
+line stops there. A `column` at or past the end underlines the line's last
+character — which is where a parser points for *unexpected end of input*, one
+past what it read — and on an empty line, the last character of the nearest
+line above. `Diagnostics()` answers what is underlined, so it can differ from
+what was asked.
+
 | | |
 |---|---|
-| `Diagnostic(line, column, length, kind, text)` | underlines `length` characters from `column` on `line` — both 1-based, as `Select` and `GotoLine` count — with `kind` `Error` `Warning` or `Info`, and shows `text` in a tooltip where the pointer rests on it. The range moves with the text; **clear and add them again after an edit**, as `Live` does on its pause. Several may share a line |
+| `Diagnostic(line, column, length, kind, text)` | underlines `length` characters from `column` on `line` — both 1-based, as `Select` and `GotoLine` count — with `kind` `Error` `Warning` or `Info`, and shows `text` in a tooltip where the pointer rests on it. **It stays on its line**: a length past the end stops there, a column at or past the end underlines the last character (where a parser points for *unexpected end*), and an empty line the last character above it. The range moves with the text; **clear and add them again after an edit**, as `Live` does on its pause. Several may share a line |
 | `ClearDiagnostics([kind])` | takes them all off, or only one kind. How many went |
-| `Diagnostics([kind])` | **a record per diagnostic**, in the order added: `{ Line, Column, Length, Kind, Text }`. The reader that makes an underline assertable, as `Marks` does for the gutter |
+| `Diagnostics([kind])` | **a record per diagnostic**, in the order added: `{ Line, Column, Length, Kind, Text }` — the range **underlined**, after it was kept to its line, which is not always the one asked for. The reader that makes an underline assertable, as `Marks` does for the gutter |
 
 ```js
 editor.Diagnostic(3, 9, 11, "Warning", "Button has no Txt");
