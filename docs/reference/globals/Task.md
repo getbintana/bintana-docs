@@ -143,7 +143,7 @@ the caller asked and it stopped, so the ending is `Error` with `Cancelled`
 set. What changes is how much of the work survives.
 
 The flag alone does not reach native code. Each job also carries a
-`GCancellable`, and `Stop`, `Timeout` and `KillAfter` cancel it:
+cancellation signal, and `Stop`, `Timeout` and `KillAfter` raise it:
 `Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` stop
 where they are and the run ends as cancelled. The directory walk, `File.Hash`
 and the compressors do not take one yet; those still wait for the flag or for
