@@ -40,6 +40,7 @@ and `CloseInput()`.
 | `Timeout` | milliseconds before the child is ended; absent waits forever |
 | `KillAfter` | milliseconds between SIGTERM and SIGKILL, `5000` by default |
 | `Input` | **`Exec.Wait` only**: the text or `Bytes` the child reads, written before its stdin is closed — what makes `Exec.Wait(["sort"], { Input: text })` a filter |
+| `Cancellable` | **`Exec.Wait` only**: a [`Cancellable`](Cancellable.md) that kills the child and answers when it is raised |
 | `Control` | a callback for a **third stream** — descriptor 3 in the child, one line at a time — for a child that speaks a protocol as well as printing |
 
 ## Running one

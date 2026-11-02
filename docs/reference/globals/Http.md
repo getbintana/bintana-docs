@@ -174,6 +174,10 @@ It blocks the main loop, so it is for a console tool, a test, or a check that
 decides what the next line does — never for a window, where the answer is the
 callback form and a [`Spinner`](../widgets/Spinner.md).
 
+A `…Wait` call also takes `{ Cancellable }`: a [`Cancellable`](Cancellable.md)
+that cancels that flight, the same way `Task.Stop()` cancels the signal a
+worker's blocking calls already carry.
+
 ## The client
 
 | | |

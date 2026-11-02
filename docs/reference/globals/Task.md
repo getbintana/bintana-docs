@@ -52,6 +52,9 @@ or its libraries, the project shadowing a library. Two files claiming one
 name is refused naming the name; the class must be self-contained in its file.
 
 `Timeout` is milliseconds before the run is aborted, absent waits forever.
+`Cancellable` is a shared [`Cancellable`](Cancellable.md): the task is linked
+to that signal, and inside `Run` the same one is `this.Cancellable`. A task
+started without one gets its own, so `this.Cancellable` is never null.
 `Task.Max([limit])` is a ceiling on live tasks, refused rather than queued;
 set it before fanning out, and `0` restores no limit. Whatever `data` holds
 must be plain — see below.

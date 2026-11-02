@@ -669,7 +669,9 @@ t.Start({ roots: subs });
 
 `Task` itself is abstract: `new Task()` throws, and so does starting a class
 the project has no file for. Options: `{ Timeout }` in milliseconds, absent
-waits forever; `Task.Max([limit])` is the ceiling on live tasks.
+waits forever; `Cancellable` is a shared [`Cancellable`](https://github.com/getbintana/bintana-docs/blob/main/docs/reference/globals/Cancellable.md)
+that is `this.Cancellable` inside `Run`; `Task.Max([limit])` is the ceiling on
+live tasks.
 
 **One answer, exactly once.** `Done` xor `Error`, however the job went — a
 stopped task reports `Cancelled` rather than going quiet, the way a stopped
