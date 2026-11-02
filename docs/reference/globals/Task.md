@@ -223,13 +223,16 @@ A task computes and reports; what is drawn happens where the answer arrives.
 
 ### No shared heap
 
-**A singleton is per runtime.** The worker builds a runtime of its own, so the
-main thread and a task share no JavaScript heap: a class instance, a module's
-top-level state or a `static` field is not the same object on the two sides,
-and `===` across the boundary is always false. A message, a report and an
-answer carry **copies** of plain data — see [Messages](#messages) — and the
-only state that is shared is the C-backed kind: a [`Cancellable`](Cancellable.md)'s
-signal, or the name a [`Lock`](Lock.md) is held by. A shared service with
+**The worker is a separate QuickJS runtime on its own thread, and it shares no
+JavaScript heap with the main thread.** QuickJS is not thread-safe: an object
+belongs to the context that made it, and cannot be read or called from the
+other side. So no object crosses — a class instance, a module's top-level
+state, a `static` field — and `===` across the boundary is always false. **A
+singleton is therefore per runtime**: each side gets its own. A message, a
+report and an answer carry **copies** of plain data — see
+[Messages](#messages) — and the only state that is shared is the C-backed
+kind: a [`Cancellable`](Cancellable.md)'s signal (two wrappers around one C
+object), or the name a [`Lock`](Lock.md) is held by. A shared service with
 methods would need a request/response channel, which the runtime does not
 have: a task can report and answer, not be called back into.
 
