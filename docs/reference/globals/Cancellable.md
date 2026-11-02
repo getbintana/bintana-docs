@@ -47,7 +47,8 @@ class Sizer extends Task {
 worker; `this.Cancellable.Cancel()` inside a task raises the same signal and is
 visible to the main thread's object. The blocking calls that take a cancellation
 signal — `Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash`
-— stop when it is raised, the same way `Task.Stop()` stops them.
+and `Directory.List`/`Files`/`Folders`/`Copy`/`DeleteTree` — stop when it is
+raised, the same way `Task.Stop()` stops them.
 
 A task started without a `Cancellable` gets one of its own, so `this.Cancellable`
 is never `null` inside `Run`; `Task.Stop()` raises that one.

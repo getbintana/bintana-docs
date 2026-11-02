@@ -464,7 +464,8 @@ Directory.Folders(dir, { Recursive: true })
 
 Sorted at each level and depth-first, so two runs list the same tree the same
 way. A symlinked directory is listed and not entered; a symlink to a file is an
-ordinary file.
+ordinary file. Inside a `Task`, the three walks and `Copy`/`DeleteTree` take
+the job's cancellation signal and throw rather than answering part of a tree.
 
 **All three throw when the path is not a directory** — `cannot list <path>` — and
 do not answer an empty list. Ask `File.IsDir(path)` first. What *is* forgiven is a

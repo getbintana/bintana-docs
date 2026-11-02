@@ -41,6 +41,13 @@ way — which is what makes a listing comparable, a test repeatable and a scan's
 output stable in a diff. A symlinked directory is listed and **not entered**; a
 symlink to a file is an ordinary file.
 
+**Inside a task, a walk is cancellable.** `Files`, `Folders` and `List` take
+the job's cancellation signal — `Task.Stop()`, its `Timeout`, or a shared
+[`Cancellable`](Cancellable.md) — and stop where they are, including part-way
+down a recursive walk. A cancelled walk **throws** (`Directory.Files:
+cancelled`, or `cannot list <path>: …`) instead of answering a partial tree.
+On the main thread there is no signal to take and nothing changes.
+
 ## Making and removing
 
 | | |
@@ -50,8 +57,10 @@ symlink to a file is an ordinary file.
 | `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is |
 | `DeleteTree(path)` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag |
 
-[`File.Trash`](File.md#moving-and-removing) takes a folder whole and is
-recoverable, which is the kinder verb wherever the user is the one deciding.
+`Copy` and `DeleteTree` walk the tree with the same signal as `Files`, so a
+task stopped halfway leaves what it had not reached. [`File.Trash`](File.md#moving-and-removing)
+takes a folder whole and is recoverable, which is the kinder verb wherever the
+user is the one deciding.
 
 ## What goes wrong
 

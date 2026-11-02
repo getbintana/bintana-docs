@@ -147,8 +147,9 @@ set. What changes is how much of the work survives.
 
 The flag alone does not reach native code. Each job also carries a
 cancellation signal, and `Stop`, `Timeout` and `KillAfter` raise it:
-`Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` stop
-where they are and the run ends as cancelled. The directory walk, `File.Hash`
+`Exec.Wait`, `Http.*Wait`, `File.Load`/`LoadBytes`/`Info`/`Copy`/`Trash` and
+the [`Directory`](Directory.md) walks (`List`, `Files`, `Folders`, `Copy`,
+`DeleteTree`) stop where they are and the run ends as cancelled. `File.Hash`
 and the compressors do not take one yet; those still wait for the flag or for
 `KillAfter` to end them between opcodes.
 
