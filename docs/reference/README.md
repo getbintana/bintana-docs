@@ -180,7 +180,7 @@ members, twice — once in its summary and once where it is explained.
 | [Text](globals/Text.md) | what a string measures, asked where there is no painter |
 | [Time](globals/Time.md) | the clock half of [`Day`](globals/Day.md), and the same bargain |
 | [Timer](globals/Timer.md) | doing something later, or repeatedly |
-| [FormPart](globals/FormPart.md) | something a form owns that is not a control: a timer today, a connection later |
+| [FormPart](globals/FormPart.md) | something a form owns that is not a control: a timer, a connection, a model or a client |
 | [UndoStack](globals/UndoStack.md) | what Edit › Undo takes back, as pairs of functions |
 | [Zip](globals/Zip.md) | reading the container every office document, ebook and jar is |
 

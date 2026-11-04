@@ -94,7 +94,7 @@ Pure JSON. The loader knows no control in particular: it applies each entry of
 | `class` | the class this file belongs to. A class finds `<Class>.form` by name, anywhere in the tree |
 | `properties` | assigned to the form itself |
 | `menus` | the menu bar; forms only. See [Menus](#menus) |
-| `components` | the non-visual parts a form owns, forms only. Each entry is `{ "type", "name", "properties" }`; `type` is a `FormPart` class (`Timer` today), `name` is what the form reaches it by, and its handler is `<name>_<event>` |
+| `components` | the non-visual parts a form owns, forms only. Each entry is `{ "type", "name", "properties" }`; `type` is a `FormPart` class (`Timer`, `Connection`, `Model` or `HttpClient`), `name` is what the form reaches it by, and its handler is `<name>_<event>` |
 | `children` | the widget tree |
 
 A child node:

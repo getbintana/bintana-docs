@@ -940,7 +940,10 @@ The base of a form's non-visual objects: `Timer`, `Connection`, `Model` and
 `PropertyNames`, `EventNames`, `On`, `Emit`, `Apply`, `Serialize` and `Delete`
 are what a part answers. `Form.Components` is the live list, and
 `Form.AddPart`/`RemovePart`/`StopParts` move it. A part's event arrives as
-`<Name>_<Event>`, exactly like a control's. `Connection` owns one
+`<Name>_<Event>`, exactly like a control's. `FormPart.Types()` lists the
+classes, `FormPart.TypeName(part)` names one, and `FormPart.New(type)` makes
+one; `FormPart.Properties(type)` and `FormPart.Events(type)` describe one
+without building it. `Connection` owns one
 `Database.Sqlite` file; `Model` names that connection, a record and a table,
 and is its `Table`, creating the table from the shape on first use. Several
 models share one connection. `HttpClient` owns an `Http.Client`; both open on
