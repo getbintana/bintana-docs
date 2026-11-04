@@ -36,6 +36,7 @@ in the section.
 | `ColumnSpan` | how many columns of a `Grid` it runs under | [how it is placed](#how-it-is-placed) |
 | `Cursor` | what the pointer looks like over it | [how it looks](#how-it-looks) |
 | `Dark` (ro) | whether it is drawn on a dark ground, derived from the ink its text uses | [how it looks](#how-it-looks) |
+| `Direction` | `LeftToRight` `RightToLeft`, or `""` to inherit the parent's | [which way it reads](#which-way-it-reads) |
 | `DragData` | the string that travels when this control is dragged | [drag and drop](#drag-and-drop) |
 | `Enabled` | answers the mouse and the keyboard | [shown, enabled, focused](#shown-enabled-focused) |
 | `Expand` | absorbs the slack on both axes — the one word that makes a control fill the room left over in a row or a column | [how it is placed](#how-it-is-placed) |
@@ -215,6 +216,22 @@ measured from, not a minimum the window must always leave room for. Without it, 
 window could never be made smaller than the form was designed. It is also how a
 component with a drawn size of its own is put into a small pane: `HAlign` and
 `VAlign` of `Fill`, and the floor is whatever `MinWidth`/`MinHeight` say.
+
+## Which way it reads
+
+| | |
+|---|---|
+| `Direction` | `LeftToRight` `RightToLeft`, or `""` to inherit the parent's. GTK carries it to every child, so a box mirrors its order and a label's `Start` moves to the right; a `Fixed` mirrors its coordinates here because those are ours |
+
+A form that reads Arabic or Hebrew says `Direction: "RightToLeft"` once, and the
+form is laid out the other way round — no second `.form`, and no per-control
+`HAlign: "End"`.  The icon theme is asked for the mirrored variant too, when it
+has one.
+
+`Direction` is about **layout**, not translation: a field with a mask or a
+number still takes the same characters, and `Alignment` on a `TextBox` stays
+physical (`Left` is the left edge) because numbers read right-aligned in every
+direction.
 
 ## Shown, enabled, focused
 

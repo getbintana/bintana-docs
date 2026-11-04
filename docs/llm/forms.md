@@ -257,6 +257,11 @@ whatever room is left is `"Fill"` on both.
 be made smaller than the form was drawn. `MinWidth`/`MinHeight` are the floor,
 and they only mean anything on an axis that stretches.
 
+A form that reads right to left says `Direction: "RightToLeft"` once, on the
+form: the boxes mirror their order, a label's `Start` moves to the right, and a
+`Fixed` mirrors the coordinates it was drawn with. A control below it may say
+its own `Direction` for a subtree; `""` inherits the parent's.
+
 ```json
 { "type": "ListBox", "name": "List",
   "properties": { "X": 12, "Y": 56, "Width": 616, "Height": 300,
