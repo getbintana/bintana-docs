@@ -1549,8 +1549,15 @@ The window. See [forms.md](forms.md#form-the-window) for the behaviour a table c
 | Member | |
 |---|---|
 | `Actions` (ro) | the commands as the `.form` declared them — the spec, not the live actions; `[]` when there are none |
+| `Components` (ro) | the non-visual objects the form owns, in the order the `.form` declared them; `[]` when there are none |
 | `Controls` (ro) | every child bound to the form by name, in creation order. `Children` is the containment tree instead, one level deep |
 | `Menus` (ro) | the menu spec as declared. It cannot be read back from GTK, which is why the spec is kept; `[]` when there are none |
+| `BuildParts(root)` | builds the `components` list of a `.form` node |
+| `AddPart(part)` | adds a part to the form and binds it by name |
+| `RemovePart(part)` | takes a part out of the form, stopping it |
+| `ClearParts()` | removes every part the form has, stopping them |
+| `StopParts()` | stops every part that can be stopped; a closed form leaves no timer behind |
+| `SerializeParts()` | the parts as `.form` nodes, for the serialiser and the designer |
 | `Record` | the shape this form edits -- the name of a record class -- or `""` |
 | `Source` | the file the form's records come from, or `""` |
 | `Serialize()` | the whole file, keyed by class |

@@ -180,6 +180,7 @@ members, twice — once in its summary and once where it is explained.
 | [Text](globals/Text.md) | what a string measures, asked where there is no painter |
 | [Time](globals/Time.md) | the clock half of [`Day`](globals/Day.md), and the same bargain |
 | [Timer](globals/Timer.md) | doing something later, or repeatedly |
+| [FormPart](globals/FormPart.md) | something a form owns that is not a control: a timer today, a connection later |
 | [UndoStack](globals/UndoStack.md) | what Edit › Undo takes back, as pairs of functions |
 | [Zip](globals/Zip.md) | reading the container every office document, ebook and jar is |
 
@@ -215,10 +216,10 @@ check that went red for a page nobody has started yet is a check somebody turns
 off before the week is out. What it refuses outright is a page that is **there**
 and incomplete.
 
-Eight globals are held to nothing but existing — `Message`, `Exec`, `Settings`,
-`Timer`, `Stopwatch`, `Dictionary`, `Regex` and `Clipboard` — because they are
-built in ways `tests/api` does not parse. That is written down in the check
-rather than left to be discovered.
+Nine globals are held to nothing but existing — `Message`, `Exec`, `Settings`,
+`Timer`, `FormPart`, `Stopwatch`, `Dictionary`, `Regex` and `Clipboard` — because
+they are built in ways `tests/api` does not parse. That is written down in the
+check rather than left to be discovered.
 
 A library page is found by its class's **file name**, so a library that adds a
 class is a page the check asks for with no list here to update — and a library

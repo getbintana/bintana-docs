@@ -933,6 +933,15 @@ if (Settings.Get("showGrid", true)) …
 The fallback matters: `Get("on", true)` tells a missing setting from one that is
 `false`. Named after the project, so two projects never read each other's.
 
+## FormPart
+
+The base of a form's non-visual objects: a `Timer` today. It has no rectangle
+and is declared in the form's `components`; `PropertyNames`, `EventNames`,
+`On`, `Emit`, `Apply`, `Serialize` and `Delete` are what a part answers.
+`Form.Components` is the live list, and `Form.AddPart`/`RemovePart`/`StopParts`
+move it. A part's event arrives as `<Name>_<Event>`, exactly like a control's.
+See [forms.md](forms.md#parts--objects-with-no-rectangle).
+
 ## Timer
 
 ```js
@@ -952,6 +961,11 @@ forty-nine days, which is what never means to a timer. The full object:
 This **is** scheduling here: `setTimeout` and `setInterval` are not part of the
 language. `Timer.After(0, …)` is also how you let GTK have a frame before
 measuring anything.
+
+**A timer can be declared in a `.form`** under `components`, with `Delay` and
+`Enabled`; `Clock_Tick` is then its form handler, and a closed form stops it.
+A timer made with `new Timer` is the program's to stop. See
+[forms.md](forms.md#parts--objects-with-no-rectangle).
 
 ## Stopwatch
 

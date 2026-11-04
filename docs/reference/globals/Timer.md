@@ -44,6 +44,28 @@ so a measurement in `Form_Open` measures nothing, and this is where it belongs.
 | `Start([delay])`, `Stop()` | the verbs |
 | `Once([delay])` | fire one more time and stop |
 
+## A timer on a form
+
+A timer can be declared in the `.form` instead of made in code. It lives in
+`components`, because it has no rectangle:
+
+```json
+"components": [
+  { "type": "Timer", "name": "Clock",
+    "properties": { "Delay": 1000, "Enabled": true } }
+]
+```
+
+```js
+Clock_Tick() { this.LblTime.Text = Time.Now(); }
+```
+
+**`Enabled: true` starts it when the form loads**, and a form that closes stops
+its timers: you do not have to remember `Stop()` in `Form_Close` for one
+declared this way. `Tick` is still the callback property, so `On("Tick", fn)`
+and `new Timer(...)` work exactly as before. The designer keeps a Timer in its
+component tray; see [forms.md](../../llm/forms.md#parts--objects-with-no-rectangle).
+
 ## What a tick is for
 
 **A tick decides *when* to repaint; what is painted comes from the data.** A
@@ -57,8 +79,9 @@ that runs when typing stops, a preview that redraws when a slider settles.
 
 ## What goes wrong
 
-- **It kept firing after the window closed.** Nothing stops a timer for you: keep
-  it and `Stop()` it in `Form_Close`.
+- **It kept firing after the window closed.** A timer declared in a `.form` is
+  stopped when the form closes. One made with `new Timer(...)` is yours: keep it
+  and `Stop()` it in `Form_Close`.
 - **The clock drifted.** Ticks were counted instead of a clock being read.
 - **A measurement in `Form_Open` answered zero.** `Timer.After(0, …)`.
 - **Nothing ever happened.** The arguments were the wrong way round —

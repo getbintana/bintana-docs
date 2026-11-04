@@ -94,6 +94,7 @@ Pure JSON. The loader knows no control in particular: it applies each entry of
 | `class` | the class this file belongs to. A class finds `<Class>.form` by name, anywhere in the tree |
 | `properties` | assigned to the form itself |
 | `menus` | the menu bar; forms only. See [Menus](#menus) |
+| `components` | the non-visual parts a form owns, forms only. Each entry is `{ "type", "name", "properties" }`; `type` is a `FormPart` class (`Timer` today), `name` is what the form reaches it by, and its handler is `<name>_<event>` |
 | `children` | the widget tree |
 
 A child node:
@@ -109,12 +110,12 @@ A child node:
 
 **A file the loader cannot read is refused, not half-built.** The root is a
 JSON object — a list, a scalar or `null` is an error with the file's name, not
-an empty window. `properties` is an object; `children`, `menus` and `actions`
-are lists; every entry of `children` is an object with a `type`; a control's
-name is an ASCII identifier and a menu item's or command's is a GLib action
-name (letters, digits, `-` and `.` — no underscore), because it becomes
-`form.<name>`; and a tree nests at most 128 deep. A missing key and `null` both
-mean *not written*.
+an empty window. `properties` is an object; `children`, `menus`, `actions` and
+`components` are lists; every entry of `children` is an object with a `type`;
+a control's name is an ASCII identifier and a menu item's or command's is a
+GLib action name (letters, digits, `-` and `.` — no underscore), because it
+becomes `form.<name>`; and a tree nests at most 128 deep. A missing key and
+`null` both mean *not written*.
 `bintana check` reports the same shapes as errors, one row per problem, and
 keeps reading the rest of the project.
 
@@ -674,6 +675,52 @@ class Stepper extends Component {
 
 Use one for a group of controls that appears more than once with behaviour of
 its own. A group that appears once is a `Panel`.
+
+## Parts — objects with no rectangle
+
+A `FormPart` is something the form owns that is not a control: it has no
+`X`/`Y`, no `Bounds` and no `Children`, so it is not in `children`. It is
+declared in `components`, and the form reaches it by name just as it reaches a
+control:
+
+```json
+{
+  "format": "bintana-form/1",
+  "class": "ClockForm",
+  "properties": { "Text": "Clock", "Width": 320, "Height": 180 },
+  "components": [
+    { "type": "Timer", "name": "Clock",
+      "properties": { "Delay": 1000, "Enabled": true } }
+  ],
+  "children": []
+}
+```
+
+```js
+class ClockForm extends Form {
+    Clock_Tick() {
+        this.LblTime.Text = Time.Now();     /* this.Clock is the part */
+    }
+}
+```
+
+- **`type` is a part class**, and `Timer` is the first one. A part declares
+  `static Properties` (what a `.form` may set) and `static Events` (what it
+  raises); `PropertyNames()` and `EventNames()` answer them.
+- **`Enabled: true` starts it when the form loads.** A timer declared in a
+  `.form` is stopped when the form closes, so it cannot keep firing into a
+  window nobody has; a timer made with `new Timer(...)` in code is still the
+  program's to `Stop()`.
+- **Its handler is the usual name**, `<Name>_<Event>` — `Clock_Tick` — and a
+  part also accepts its own `On("Tick", fn)`. `Emit` runs the part's handler
+  first, then the form's.
+- **The designer draws it in a tray**, not on the canvas: a part has no
+  rectangle to drag. That is the one gesture that does not exist here, and the
+  tray is the place it lands. See [`controls.md`](controls.md#form) for the
+  `Form.Components` list and the verbs.
+- **Only objects that are classes can be parts.** `Timer` is one; `Exec` is a
+  global with statics, so it would need a wrapper class before a `.form` could
+  name it.
 
 ## Building a tree from code
 
