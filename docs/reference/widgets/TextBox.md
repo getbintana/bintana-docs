@@ -17,6 +17,7 @@ It is a `Widget` and a control like any other, so everything on
 |---|---|---|
 | `ActivatesDefault` | Enter presses the form's **default button** *instead of* raising `Activate` | [Enter](#enter) |
 | `Alignment` | `Left` `Center` `Right`, default `"Left"` | [what the field expects](#what-the-field-expects) |
+| `Completion` | the words it offers while somebody types, an array of strings | [an editable combo](#an-editable-combo) |
 | `Icon` | an icon **inside** the field, at the end | [what the field expects](#what-the-field-expects) |
 | `MaxLength` | how many characters may be typed | [what is in it](#what-is-in-it) |
 | `Password` | the characters are drawn as dots | [what is in it](#what-is-in-it) |
@@ -123,6 +124,34 @@ being re-run. `SetFocus()` alone leaves the caret where it was.
 The icon is the field's own verb: a magnifier that clears the search, an eye that
 shows the password, a calendar that opens a picker. It costs no room on the form,
 which is the reason to prefer it to a button beside the field.
+
+## An editable combo
+
+| | |
+|---|---|
+| `Completion` | the words it offers while somebody types, an array of strings; `[]` offers none. It completes and **does not restrict**: what is typed is still `Text`, which is the difference from a `ComboBox` |
+
+A `TextBox` with `Completion` is the field that lets somebody type and still
+offers a list. The words are a **plain array of strings**, the popup filters them
+as the person types, and the field completes inline; what is typed is still
+`Text`, whether or not it is in the list. That is the difference from a
+[`ComboBox`](ComboBox.md): a combo is one choice out of a closed list, and this
+is a field with a memory.
+
+```json
+{ "type": "TextBox", "name": "TxtCategory",
+  "properties": { "Completion": ["Hardware", "Software", "Services"] } }
+```
+
+```js
+TxtCategory.Completion = this.categories;     // a list that changed
+```
+
+`Completion = []` offers nothing. The list is data and **not translated**: it is
+what the field offers, not prose a catalogue should rewrite. For a list that
+narrows as the person types, reassign it in `Change` -- the popup is rebuilt on
+every assignment, so the words the next keystroke offers can come from the text
+so far.
 
 ## Enter
 

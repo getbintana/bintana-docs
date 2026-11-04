@@ -481,6 +481,7 @@ One line of editable text.
 |---|---|
 | `ActivatesDefault` | Enter presses the form's **default button** *instead of* raising `Activate` |
 | `Alignment` | `Left` `Center` `Right`, default `"Left"`. Numbers read right-aligned, which is the one case worth changing it for |
+| `Completion` | the words it offers while somebody types, an array of strings; `[]` offers none. It completes and **does not restrict**: what is typed is still `Text`, which is the difference from a `ComboBox` |
 | `Icon` | an icon **inside** the field, at the end. Clicking it raises `IconClick` |
 | `MaxLength` | how many characters may be typed; `0` is no limit |
 | `Password` | the characters are drawn as dots. `Text` still answers with the real thing, because the program is the one asking |
