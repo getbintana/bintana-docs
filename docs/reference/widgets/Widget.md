@@ -44,6 +44,9 @@ in the section.
 | `Font` | a Pango description — `"Cantarell Bold 12"` — or a partial one | [how it looks](#how-it-looks) |
 | `FontScale` | a multiplier on whatever size is in force | [how it looks](#how-it-looks) |
 | `Foreground` | likewise, for the text | [how it looks](#how-it-looks) |
+| `GridColumn` | which column of a `Grid` it sits in | [how it is placed](#how-it-is-placed) |
+| `GridRow` | which row of a `Grid` it sits in | [how it is placed](#how-it-is-placed) |
+| `GridRowSpan` | how many rows of a `Grid` it runs down | [how it is placed](#how-it-is-placed) |
 | `HAlign` | `Auto` `Start` `End` `Center` `Fill` — what becomes of it when the container is not the size the coordinates were drawn for | [how it is placed](#how-it-is-placed) |
 | `HExpand` | the horizontal half of it, when the two answers differ | [how it is placed](#how-it-is-placed) |
 | `Height` | the height, likewise | [where it is and how big](#where-it-is-and-how-big) |
@@ -197,6 +200,9 @@ else               this.Pic.On("Allocated", (b) => this.fitTo(b));
 | `VAlign` | the same, vertically |
 | `Margin` | room **around** it: one number for all four sides, never a list. On a `Form` it insets the contents, a window having no outside. Not a list. |
 | `ColumnSpan` | how many columns of a `Grid` it runs under. `1` |
+| `GridRow` | which row of a `Grid` it sits in; `-1` follows the order. `Row` is already a `TableView` method, so the grid's own word has the prefix |
+| `GridColumn` | which column of a `Grid` it sits in; `-1` follows the order. There is no `Column` for it to take: `Editor` answers one |
+| `GridRowSpan` | how many rows of a `Grid` it runs down. `1` |
 | `TabIndex` | where Tab reaches it on a surface laid out by coordinate. Sparse, never renumbered; `0` means *in drawn order*. The IDE edits it as a list — *Form > Tab order...* — which is the shape a relation needs |
 | `Raise()` | to the top of the painting order, among its siblings on a surface |
 | `Lower()` | and to the bottom |

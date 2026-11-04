@@ -22,8 +22,8 @@ follows is what is its own.
 | `RowSpacing` | pixels between the rows | [spacing](#spacing) |
 
 No methods and no events of its own. Children go in with
-[`Add`](Container.md#putting-children-in) and a child's place is decided by the
-order it went in.
+[`Add`](Container.md#putting-children-in); a child's place is the order it went
+in, unless it names a cell with `GridRow` and `GridColumn`.
 
 ## Which container is this one
 
@@ -46,15 +46,26 @@ forty rows in it is forty times as many controls as a table with forty rows.
 
 **Children flow in order**, left to right, wrapping at `Columns`: with `Columns:
 2`, the first child is the caption of the first row and the second is its field.
-There is no *row* and *column* to declare per child — the order is the layout,
-which is what makes a grid something a designer can fill by dragging and a
+That is what makes a grid something a designer can fill by dragging and a
 translator cannot break.
+
+**A child may name its cell instead**: `GridRow` and `GridColumn`, both counting
+from `0`, with `-1` meaning *follow the order*.  Both have to be set: a row with
+no column is half a place, and the child stays in the flow.  The flow walks
+around the cells a placed child took, so the two ways of filling a grid mix -- a
+placed caption with fields that flow after it -- instead of stacking.  The names
+carry the `Grid` prefix because `Row` is already a `TableView` method and
+`Column` an `Editor` read-only.
 
 A column is **as wide as its widest child** and a row as tall as its tallest. A
 child that should take the slack of its row says
 [`HExpand`](Widget.md#how-it-is-placed); one that should run under several
 columns says [`ColumnSpan`](Widget.md#how-it-is-placed) — which is how a field
-that spans the whole dialog, or a separator between sections, is written.
+that spans the whole dialog, or a separator between sections, is written.  One
+that should run down several rows says
+[`GridRowSpan`](Widget.md#how-it-is-placed); a row span over a row with no other
+child is only as tall as the rows under it, since a row's height comes from what
+is in it.
 
 ## Spacing
 
@@ -73,6 +84,12 @@ rest.
 
 - **The fields are not lined up.** Something went in in the wrong order, or a
   child that should span two columns did not say `ColumnSpan`.
+- **A placed child is not where it was written.** Only one of `GridRow` and
+  `GridColumn` is set, and a half-named cell follows the order instead. Both
+  count from `0`.
+- **A row span looks shorter than it should.** The first row of the span has no
+  other child, so its height is the other rows'; put something in that row if
+  the span is meant to be visible.
 - **The caption column is enormous.** One caption in it is long — a sentence
   rather than a label — and a column is as wide as its widest child. Wrap that
   one, or give it a row of its own with a `ColumnSpan`.
@@ -86,9 +103,9 @@ rest.
 
 ## What it does not do
 
-- **No per-child row and column.** The order is the place; `ColumnSpan` is the
-  only escape, and a layout that needs more than that is two grids or a grid of
-  panels.
+- **No column widths to type.** A column is as wide as its widest child; the
+  only sizes are the spans. A layout that needs more than that is two grids or a
+  grid of panels.
 - **No row headings, no selection, no data.** [`TableView`](TableView.md).
 - **No coordinates.** A grid refuses `Arrangement`, which is what
   [`Placement`](Container.md#not-every-container-arranges) answers for.

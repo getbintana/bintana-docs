@@ -177,6 +177,9 @@ Every control and every container has all of this.
 | `Font` | a Pango description — `"Cantarell Bold 12"` — or a partial one: `"Bold"`, `"12"`. `""` restores the theme |
 | `FontScale` | a multiplier on whatever size is in force: `1.1` is 110%. `1` is "nothing said"; `0` is refused |
 | `Foreground` | likewise, for the text |
+| `GridColumn` | which column of a `Grid` it sits in; `-1` follows the order. There is no `Column` for it to take: `Editor` answers one |
+| `GridRow` | which row of a `Grid` it sits in; `-1` follows the order. `Row` is already a `TableView` method, so the grid's own word has the prefix |
+| `GridRowSpan` | how many rows of a `Grid` it runs down. `1` |
 | `HAlign` | `Auto` `Start` `End` `Center` `Fill` — what becomes of it when the container is not the size the coordinates were drawn for |
 | `HExpand` | the horizontal half of it, when the two answers differ |
 | `Height` | the height, likewise |
@@ -1293,7 +1296,7 @@ A `Frame` that folds.
 
 ## Grid
 
-Rows and columns whose sizes come from what is in them. Children flow in order, wrapping at `Columns`; a child with `HExpand` takes the slack and `ColumnSpan` lets one run under several. **The answer to a caption that grows in translation**, which a row of coordinates has none.
+Rows and columns whose sizes come from what is in them. Children flow in order, wrapping at `Columns`; a child with `HExpand` takes the slack and `ColumnSpan` lets one run under several. **A child may name its cell** with `GridRow` and `GridColumn` (both counting from `0`; `-1` follows the order), and `GridRowSpan` lets it run down several rows; the flow walks around the cells a placed child took. **The answer to a caption that grows in translation**, which a row of coordinates has none.
 
 | Member | |
 |---|---|

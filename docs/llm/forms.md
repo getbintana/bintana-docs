@@ -269,7 +269,9 @@ take the same value**: `Margin` is a single number for all four sides, `Padding`
 is a string of one to four sizes. A `Margin` given `Padding`'s spelling —
 `"0 0 0 12"` — is refused, naming the value, as every numeric property is.
 `Expand` / `HExpand` / `VExpand` decide who absorbs slack in a row or a column.
-`ColumnSpan` lets a child of a `Grid` run under several columns.
+`ColumnSpan` lets a child of a `Grid` run under several columns, and `GridRow` /
+`GridColumn` name the cell it sits in (`-1` follows the order; both must be set);
+`GridRowSpan` is the rows it runs down.
 
 ### The order Tab takes
 
