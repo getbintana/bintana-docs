@@ -84,6 +84,8 @@ in the section.
 | `Hide()` | makes it invisible | [shown, enabled, focused](#shown-enabled-focused) |
 | `Lower()` | and to the bottom | [how it is placed](#how-it-is-placed) |
 | `Move(x, y)` | `X` and `Y` together, because that reads better in a loop | [where it is and how big](#where-it-is-and-how-big) |
+| `MoveBackward()` | one place toward the back, where `Lower` goes all the way | [how it is placed](#how-it-is-placed) |
+| `MoveForward()` | **one place** toward the front, among its siblings -- `Raise` takes it all the way | [how it is placed](#how-it-is-placed) |
 | `On(event, fn)` | installs **this control's own** handler for an event, for a control built in code: no name, and nothing left on the form to delete | [commands, menus and keys](#commands-menus-and-keys) |
 | `OriginIn(container)` | `[x, y]`: where this widget's corner is in that container's space | [where it is and how big](#where-it-is-and-how-big) |
 | `PopupMenu(x, y)` | opens that menu at a point in this control's own coordinates — how a button that drops a menu is built | [commands, menus and keys](#commands-menus-and-keys) |
@@ -207,6 +209,8 @@ else               this.Pic.On("Allocated", (b) => this.fitTo(b));
 | `TabIndex` | where Tab reaches it on a surface laid out by coordinate. Sparse, never renumbered; `0` means *in drawn order*. The IDE edits it as a list — *Form > Tab order...* — which is the shape a relation needs |
 | `Raise()` | to the top of the painting order, among its siblings on a surface |
 | `Lower()` | and to the bottom |
+| `MoveForward()` | **one place** toward the front, among its siblings -- `Raise` takes it all the way. A `Fixed`, a box, a grid, a stack, a notebook, a `Flow` and a `RowList` all answer; a split and an aspect frame have no next place and do nothing |
+| `MoveBackward()` | one place toward the back, where `Lower` goes all the way |
 
 **A stretched control asks for its floor and not for the size it was drawn at**,
 and this is the rule that surprises people once: on an axis whose alignment is

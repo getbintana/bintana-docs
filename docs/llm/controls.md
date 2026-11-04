@@ -220,6 +220,8 @@ Every control and every container has all of this.
 | `Hide()` | makes it invisible. A hidden control **keeps its place in the tree** and its position in a box |
 | `Lower()` | and to the bottom |
 | `Move(x, y)` | `X` and `Y` together, because that reads better in a loop |
+| `MoveForward()` | **one place** toward the front, among its siblings -- `Raise` takes it all the way. A `Fixed`, a box, a grid, a stack, a notebook, a `Flow` and a `RowList` all answer; a split and an aspect frame have no next place and do nothing |
+| `MoveBackward()` | one place toward the back, where `Lower` goes all the way |
 | `OriginIn(container)` | `[x, y]`: where this widget's corner is in that container's space |
 | `PopupMenu(x, y)` | opens that menu at a point in this control's own coordinates — how a button that drops a menu is built |
 | `PropertyOptions(name)` | the exact strings that property accepts, or an empty list. What fills a drop-down in the property grid, and the reason a list of values is never typed twice |
@@ -1411,7 +1413,7 @@ Stacked: the first child fills, the rest float on top. It adds no *member* to `C
 |---|---|
 | `Children[0]` | its real children, one level deep, in the order they are in |
 | `Reorder(child, 0)` | moves a child among its siblings. The index counts them *without* the one being moved. **Every container with an order answers it**: a box, a `Grid`, a `Flow`, a `RowList`, a `Notebook`, a `Switcher`, a `Split` (the index names the half) and an `Overlay` (index `0` is the base layer, the one that fills). A `Fixed` refuses — there the order is the painting order, which is `Raise`/`Lower` |
-| `Raise()` / `Lower()` | to the top of the painting order, among its siblings on a surface |
+| `Raise()` / `Lower()` / `MoveForward()` / `MoveBackward()` | to the top of the painting order, among its siblings on a surface |
 | `HAlign` / `VAlign` | `Auto` `Start` `End` `Center` `Fill` — what becomes of it when the container is not the size the coordinates were drawn for |
 
 **`X`/`Y` mean nothing in an overlay and are not saved.** A stack is not a

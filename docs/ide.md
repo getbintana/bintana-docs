@@ -318,7 +318,7 @@ are neighbours; the palette and the tree are about the shape of the form and are
 the other thing. Which is why the new page went in the middle rather than on the
 end.
 
-The design actions — delete, bring to front, send to back — go **inside** the
+The design actions — delete, bring forward, send backward — go **inside** the
 `Controls` page and not under the switcher, because that is what they are about:
 the shape of the tree, not the value of a property. Under the strip they showed
 up beneath the property grid too, which is a row of buttons answering a question
@@ -3316,12 +3316,14 @@ the tree shows whatever the form holds, palette or not, and a component stand-in
 gets the component icon since what it stands for has none of its own.
 
 **The order is paint order**, so the control at the front is the *last* row:
-*Bring to front* moves a row down the tree and *Send to back* moves it up. The
-design bar's arrows follow the row for that reason; a layers panel that put the
-front at the top would be a different view, and the tree is not one.
+*Bring forward* moves a row one place down the tree and *Send backward* one
+place up. The design bar's arrows follow the row for that reason; a layers panel
+that put the front at the top would be a different view, and the tree is not one.
+The runtime's `Raise`/`Lower` still go all the way and are there for code; the
+buttons are the one-step, because that is the gesture a person repeats.
 
 **Right clicking** either the canvas or a node offers the commands that are
-already there — rename, delete, bring to front, send to back, and on the tree
+already there — rename, delete, bring forward, send backward, and on the tree
 *Expand all* / *Collapse all* — reached from the
 pointer instead of from across the window. They carry no command of their own and
 go grey with the buttons they duplicate. Two sets of names (`MnuCv*`, `MnuTr*`)
