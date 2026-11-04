@@ -108,6 +108,27 @@ something a mapper should make silently.
 |---|---|
 | `Transaction(fn)` | everything in `fn` or nothing. **Nests**, through savepoints, so a function that wraps its own work in one is safe to call from inside another |
 
+## A connection on a form
+
+The same connection can be declared in a `.form` as a part, with no rectangle:
+
+```json
+"components": [
+  { "type": "Connection", "name": "Db",
+    "properties": { "Path": "data/clients.db" } }
+]
+```
+
+```js
+this.Db.Query("select * from clients");
+```
+
+`Path` is relative to the project. The file opens on first use; `Db` is the
+`Connection`, and `Query`, `Execute`, `Script`, `Table`, `Tables`, `Columns`,
+`Transaction` and `Close` are the parts' own words for it. A form that closes
+closes it. See [FormPart](FormPart.md) and
+[forms.md](../../llm/forms.md#parts--objects-with-no-rectangle).
+
 ## What goes wrong
 
 - **`Update` threw and the program stopped.** It matched no row — the record's

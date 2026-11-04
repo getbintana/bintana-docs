@@ -30,8 +30,9 @@ Clock_Tick() { this.LblTime.Text = Time.Now(); }
 | `Apply(properties)` | applies a property dictionary to the part, refusing a name it has not got | [the object](#the-object) |
 | `Serialize()` | this part as a `.form` node | [the object](#the-object) |
 | `Delete()` | removes it from the form it belongs to | [the object](#the-object) |
-| `FormPart.New(type)` | a new part of `type` -- `Timer` today; a name that is not a part is refused by name | [the classes](#the-classes) |
+| `FormPart.New(type)` | a new part of `type` -- `Timer`, `Connection` or `HttpClient`; a name that is not a part is refused by name | [the classes](#the-classes) |
 | `FormPart.Types()` | the names of the part classes this runtime can make, for a palette or a `.form` loader | [the classes](#the-classes) |
+| `FormPart.TypeName(part)` | the name a part is written under in a `.form` -- the registry's name, which is not always the class's own (`Connection` is a part, the C `Connection` it wraps is a type) | [the classes](#the-classes) |
 
 ## The object
 
@@ -56,11 +57,14 @@ its events reach nobody.
 
 ## The classes
 
-`Timer` is the first one. It declares `Delay` and `Enabled` as properties and
-`Tick` as its event; see [Timer](Timer.md#a-timer-on-a-form). A class becomes a
-part when it extends `FormPart` and declares `static Events` and
-`static Properties`; `Exec` is a global with statics rather than a class, so it
-needs a wrapper before a `.form` can name it.
+`Timer`, `Connection` and `HttpClient` are the built-ins. `Timer` declares
+`Delay` and `Enabled` as properties and `Tick` as its event; see
+[Timer](Timer.md#a-timer-on-a-form). `Connection` declares `Path` and owns a
+`Database.Sqlite` file; `HttpClient` declares `BaseUrl`, `Timeout`, `Http1` and
+`FollowRedirects` and owns an `Http.Client`. A class becomes a part when it
+extends `FormPart` and declares `static Events` and `static Properties`;
+`Exec` is a global with statics rather than a class, so it needs a wrapper
+before a `.form` can name it.
 
 ## See also
 

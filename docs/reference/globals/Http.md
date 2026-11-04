@@ -312,6 +312,28 @@ included: libsoup reads the variable once, at the first connection, so setting
 it later changes nothing. It can equally come from outside, in the launcher or
 the desktop entry's `Exec`.
 
+## A client on a form
+
+The client can be declared in a `.form` as a part, with no rectangle:
+
+```json
+"components": [
+  { "type": "HttpClient", "name": "Api",
+    "properties": { "BaseUrl": "https://example.com", "Timeout": 5000 } }
+]
+```
+
+```js
+this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
+```
+
+`BaseUrl`, `Timeout`, `Http1` and `FollowRedirects` are the part's properties;
+`Client` is the `HttpClient` itself, and `Get`, `Post`, `Put`, `Patch`,
+`Delete`, `Head` and `Request` are its verbs. The session is made on first use
+and dropped when a property changes or the form closes. See
+[FormPart](FormPart.md) and
+[forms.md](../../llm/forms.md#parts--objects-with-no-rectangle).
+
 ## What goes wrong
 
 - **A 404 did not reach `onError`.** It is an answer: `Status` in `onDone`.

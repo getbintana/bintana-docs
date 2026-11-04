@@ -704,23 +704,50 @@ class ClockForm extends Form {
 }
 ```
 
-- **`type` is a part class**, and `Timer` is the first one. A part declares
-  `static Properties` (what a `.form` may set) and `static Events` (what it
-  raises); `PropertyNames()` and `EventNames()` answer them.
-- **`Enabled: true` starts it when the form loads.** A timer declared in a
+A database and a client are the same shape, and the form reaches them by
+name too:
+
+```json
+"components": [
+  { "type": "Connection", "name": "Db",
+    "properties": { "Path": "data/pulse.db" } },
+  { "type": "HttpClient", "name": "Api",
+    "properties": { "BaseUrl": "https://example.com", "Timeout": 5000 } }
+]
+```
+
+```js
+this.Db.Query("select * from pulse");
+this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
+```
+
+`Connection` opens the SQLite file on first use, with `Db`, `Query`,
+`Execute`, `Table` and the rest of the connection's verbs; `HttpClient` makes
+the session on first use and offers `Client`, `Get`, `Post`, `Request` and the
+other verbs. Changing a property drops the handle, so the next use starts with
+the new setting.
+
+- **`type` is a part name**, not a control class. The runtime has `Timer`,
+  `Connection` (a `Database.Sqlite` file) and `HttpClient` (an `Http.Client`).
+  A part declares `static Properties` (what a `.form` may set) and
+  `static Events` (what it raises); `PropertyNames()` and `EventNames()` answer
+  them.
+- **`Enabled: true` starts a Timer when the form loads.** A timer declared in a
   `.form` is stopped when the form closes, so it cannot keep firing into a
   window nobody has; a timer made with `new Timer(...)` in code is still the
-  program's to `Stop()`.
+  program's to `Stop()`. A `Connection` opens on first use and is closed when
+  the form closes; an `HttpClient` makes its session on first use.
 - **Its handler is the usual name**, `<Name>_<Event>` — `Clock_Tick` — and a
   part also accepts its own `On("Tick", fn)`. `Emit` runs the part's handler
-  first, then the form's.
+  first, then the form's. `Connection` and `HttpClient` raise no events of
+  their own; their verbs take callbacks.
 - **The designer draws it in a tray**, not on the canvas: a part has no
   rectangle to drag. That is the one gesture that does not exist here, and the
   tray is the place it lands. See [`controls.md`](controls.md#form) for the
   `Form.Components` list and the verbs.
-- **Only objects that are classes can be parts.** `Timer` is one; `Exec` is a
-  global with statics, so it would need a wrapper class before a `.form` could
-  name it.
+- **Only objects that are classes can be parts.** `Timer`, `Connection` and
+  `HttpClient` are; `Exec` is a global with statics, so it would need a wrapper
+  class before a `.form` could name it.
 
 ## Building a tree from code
 
