@@ -164,12 +164,14 @@ Split                   HAlign/VAlign Fill: the whole window below the toolbar
     SideStrip (Panel, a column)  one button per view, built in code, hidden
                         while the panel is open
     SideView (Panel, a column)
-      SideHead (Panel, a row)  CmbView, the chooser over the three views, and
+      SideHead (Panel, a row)  CmbView, the chooser over the four views, and
                         BtnSideHide, which folds the panel away
       SideStack (Switcher, no strip)
         "Project"/"Files"  TreePage: FileTree and the filter over it
         "Changes"          ChangesSplit: ChangeTable over the commit box (the
                         message and its one button), a divider between them
+        "Data"             DataPage: CmbDataDb, DataTree and its message, all
+                        built in code by Data.js
   RightSplit (Split)
     WorkArea (Split)      the pages, and beside them the panel that speaks for them
       EditorBox (Panel, a column)  the notebook and the bar under it; hidden with
@@ -196,31 +198,34 @@ Split                   HAlign/VAlign Fill: the whole window below the toolbar
                         which names the selection: `Button1 (Button)`, or
                         `Form1 (Form)`) above Properties and Events, and
                         the outline's own.
-    ConsoleBox (Notebook) the bottom panel: three declared pages, all Fill
+    ConsoleBox (Notebook) the bottom panel: four declared pages, all Fill
                             "Output"    LogView, a read-only TextEditor
                             "Debug"     DebugPage, the stack and the values
                             "Problems"  ProblemView, a TableView of places
                             "Terminal"  Shell, built in code and only where
                                         Widget.Available("Terminal") says yes
+                            "Data"      DataConsole: DataSql over DataRows,
+                                        built in code by Data.js
 ```
 
-**The project panel folds to a strip, and the strip opens any of its three
+**The project panel folds to a strip, and the strip opens any of its four
 views.** `BtnSideHide` — beside the chooser — hides `SideView` and leaves
 `SideStrip` in the same half of the `Split`: the half itself stays, because
 hiding it would hand its room to the work area and GTK would hide the divider
 with it, taking the strip down too. The strip is **one button per view** —
-*Project*, *Files*, *Changes* — so a folded panel opens straight on any of
-them; the single button it replaces could only bring back whatever was up.
+*Project*, *Files*, *Changes*, *Data* — so a folded panel opens straight on any
+of them; the single button it replaces could only bring back whatever was up.
 Pressing one moves the chooser and unfolds the panel around it, so the two
 never disagree, and the width to come back to is kept beside the fold in
 `session.window` — the divider says the strip's while it is folded.
 
-The three views are the chooser's list: *Project* and *Files* are the tree's
-two groupings and share `TreePage`; *Changes* is the git page. The strip's
+The four views are the chooser's list: *Project* and *Files* are the tree's
+two groupings and share `TreePage`; *Changes* is the git page; *Data* is the
+schema browser. The strip's
 buttons are **built from that list** and not declared in the `.form`: how many
 there are is its answer, and each view publishes its own row — the name, the
 button's tooltip and icons, the page of `SideStack`, and what brings it up —
-beside the class that owns it. A fourth panel is a page of the stack and a row
+beside the class that owns it. A fifth panel is a page of the stack and a row
 where its class lives.
 
 **The panels are shown and hidden from the `View` menu.** *Project panel*
@@ -238,7 +243,7 @@ room to the half that is left, and the panel comes back the height it had with
 no number kept anywhere.
 
 **And each panel's own choices are in the menu with it.** *Side panel* lists
-the side bar's three views and *Bottom panel* the console's pages — the
+the side bar's four views and *Bottom panel* the console's pages — the
 Terminal included where the build has one — with the mark on the one that is
 up; choosing one from there opens the panel around it, the same road the
 strip's buttons take. Beside them the editor keeps three settings of its own —
@@ -465,11 +470,11 @@ The IDE's own tree is the first client: `ide/forms/` holds the twelve
 ## The tree, in two views
 
 A chooser at the top of the tree, where the heading used to be: **Project** and
-**Files** (and a third, **Changes**, for git). They are worth having separately for the
+**Files** (and **Changes** for git and **Data** for the databases). They are worth having separately for the
 reason Android Studio has them — the first is where one works, and the second is where
 one goes when the *grouping* is what hides something. Both show every file of the
 project: what they differ about is grouping, not membership. A folded panel
-offers the same three as its strip, one icon button each.
+offers the same four as its strip, one icon button each.
 
 **Project is a lie about the disk, deliberately.** A form's two files are one
 node, catalogues from anywhere gather under one category, the folders a tool
@@ -1980,6 +1985,42 @@ tree's `[M]` and the counts in the status bar, which all come out of one
 `git status`. Deliberately not the whole of *Refresh status*: the branch, the
 remotes and how far ahead you are cannot change because a buffer was written, and
 a save is not the place to spend four child processes.
+
+### The Data page, beside the tree
+
+A project that keeps its clients in SQLite was developed without the IDE
+knowing the schema: the only way to see a table was to run the program and read
+the error. The **Data** view is the fourth page of the side bar, and the same
+page name in the bottom panel is its console.
+
+**Where a database is comes from the project.** Three things name one: a
+`.conn` file (`{ "kind": "sqlite", "path": "data/clients.db" }`, now a
+*Connections* category of the project tree), a form's `Connection` part with
+its `Path`, and a `.db`/`.sqlite` file left in the tree. The path is the
+identity, so a `.conn` and a form that name the same file are one entry, and
+the models of every form are gathered onto it. **A database that is not there
+yet is shown as not created**, and looking at it does not create it: a schema
+browser that writes is not a browser.
+
+**The tree is the runtime's answer.** `Database.Sqlite(path).Tables` is the
+list, `Columns(table)` gives `{ Name, Type, Required, Key }` for each, and the
+connection is closed again when the tree is built. A model whose table has not
+been created is listed by name -- that is the state a first run is in -- and a
+record's fields come from the project's `.record` files through `Binding`, the
+same answer the designer's `Record` and `DataField` rows read.
+
+**Double-clicking a table previews it**, and a column previews that column:
+the SQL appears in the console (`SELECT * FROM "clients" LIMIT 200`) and its
+rows in the table below. The console is a `SourceEditor` with SQL highlighting
+over a `TableView`; `SELECT`, `PRAGMA`, `EXPLAIN` and `WITH` go through
+`Query`, everything else through `Execute`, whose answer is what changed.
+**The connection is the console's and is closed after each run** -- this is a
+window onto a file, not the application's session.
+
+What the page does not do is as deliberate as what it does: it does not edit
+rows, does not write a schema, and does not create a database. Those are the
+application's acts, and an IDE that performed them behind the program's back
+would be a second program with the same file.
 
 ### Branches, and the history
 
