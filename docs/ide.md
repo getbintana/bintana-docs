@@ -3315,6 +3315,11 @@ palette's types — `Form`, `TreeView`, `Terminal`, `Scroller` and the rest — 
 the tree shows whatever the form holds, palette or not, and a component stand-in
 gets the component icon since what it stands for has none of its own.
 
+**The order is paint order**, so the control at the front is the *last* row:
+*Bring to front* moves a row down the tree and *Send to back* moves it up. The
+design bar's arrows follow the row for that reason; a layers panel that put the
+front at the top would be a different view, and the tree is not one.
+
 **Right clicking** either the canvas or a node offers the commands that are
 already there — rename, delete, bring to front, send to back, and on the tree
 *Expand all* / *Collapse all* — reached from the
