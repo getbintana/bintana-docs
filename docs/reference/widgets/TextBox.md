@@ -19,6 +19,7 @@ It is a `Widget` and a control like any other, so everything on
 | `Alignment` | `Left` `Center` `Right`, default `"Left"` | [what the field expects](#what-the-field-expects) |
 | `Completion` | the words it offers while somebody types, an array of strings | [an editable combo](#an-editable-combo) |
 | `Icon` | an icon **inside** the field, at the end | [what the field expects](#what-the-field-expects) |
+| `Mask` | the shape of what may be typed | [the shape of what is typed](#the-shape-of-what-is-typed) |
 | `MaxLength` | how many characters may be typed | [what is in it](#what-is-in-it) |
 | `Password` | the characters are drawn as dots | [what is in it](#what-is-in-it) |
 | `Placeholder` | the grey words shown while it is empty | [what is in it](#what-is-in-it) |
@@ -152,6 +153,33 @@ what the field offers, not prose a catalogue should rewrite. For a list that
 narrows as the person types, reassign it in `Change` -- the popup is rebuilt on
 every assignment, so the words the next keystroke offers can come from the text
 so far.
+
+## The shape of what is typed
+
+| | |
+|---|---|
+| `Mask` | the shape of what may be typed: `0` a digit, `A` a letter, `?` any character, `*` a letter or digit, everything else a literal put in for the person. `""` is no mask. What does not fit is refused — dropped while typing, a `TypeError` when `Text` is assigned from code |
+
+```json
+{ "type": "TextBox", "name": "TxtTaxId",
+  "properties": { "Mask": "00.000.000-0" } }
+```
+
+```js
+TxtTaxId.Text = "123456789";     // reads back "12.345.678-9"
+```
+
+A character that does not fit the next slot is **refused**: while somebody types
+it is dropped, and when `Text` is assigned from code the assignment throws rather
+than storing a value the field would not have accepted. The literals are put in
+as the slots before them fill, so a half-typed field is `12.3` and not
+`12.3__.___-_`. Setting a mask that the text already there does not fit is
+refused whole: the old mask and the old text stay.
+
+The mask is about the *shape*, not the meaning: `00.000.000-0` accepts
+`99.999.999-9` as readily as a real tax id, and a date mask accepts the
+thirty-first of February. What the digits have to mean is still a check of the
+program's.
 
 ## Enter
 

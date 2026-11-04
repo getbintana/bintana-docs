@@ -483,6 +483,7 @@ One line of editable text.
 | `Alignment` | `Left` `Center` `Right`, default `"Left"`. Numbers read right-aligned, which is the one case worth changing it for |
 | `Completion` | the words it offers while somebody types, an array of strings; `[]` offers none. It completes and **does not restrict**: what is typed is still `Text`, which is the difference from a `ComboBox` |
 | `Icon` | an icon **inside** the field, at the end. Clicking it raises `IconClick` |
+| `Mask` | the shape of what may be typed: `0` a digit, `A` a letter, `?` any character, `*` a letter or digit, everything else a literal put in for the person. `""` is no mask. What does not fit is refused — dropped while typing, a `TypeError` when `Text` is assigned from code |
 | `MaxLength` | how many characters may be typed; `0` is no limit |
 | `Password` | the characters are drawn as dots. `Text` still answers with the real thing, because the program is the one asking |
 | `Placeholder` | the grey words shown while it is empty. **Translated**. It is a hint, never a label: a field whose only label is its placeholder has no label once somebody types in it |
