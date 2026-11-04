@@ -59,12 +59,13 @@ its events reach nobody.
 
 `Timer`, `Connection` and `HttpClient` are the built-ins. `Timer` declares
 `Delay` and `Enabled` as properties and `Tick` as its event; see
-[Timer](Timer.md#a-timer-on-a-form). `Connection` declares `Path` and owns a
-`Database.Sqlite` file; `HttpClient` declares `BaseUrl`, `Timeout`, `Http1` and
-`FollowRedirects` and owns an `Http.Client`. A class becomes a part when it
-extends `FormPart` and declares `static Events` and `static Properties`;
-`Exec` is a global with statics rather than a class, so it needs a wrapper
-before a `.form` can name it.
+[Timer](Timer.md#a-timer-on-a-form). `Connection` declares `Path`, `Record` and
+`TableName`, owns a `Database.Sqlite` file, and its `Model` is the `Table` for
+the selected record -- `Ensure` creates that table from the shape. `HttpClient`
+declares `BaseUrl`, `Timeout`, `Http1` and `FollowRedirects` and owns an
+`Http.Client`. A class becomes a part when it extends `FormPart` and declares
+`static Events` and `static Properties`; `Exec` is a global with statics rather
+than a class, so it needs a wrapper before a `.form` can name it.
 
 ## See also
 

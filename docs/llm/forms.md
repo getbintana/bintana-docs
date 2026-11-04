@@ -710,16 +710,27 @@ name too:
 ```json
 "components": [
   { "type": "Connection", "name": "Db",
-    "properties": { "Path": "data/pulse.db" } },
+    "properties": { "Path": "data/pulse.db",
+                    "Record": "Check", "TableName": "checks" } },
   { "type": "HttpClient", "name": "Api",
     "properties": { "BaseUrl": "https://example.com", "Timeout": 5000 } }
 ]
 ```
 
 ```js
+this.Db.Model.Insert(new Check({ At: Time.Now, Site: "api", Url: "/health" }));
 this.Db.Query("select * from pulse");
 this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
 ```
+
+`Record` names a `.record`/`Record` class and `TableName` the table it lives
+in. `Db.Model` is the `Table` for that shape, and the first use creates the
+table with `CREATE TABLE IF NOT EXISTS` from the record's fields -- text,
+date, time, datetime, enum and decimal are `TEXT`, int and bool `INTEGER`,
+number `REAL`, bytes `BLOB`, and a single integer key is `INTEGER PRIMARY
+KEY`. `Field.List` and `Field.Record` are not columns and are refused. The
+creation never migrates an existing table: a shape that no longer fits is
+`Table`'s error, and changing the schema is a decision the program makes.
 
 `Connection` opens the SQLite file on first use, with `Db`, `Query`,
 `Execute`, `Table` and the rest of the connection's verbs; `HttpClient` makes

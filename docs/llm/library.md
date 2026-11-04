@@ -941,8 +941,10 @@ The base of a form's non-visual objects: `Timer`, `Connection` and
 are what a part answers. `Form.Components` is the live list, and
 `Form.AddPart`/`RemovePart`/`StopParts` move it. A part's event arrives as
 `<Name>_<Event>`, exactly like a control's. `Connection` owns a
-`Database.Sqlite` file, and `HttpClient` an `Http.Client`; both open on first
-use and close with the form. See
+`Database.Sqlite` file and selects a record (`Record`) and its table
+(`TableName`); `Model` is that `Table`, and the first use creates the table
+from the shape. `HttpClient` owns an `Http.Client`; both open on first use and
+close with the form. See
 [forms.md](forms.md#parts--objects-with-no-rectangle).
 
 ## Timer

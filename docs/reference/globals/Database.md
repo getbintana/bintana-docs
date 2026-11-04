@@ -110,23 +110,36 @@ something a mapper should make silently.
 
 ## A connection on a form
 
-The same connection can be declared in a `.form` as a part, with no rectangle:
+The same connection can be declared in a `.form` as a part, with no rectangle,
+and it can select the record it is for:
 
 ```json
 "components": [
   { "type": "Connection", "name": "Db",
-    "properties": { "Path": "data/clients.db" } }
+    "properties": { "Path": "data/clients.db",
+                    "Record": "Client", "TableName": "clients" } }
 ]
 ```
 
 ```js
+this.Db.Model.Insert(client);
 this.Db.Query("select * from clients");
 ```
 
-`Path` is relative to the project. The file opens on first use; `Db` is the
-`Connection`, and `Query`, `Execute`, `Script`, `Table`, `Tables`, `Columns`,
-`Transaction` and `Close` are the parts' own words for it. A form that closes
-closes it. See [FormPart](FormPart.md) and
+`Path` is relative to the project. `Record` names a `.record` (or a `Record`
+class declared in code) and `TableName` the table it lives in; `Model` is the
+`Table` for it, and the first use creates the table from the shape with
+`CREATE TABLE IF NOT EXISTS`. The mapping is the one `Table` already uses:
+text/date/time/datetime/enum/decimal are `TEXT`, int and bool `INTEGER`,
+number `REAL`, bytes `BLOB`, a single integer key is `INTEGER PRIMARY KEY`,
+and `required` is `NOT NULL`. A `Field.List` or `Field.Record` is not a column
+and is refused by name; a shape that no longer fits an existing table is
+`Table`'s refusal, not a silent migration.
+
+The file opens on first use; `Db` is the `Connection`, and `Query`, `Execute`,
+`Script`, `Table`, `Tables`, `Columns`, `Transaction` and `Close` are the
+part's own words for it. A form that closes closes it. See
+[FormPart](FormPart.md) and
 [forms.md](../../llm/forms.md#parts--objects-with-no-rectangle).
 
 ## What goes wrong
