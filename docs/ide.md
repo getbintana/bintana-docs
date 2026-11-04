@@ -3319,8 +3319,10 @@ gets the component icon since what it stands for has none of its own.
 *Bring forward* moves a row one place down the tree and *Send backward* one
 place up. The design bar's arrows follow the row for that reason; a layers panel
 that put the front at the top would be a different view, and the tree is not one.
-The runtime's `Raise`/`Lower` still go all the way and are there for code; the
-buttons are the one-step, because that is the gesture a person repeats.
+The runtime's `Raise`/`Lower` still go all the way; the buttons are the
+one-step, because that is the gesture a person repeats, and the *Form* menu and
+the canvas's context menu carry the all-the-way pair as *Bring to front* and
+*Send to back*.
 
 **Right clicking** either the canvas or a node offers the commands that are
 already there — rename, delete, bring forward, send backward, and on the tree
