@@ -935,16 +935,16 @@ The fallback matters: `Get("on", true)` tells a missing setting from one that is
 
 ## FormPart
 
-The base of a form's non-visual objects: `Timer`, `Connection` and
+The base of a form's non-visual objects: `Timer`, `Connection`, `Model` and
 `HttpClient`. It has no rectangle and is declared in the form's `components`;
 `PropertyNames`, `EventNames`, `On`, `Emit`, `Apply`, `Serialize` and `Delete`
 are what a part answers. `Form.Components` is the live list, and
 `Form.AddPart`/`RemovePart`/`StopParts` move it. A part's event arrives as
-`<Name>_<Event>`, exactly like a control's. `Connection` owns a
-`Database.Sqlite` file and selects a record (`Record`) and its table
-(`TableName`); `Model` is that `Table`, and the first use creates the table
-from the shape. `HttpClient` owns an `Http.Client`; both open on first use and
-close with the form. See
+`<Name>_<Event>`, exactly like a control's. `Connection` owns one
+`Database.Sqlite` file; `Model` names that connection, a record and a table,
+and is its `Table`, creating the table from the shape on first use. Several
+models share one connection. `HttpClient` owns an `Http.Client`; both open on
+first use and close with the form. See
 [forms.md](forms.md#parts--objects-with-no-rectangle).
 
 ## Timer

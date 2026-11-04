@@ -110,35 +110,39 @@ something a mapper should make silently.
 
 ## A connection on a form
 
-The same connection can be declared in a `.form` as a part, with no rectangle,
-and it can select the record it is for:
+The connection can be declared in a `.form` as a part, with no rectangle, and
+a `Model` part selects one record over one of its tables:
 
 ```json
 "components": [
   { "type": "Connection", "name": "Db",
-    "properties": { "Path": "data/clients.db",
-                    "Record": "Client", "TableName": "clients" } }
+    "properties": { "Path": "data/clients.db" } },
+  { "type": "Model", "name": "Clients",
+    "properties": { "Connection": "Db", "Record": "Client",
+                    "TableName": "clients" } }
 ]
 ```
 
 ```js
-this.Db.Model.Insert(client);
+this.Clients.Insert(client);
 this.Db.Query("select * from clients");
 ```
 
-`Path` is relative to the project. `Record` names a `.record` (or a `Record`
-class declared in code) and `TableName` the table it lives in; `Model` is the
-`Table` for it, and the first use creates the table from the shape with
-`CREATE TABLE IF NOT EXISTS`. The mapping is the one `Table` already uses:
-text/date/time/datetime/enum/decimal are `TEXT`, int and bool `INTEGER`,
-number `REAL`, bytes `BLOB`, a single integer key is `INTEGER PRIMARY KEY`,
-and `required` is `NOT NULL`. A `Field.List` or `Field.Record` is not a column
-and is refused by name; a shape that no longer fits an existing table is
-`Table`'s refusal, not a silent migration.
+**One `Connection` is one file; one `Model` is one record over one table.**
+Several models can use the same connection -- `this.Clients`, `this.Orders` --
+and the file is opened once. `Path` is relative to the project. `Model`'s
+`Record` names a `.record` (or a `Record` class in code), `TableName` the
+table, and `Model.Table` is the `Table`; its first use creates the table from
+the shape with `CREATE TABLE IF NOT EXISTS`. The mapping is the one `Table`
+already uses: text/date/time/datetime/enum/decimal are `TEXT`, int and bool
+`INTEGER`, number `REAL`, bytes `BLOB`, a single integer key is `INTEGER
+PRIMARY KEY`, and `required` is `NOT NULL`. A `Field.List` or `Field.Record`
+is not a column and is refused by name; a shape that no longer fits an
+existing table is `Table`'s refusal, not a silent migration.
 
 The file opens on first use; `Db` is the `Connection`, and `Query`, `Execute`,
 `Script`, `Table`, `Tables`, `Columns`, `Transaction` and `Close` are the
-part's own words for it. A form that closes closes it. See
+connection's own words for it. A form that closes closes it. See
 [FormPart](FormPart.md) and
 [forms.md](../../llm/forms.md#parts--objects-with-no-rectangle).
 

@@ -710,54 +710,60 @@ name too:
 ```json
 "components": [
   { "type": "Connection", "name": "Db",
-    "properties": { "Path": "data/pulse.db",
-                    "Record": "Check", "TableName": "checks" } },
+    "properties": { "Path": "data/pulse.db" } },
+  { "type": "Model", "name": "Checks",
+    "properties": { "Connection": "Db", "Record": "Check",
+                    "TableName": "checks" } },
   { "type": "HttpClient", "name": "Api",
     "properties": { "BaseUrl": "https://example.com", "Timeout": 5000 } }
 ]
 ```
 
 ```js
-this.Db.Model.Insert(new Check({ At: Time.Now, Site: "api", Url: "/health" }));
+this.Checks.Insert(new Check({ At: Time.Now, Site: "api", Url: "/health" }));
 this.Db.Query("select * from pulse");
 this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
 ```
 
-`Record` names a `.record`/`Record` class and `TableName` the table it lives
-in. `Db.Model` is the `Table` for that shape, and the first use creates the
-table with `CREATE TABLE IF NOT EXISTS` from the record's fields -- text,
-date, time, datetime, enum and decimal are `TEXT`, int and bool `INTEGER`,
-number `REAL`, bytes `BLOB`, and a single integer key is `INTEGER PRIMARY
-KEY`. `Field.List` and `Field.Record` are not columns and are refused. The
-creation never migrates an existing table: a shape that no longer fits is
+**A `Connection` is one database file and a `Model` is one record over one
+table.** A form can carry several Models over the same `Connection`; it is one
+file, opened once, not one per table. `Record` names a `.record`/`Record` class
+and `TableName` the table it lives in; `Model.Table` is the `Table`, and the
+first use creates the table with `CREATE TABLE IF NOT EXISTS` from the record's
+fields -- text, date, time, datetime, enum and decimal are `TEXT`, int and bool
+`INTEGER`, number `REAL`, bytes `BLOB`, and a single integer key is `INTEGER
+PRIMARY KEY`. `Field.List` and `Field.Record` are not columns and are refused.
+The creation never migrates an existing table: a shape that no longer fits is
 `Table`'s error, and changing the schema is a decision the program makes.
 
 `Connection` opens the SQLite file on first use, with `Db`, `Query`,
-`Execute`, `Table` and the rest of the connection's verbs; `HttpClient` makes
-the session on first use and offers `Client`, `Get`, `Post`, `Request` and the
-other verbs. Changing a property drops the handle, so the next use starts with
-the new setting.
+`Execute`, `Table` and the rest of the connection's verbs; `Model` is the
+`Table` for its record; `HttpClient` makes the session on first use and offers
+`Client`, `Get`, `Post`, `Request` and the other verbs. Changing a property
+drops the handle, so the next use starts with the new setting.
 
 - **`type` is a part name**, not a control class. The runtime has `Timer`,
-  `Connection` (a `Database.Sqlite` file) and `HttpClient` (an `Http.Client`).
-  A part declares `static Properties` (what a `.form` may set) and
-  `static Events` (what it raises); `PropertyNames()` and `EventNames()` answer
-  them.
+  `Connection` (one `Database.Sqlite` file), `Model` (one record over one
+  table) and `HttpClient` (an `Http.Client`). A part declares
+  `static Properties` (what a `.form` may set) and `static Events` (what it
+  raises); `PropertyNames()` and `EventNames()` answer them.
 - **`Enabled: true` starts a Timer when the form loads.** A timer declared in a
   `.form` is stopped when the form closes, so it cannot keep firing into a
   window nobody has; a timer made with `new Timer(...)` in code is still the
   program's to `Stop()`. A `Connection` opens on first use and is closed when
-  the form closes; an `HttpClient` makes its session on first use.
+  the form closes; a `Model` shares it; an `HttpClient` makes its session on
+  first use.
 - **Its handler is the usual name**, `<Name>_<Event>` — `Clock_Tick` — and a
   part also accepts its own `On("Tick", fn)`. `Emit` runs the part's handler
-  first, then the form's. `Connection` and `HttpClient` raise no events of
-  their own; their verbs take callbacks.
+  first, then the form's. `Connection`, `Model` and `HttpClient` raise no
+  events of their own; their verbs take callbacks.
 - **The designer draws it in a tray**, not on the canvas: a part has no
   rectangle to drag. That is the one gesture that does not exist here, and the
   tray is the place it lands. See [`controls.md`](controls.md#form) for the
   `Form.Components` list and the verbs.
-- **Only objects that are classes can be parts.** `Timer`, `Connection` and
-  `HttpClient` are; `Exec` is a global with statics, so it would need a wrapper
+- **Only objects that are classes can be parts.** `Timer`, `Connection`,
+  `Model` and `HttpClient` are; `Exec` is a global with statics, so it would
+  need a wrapper
   class before a `.form` could name it.
 
 ## Building a tree from code
