@@ -3252,6 +3252,21 @@ be told apart from a machine with no printer and a throw would make a capability
 question something a program has to catch. Printing itself is core GTK and works
 either way.
 
+## PdfForm
+
+The form layer of a PDF: Cairo writes the page and PoDoFo adds the AcroForm
+widgets. Optional at build time; without it `PdfForm.Available` is false and
+`AddFields` refuses naming the package.
+
+| | |
+|---|---|
+| `Available` (ro) | whether this build has PoDoFo |
+| `AddFields(path, fields)` | adds fields to an existing PDF, in place, and answers how many. Each field is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`; `Rect` is in PDF points with the origin at the bottom-left. A signature field is left empty for the signer's application |
+
+`Report.SavePdf` uses this when the report declares an `Input` or a
+`Signature`; an application calls it directly only for a static PDF it already
+has.
+
 ## Drawing
 
 `Drawing.Save(path, width, height, draw)`, `Drawing.ToPng(width, height, draw)`

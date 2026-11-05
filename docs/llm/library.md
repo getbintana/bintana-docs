@@ -879,6 +879,37 @@ if (printers === null)      … // this build cannot say
 else if (!printers.length)  … // it can, and there are none
 ```
 
+## PdfForm
+
+The form layer of a PDF. **Cairo draws the page; PoDoFo adds the fields a PDF
+viewer can fill.** Optional at build time, the sqlite mould: without PoDoFo
+`PdfForm` still exists, `Available` is false, and `AddFields` refuses naming the
+package.
+
+A [`Report`](report.md#report) with an `Input` or a `Signature` element uses
+this for you; an application calls it directly only when it already has a
+static PDF and wants to turn it into a form.
+
+| | |
+|---|---|
+| `Available` (ro) | whether this build has PoDoFo, which is what `AddFields` needs; when false the verb refuses with a sentence naming the package |
+| `AddFields(path, fields)` | adds the fields to the PDF at `path`, **in place**, and answers how many. Each field is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty for the signer's own application. The PDF must exist and be one this build's PoDoFo can parse; a failure leaves the file as it was |
+
+```js
+PdfForm.AddFields("solicitud.pdf", [
+    { Page: 1, Name: "nombre", Type: "Text",
+      Rect: { X: 160, Y: 734, Width: 300, Height: 24 }, Value: "Matías" },
+    { Page: 1, Name: "acepto", Type: "Check",
+      Rect: { X: 160, Y: 692, Width: 16, Height: 16 }, Checked: true },
+    { Page: 1, Name: "firma", Type: "Signature",
+      Rect: { X: 160, Y: 592, Width: 250, Height: 60 }, Reason: "Conformidad" },
+]);
+```
+
+**A signature field is a `/Sig` widget with no signature in it.** The user's own
+application — Acrobat, Preview, a browser or the platform's signing tool — fills
+it with their certificate; Bintana never needs the private key.
+
 ## Drawing
 
 A [`Painter`](controls.md#painter) over a PNG or a PDF **with no control and no
