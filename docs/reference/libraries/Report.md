@@ -23,9 +23,10 @@ this.Report.Sections = this.sections();   // the shape, declared in code
 this.Report.Data     = rows;              // the numbers, handed over
 ```
 
-**There is no designer for a report**: the bands, their heights and what sits in
-each are *written down*, which is why they can be version-controlled and why the
-totals cannot drift from the data.
+**The shape is data and can be designed.** The bands, their heights and what
+sits in each are `Sections` — plain objects the `.form` can carry — so the IDE's
+report designer draws them on a page and saves the result, while the rows stay
+in code. A report written entirely in code is unchanged.
 
 It is a [`Component`](../widgets/Component.md), so everything on
 [`Widget`](../widgets/Widget.md) is on it too.
@@ -48,6 +49,20 @@ It is a [`Component`](../widgets/Component.md), so everything on
 | `Send([setup], cb)` | **every page, to paper**, through [`Printer`](../../llm/library.md#printer): this fills in how many pages there are and the paper and orientation the report was laid out for, and `{ Copies, From, To }` say the job | [off the screen](#off-the-screen) |
 | **event** `Page(page)` | the data moved the current page | [turning the pages](#turning-the-pages) |
 | **event** `Prepared(count)` | the pages were computed | [the data](#the-data) |
+
+## The designer
+
+Double-click a `Report` on the IDE's canvas and its page opens. The bands are in
+reading order, the elements where they will print, and the selection's properties
+are on the right. Drag an element to move it; drag a band's bottom edge to change
+its height; the buttons add Text, Field, Total, Line, Box and Image elements,
+add a group by a field, and remove the selection. Paper, orientation and margin
+are at the top.
+
+**It edits `Sections` and writes it into the `.form`.** The data is not there:
+every `Field` and `Total` shows a sample value while it is arranged. The running
+report loads the saved `Sections` with the ordinary property loader and the
+application fills `Data`, so the page that prints is the page that was drawn.
 
 ## The paper
 
@@ -168,6 +183,8 @@ what it adds is a painter-level verb, and its `Refresh` answers:
 | `ReportDocument.Paint(p, page, width, height)` | draws page `page` (one-based, clamped) with `p`, scaled to fit `width`×`height` and centred — for a painter something else opened: a `DrawPage` of your own, or a `Drawing` that puts this page beside other things. Black on white, whatever the theme |
 | `ReportDocument.Save(path, [page], [scale])` | one page to a PNG. `page` defaults to `1`, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). **No widget and no display**: it draws through `Drawing` |
 | `ReportDocument.SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text. **No widget and no display**: it draws through `Drawing`, which is what lets a `main` project — a report run from a timer — write one. A page that throws leaves no file |
+| `ReportDocument.DesignLayout([sample])` | the bands as a designer stacks them: one page wide, in reading order, with every element's box. Coordinates are points, `0,0` at the sheet's top-left; `sample` is the row a `Field` or a `Total` reads, and one is made from the field names when it is not given. The stack grows past the page when the bands need more room, so a designer shows all of them rather than cutting the last band off. |
+| `ReportDocument.PaintDesign(p, width, height, [sample])` | the design on a painter: the sheet, a tint and a rule for every band, and the elements where they will print. Scaled to fit `width`×`height`, as `Paint` scales a page; answers the same layout in the painter's coordinates, which is what a hit test wants. A missing image is a placeholder box, not a throw — the designer is where it is chosen. |
 
 ```js
 // project.json: { "main": "Main", "uses": ["report"] }

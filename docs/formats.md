@@ -372,7 +372,11 @@ A child node:
 - `name` becomes `widget.Name`, is exposed on the form as `this.<name>`, and is the
   prefix of its handlers. It has to be a valid identifier **in ASCII** — see the
   note below, because that is narrower than what JavaScript itself accepts.
-- `properties` are applied **in the order written**, as plain assignments. Order
+- `properties` are applied **in the order written**, as plain assignments. A
+  value that is a **plain object or array** is written as JSON and assigned as
+  the same shape — a report's `Sections` is the case — while a class instance is
+  not: the loader would hand the setter an object it cannot use, and only a
+  `Decimal` carries the machine text its setter reads. Order
   can matter: `Value` before `Max` on a `SpinBox` would be clamped, which is why
   the factory range is wide, and `Arrangement` is written first by the serialiser
   so that every coordinate and size after it is read in the layout it was meant

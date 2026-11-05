@@ -14,12 +14,12 @@ library is: name it in `project.json`, then use its class in a `.form`.
 
 The division is the same one `charts` argues for, applied to a document instead
 of a plot: **the shape of the report — its bands, their heights, what sits in
-each — is declared in code**, and **the numbers are handed over** as plain rows.
-There is no designer; the layout is written down, which is why it is
-version-controlled and why the totals cannot drift from the data. The example is
-`examples/report`: a statement of account with every band, two nested group
-levels, exact totals, a logo, rows that grow to fit their description, and the
-whole thing out as one PDF.
+each — is data**, and **the numbers are handed over** as plain rows. The shape
+can be written down in code or drawn in the IDE's report designer, which edits
+the same `Sections` and saves it in the `.form`; the data always belongs to the
+application. The example is `examples/report`: a statement of account with every
+band, two nested group levels, exact totals, a logo, rows that grow to fit their
+description, and the whole thing out as one PDF.
 
 ## Report
 
@@ -49,7 +49,9 @@ the print dialog. Assigning `Data` on the control assigns it there.
 
 ### `Sections`
 
-An object keyed by band name; each band is `{ Height, Elements }`. `Height` is
+An object keyed by band name; each band is `{ Height, Elements }`. It is **plain
+data**, so a designer can write it and the `.form` carries it as an ordinary
+property; assigning it from code works exactly as before. `Height` is
 in points, and it is what pagination adds up. The five fixed bands:
 
 | Band | emitted |
@@ -188,6 +190,21 @@ which is why there is nothing to disagree with it. The operations:
 - `Avg` is always a plain number: an average has no exact decimal text, and how
   many places to round it to is the caller's decision.
 
+### The designer
+
+Double-click a `Report` in the IDE's canvas and its page opens: the bands in
+reading order, the elements where they will print, and a property panel for the
+selection. Drag an element to move it; drag a band's bottom edge to change its
+height. The buttons add Text, Field, Total, Line, Box and Image elements, add a
+group by a field, and remove the selection. Paper, orientation and margin are at
+the top.
+
+**What it edits is `Sections`, and what it writes is the `.form`.** The data is
+not there -- every `Field` and `Total` shows a sample value while you arrange
+it -- so a designed report is still a report whose rows come from code. A form
+that carries a designed report loads it with the ordinary property loader, and
+a report declared entirely in code is unchanged.
+
 ## ReportDocument
 
 **The report with no control.** Everything a report *is* — the paper, the bands,
@@ -205,6 +222,8 @@ from a timer at six in the morning is this.
 | `Paint(p, page, width, height)` | draws page `page` (one-based, clamped) with `p`, scaled to fit `width`×`height` and centred — for a painter something else opened: a `DrawPage` of your own, or a `Drawing` that puts this page beside other things. Black on white, whatever the theme |
 | `Save(path, [page], [scale])` | one page to a PNG. `page` defaults to `1`, `scale` to `2` (144 dpi — an A4 page is a 1190px-wide PNG). **No widget and no display**: it draws through `Drawing` |
 | `SavePdf(path)` | **every page, one file**. Vector, at the paper's exact size, so the text in it is text. **No widget and no display**: it draws through `Drawing`, which is what lets a `main` project — a report run from a timer — write one. A page that throws leaves no file |
+| `DesignLayout([sample])` | the bands as a designer stacks them: one page wide, in reading order, with every element's box. Coordinates are points, `0,0` at the sheet's top-left; `sample` is the row a `Field` or a `Total` reads, and one is made from the field names when it is not given. The stack grows past the page when the bands need more room, so a designer shows all of them rather than cutting the last band off. |
+| `PaintDesign(p, width, height, [sample])` | the design on a painter: the sheet, a tint and a rule for every band, and the elements where they will print. Scaled to fit `width`×`height`, as `Paint` scales a page; answers the same layout in the painter's coordinates, which is what a hit test wants. A missing image is a placeholder box, not a throw — the designer is where it is chosen. |
 
 No events: nothing here is on a screen, so nothing is raised while a `.form`
 loads and nothing has to be told. `Refresh()` **answers** the count instead.

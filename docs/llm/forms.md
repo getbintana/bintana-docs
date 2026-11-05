@@ -929,5 +929,7 @@ Only if you save a form from code (`SaveForm(path)`), or want to know why a
 - `Arrangement` first.
 - `X`/`Y` only when the parent lays out by coordinate; `Width`/`Height` in a box
   only if one was declared.
-- Only strings, numbers, booleans and arrays.
+- Strings, numbers, booleans, arrays, and **plain objects** — a report's
+  `Sections` is one. A class instance is not: only a `Decimal` has a `toJSON`
+  the setter can read back.
 - The **declared** value, not the translated one.
