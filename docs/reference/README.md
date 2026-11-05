@@ -71,7 +71,7 @@ from the C, from a probe written to ask, or from an example that does it.
 |---|---|
 | `widgets/` | one page per **class**: `TableView`, `Label`, `Split`, `Form`. `Widget` is what they all inherit from, containers included, which is why the folder is called that and not `controls/` |
 | `globals/` | one page per **global**: `File`, `Logger`, `Timer`, `Locale`, `Decimal`, `Record`. It is what the rest of this tree calls them and what [`llm/library.md`](../llm/library.md) is the short form of |
-| `libraries/` | one page per **class a shipped library publishes**: `AboutBox`, `AskText`, `Chart`, `Confirm`, `Markdown`, `Metainfo`, `Nsis`, `Package`, `QrCode`, `QrView`, `Report`, `Xlsx`. They are reached with `uses` in `project.json`, which makes what they publish part of the contract exactly as a control's properties are |
+| `libraries/` | one page per **class a shipped library publishes**: `AboutBox`, `AskText`, `Chart`, `Confirm`, `Markdown`, `Metainfo`, `Nsis`, `Package`, `PropertyGrid`, `QrCode`, `QrView`, `Report`, `Xlsx`. They are reached with `uses` in `project.json`, which makes what they publish part of the contract exactly as a control's properties are |
 
 A page's name is the class or the global it documents, exactly as it is spelt in
 code — `widgets/TableView.md`, `globals/File.md` — so the IDE can find the page
@@ -80,7 +80,7 @@ for a control without a table in the middle.
 ## What is here
 
 **Every name this runtime publishes has a page**: 48 classes, 33 globals and the
-11 classes the shipped libraries publish. `tests/api.sh` holds each one to its
+13 classes the shipped libraries publish. `tests/api.sh` holds each one to its
 members, twice — once in its summary and once where it is explained.
 
 ### widgets/
@@ -193,6 +193,7 @@ members, twice — once in its summary and once where it is explained.
 | [Markdown](libraries/Markdown.md) | a Markdown document, as a component |
 | [Metainfo](libraries/Metainfo.md) | the AppStream file a project carries, which the IDE edits |
 | [Package](libraries/Package.md) | the files a package is built from: the metainfo, the menu entry, the icon and the Flatpak manifest |
+| [PropertyGrid](libraries/PropertyGrid.md) | an object's properties, as rows that edit them |
 | [QrCode](libraries/QrCode.md) | a QR code, as data: the encoder, and the modules it made |
 | [QrView](libraries/QrView.md) | a QR code on a form: text in, the symbol drawn as big as the room allows |
 | [Report](libraries/Report.md) | a banded report, as a component |
