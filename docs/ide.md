@@ -324,6 +324,15 @@ the shape of the tree, not the value of a property. Under the strip they showed
 up beneath the property grid too, which is a row of buttons answering a question
 that page never asked.
 
+**A project class that extends a runtime control is drawn as that control.**
+`class MyList extends ListBox` placed on a form shows the list the base draws,
+with its `Items` and `Index` in the grid; the tree and the saved `.form` still
+say `MyList`.  The IDE reads the `extends` from the source and never runs the
+class, which is the condition the feature was waiting for: a method the subclass
+adds is not run on the canvas, and a class that paints itself in code still shows
+the base's empty box.  A class only the subclass declares, and its `design`
+values, live in the node and are shown in design mode.
+
 The *Form* menu carries the alignment commands. **Centre horizontally** and
 **centre vertically** work with one control -- it goes in the middle of its
 container -- and with several, which are pulled onto the primary's centre line.
