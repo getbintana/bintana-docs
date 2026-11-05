@@ -24,7 +24,7 @@ Every name here is a global: ambient, always present, no import.
 | `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm`. **A top-level `class` is a lexical binding and not a property of the global object**, so a library's and a project's classes are *not* in it -- nor what a module exports, which is on the global object and left out on purpose: it is the program's and not the runtime's -- read those out of the sources, which is what the IDE does. It exists because the alternative is a hand-written list of global names, and there are a hundred and sixty-four of them |
 | `ProtectPrototype()` | refuse every new name on `Object.prototype`, so code loaded later cannot change every `for...in` in the program. Existing members can still be replaced; answers `true`, also when it was already closed |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once. The other direction of the lookup: `LibraryPath` resolves a name you already know, this is what a dialog that offers a choice needs |
-| `Replacements()` | every name this language takes away, and what to write instead. It is a bag keyed by the name that went: `{ setTimeout: "Timer.After(delay, tick) — the delay comes first", "Object.assign": "{ ...a, ...b }", … }`. **`""` where there is no word for that thing here**, which is an answer rather than a gap in the table. An editor asks it of an identifier nobody can find, so a beginner meets `Timer` at the token rather than a `ReferenceError` at the next run |
+| `Replacements()` | every name this language takes away, and what to write instead. It is a bag keyed by the name that went: `{ setTimeout: "Timer.After(delay, tick) — the delay comes first", "Object.assign": "{ ...a, ...b }", … }`. **`""` where there is no word for that thing here**, which is an answer rather than a gap in the table. An editor asks it of an identifier nobody can find, so a beginner meets `Timer` at the token rather than a `ReferenceError` at the next run. **The same sentence is in a caught `ReferenceError`'s `message`**, because the engine asks the table while it builds the error |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`**. Without it an uncaught error goes to the terminal and to a window of the runtime's own; with it, to the handler instead. An error raised inside the handler reaches only the terminal. `null` until assigned |
 | `Inhibit(reason, [what])` | keep the session from doing something while work runs — a backup, an export, a long download. `what` is any of `"Suspend"`, `"Idle"` (the screen blanking), `"Logout"`, `"Switch"` (switching user), and `["Suspend"]` when left out; `reason` is what the desktop shows the user. Answers `{ Active, By, Release() }`: **`Active` says whether this machine agreed**, and `false` is an answer, never a throw — a console project, or a platform that cannot hold all of `what` (macOS holds only `"Logout"`, Windows has no `"Switch"`), asks nothing and answers `false`. `By` is `"Portal"` on Linux, `"PowerRequest"` on Windows, `"AppKit"` on macOS, `""` when not active. **On Linux the portal's refusal is not visible**: `Active` is *asked*, and a desktop whose portal has no Inhibit (XFCE's, by default) refuses it silently. `Release()` lets go, and twice is harmless; quitting releases everything |
 | `Quit(code)` | quit with that exit status. `0` is *it worked*, and a console tool that answers a question answers with this. A `code` that is not a number is **refused** — `Quit("fail")` used to exit `0`, which a runner reads as success; `Quit()` is `0`. **An uncaught error makes a `main` project exit `1` unless `Quit` said otherwise** — a traceback that leaves the status at `0` is a failure a runner reads as success too |
@@ -1088,6 +1088,41 @@ fast as the machine can go, which is what makes them right for comparing a
 download against a published digest, keying a cache, or telling two files apart,
 and wrong for storing what somebody typed. There is no salt, no work factor and
 no `bcrypt` here.
+
+## Cipher
+
+The one operation `Hash` cannot do: encrypt, and undo it with the key.
+
+```js
+const key    = Random.Bytes(32);              // keep it in the Keyring
+const sealed = Cipher.Encrypt(File.LoadBytes("clients.db"), key);
+File.SaveBytes("clients.db.enc", sealed);
+
+const opened = Cipher.Decrypt(sealed, key);   // Bytes, or a throw
+```
+
+| | |
+|---|---|
+| `Available` | whether this build has a cipher at all: false without GnuTLS, and then both verbs refuse naming the package |
+| `Encrypt(data, key)` | AES-256-GCM. `data` is text (its UTF-8) or `Bytes`; `key` is text or `Bytes`, hashed with SHA-256 to the 32 bytes the cipher takes. The answer is a marker, a fresh 12-byte nonce and the ciphertext with its tag -- two seals of the same data differ, and a changed byte or a wrong key is refused by `Decrypt` |
+| `Decrypt(sealed, key)` | the plaintext, or a **throw** when the key is wrong or the value was changed -- GCM authenticates, so there is no half-right answer |
+
+**The key is whatever the application has**, and it is hashed, not padded: a
+passphrase, an `Hash.Hmac` digest, `Random.Bytes(32)` — all become the same 32
+bytes, and none of them has to be a particular length. **There is no key in the
+sealed value and no way to recover one**: losing the key loses the data, which
+is what encryption means. Keep it in [`Keyring`](../reference/globals/Keyring.md)
+or in the user's head, never beside the file.
+
+**It is authenticated encryption, not a password hash.** A wrong key, a changed
+byte, a truncated value or one that was never sealed by this cipher is a throw;
+nothing comes back that looks like plaintext. `Hash` is the one-way half and
+`Hash.Hmac` the signature; this is the reversible half, and all three are
+different questions.
+
+**It works in a `Task`** — GnuTLS is memory, not a widget — and it is the
+operation a backup, a report leaving the building or a database on a laptop
+wants. `File.LoadBytes`/`SaveBytes` are the file pair around it.
 
 ## Random
 

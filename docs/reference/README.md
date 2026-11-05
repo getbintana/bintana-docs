@@ -79,7 +79,7 @@ for a control without a table in the middle.
 
 ## What is here
 
-**Every name this runtime publishes has a page**: 48 classes, 33 globals and the
+**Every name this runtime publishes has a page**: 48 classes, 34 globals and the
 13 classes the shipped libraries publish. `tests/api.sh` holds each one to its
 members, twice — once in its summary and once where it is explained.
 
@@ -144,6 +144,7 @@ members, twice — once in its summary and once where it is explained.
 | [Bitmap](globals/Bitmap.md) | a picture as a value: load it, scale it, crop it, turn it |
 | [Bytes](globals/Bytes.md) | a file's contents, when they are not text |
 | [Cancellable](globals/Cancellable.md) | a cancellation signal a task and a blocking call can share |
+| [Cipher](globals/Cipher.md) | a key and some bytes: encrypt them, and only the key opens them |
 | [Clipboard](globals/Clipboard.md) | copy and paste, which are not symmetrical |
 | [Csv](globals/Csv.md) | rows of text, the way spreadsheets and other programs exchange them |
 | [Database](globals/Database.md) | a [`Record`](globals/Record.md) over a table |
