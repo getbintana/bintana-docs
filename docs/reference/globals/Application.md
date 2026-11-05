@@ -10,6 +10,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `CheckSource(text)` | `null` when the text is valid JavaScript, else `{ Message, Line, Column }` | [asking about the machine](#asking-about-the-machine) |
 | `Symbols(text)` | what the text declares — `[{ Name, Kind, Line, Parent, Super, From, Params, End, Doc, Returns }]`, out of the parser and with nothing run | [asking about the machine](#asking-about-the-machine) |
 | `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm` | [asking about the machine](#asking-about-the-machine) |
+| `ProtectPrototype()` | refuse every new name on `Object.prototype`, so code loaded later cannot change every `for...in` in the program | [protecting the prototype](#protecting-the-prototype) |
 | `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other | [where its files are](#where-its-files-are) |
 | `DecorationLayout` | how this desktop arranges a title bar — which buttons, and on which side | [asking about the machine](#asking-about-the-machine) |
 | `Directory` | the project directory, absolute | [where its files are](#where-its-files-are) |
@@ -107,6 +108,24 @@ read before the break, and one that breaks *in the heritage* is listed with none
 Text that does not compile answers what the parser reached before
 the error: an editor reads this while somebody types, and the complaint is
 `CheckSource`'s to give. Nothing runs.
+
+## Protecting the prototype
+
+| | |
+|---|---|
+| `ProtectPrototype()` | refuse every new name on `Object.prototype`, so code loaded later cannot change every `for...in` in the program. Existing members can still be replaced; answers `true`, also when it was already closed |
+
+**`for...in` recites the prototype chain**, so a plugin that polyfills
+`Object.prototype.currency` changes every enumeration in the host — an invoice
+total among them. The language has no `Object.preventExtensions` (it went with
+the rest of `Object`), so this is the verb that closes the one object every
+other object inherits from. Call it **before loading code you did not write**;
+there is no way back, which is why the runtime does not do it for every program.
+
+**Existing members can still be replaced.** This is `preventExtensions`, not
+`freeze`: a plugin that patches `toString` is a different problem from one that
+adds a key, and the narrower promise is the one a host can make without
+surprising a library that already runs.
 
 ## Globals
 
