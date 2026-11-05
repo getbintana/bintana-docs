@@ -331,6 +331,8 @@ container -- and with several, which are pulled onto the primary's centre line.
 (which is the form for the usual case), both axes at once. The board draws the
 same 4-pixel lattice its moves snap to, one `DrawingArea` over the selection
 chrome, so where a control lands is something one can see rather than infer.
+*View > Design grid* hides it and brings it back, and the answer is remembered
+for the next start.
 
 **Saving is not one of them.** There is one `Save`, in the toolbar, and it saves
 whatever the active tab is — a `.form` through the designer, a `.js` through the
