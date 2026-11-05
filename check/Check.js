@@ -260,6 +260,7 @@ const GLOBAL_SECTIONS = [
     ["Keyring",           "Keyring"],
     ["Zip",               "Zip", "ZipArchive", "ZipWriter"],
     ["Notification",      "Notification"],
+    ["Bitmap",            "Bitmap"],
     ["Bytes",             "Bytes"],
     ["Decimal",           "Decimal"],
     ["Day",               "Day"],
@@ -439,6 +440,7 @@ function pageSplit(text, name) {
 const GLOBAL_PAGE_OWNERS = {
     AudioPlayer: ["AudioPlayer"],
     Application: ["Application"],
+    Bitmap:      ["Bitmap"],
     Bytes:       ["Bytes"],
     Database:    ["Connection"],
     Day:         ["Day"],
