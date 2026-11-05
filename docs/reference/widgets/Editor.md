@@ -30,6 +30,7 @@ everything here works the same in both.
 | `Append(text)` | at the end, **scrolling there**, whatever the cursor was doing — which is what a log pane wants and what makes a read-only editor the right control for one | [what is in it](#what-is-in-it) |
 | `Clear()` | empties it | [what is in it](#what-is-in-it) |
 | `CursorBounds()` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Show(content, editor, { Rect })` points at for a hint beside the cursor | [the cursor](#the-cursor) |
+| `Format([indent])` | re-indents the selected lines, or every line when nothing is selected, to the file's nesting depth — **leading whitespace only**: strings, comments, template literals and regular expressions are not braces, and a line it cannot attribute keeps its indentation | [formatting](#formatting) |
 | `GotoLine(line)` | puts the cursor there and scrolls to it | [the cursor](#the-cursor) |
 | `Insert(text)` | at the cursor | [what is in it](#what-is-in-it) |
 | `LineOf(index)` | the line a **search's index** falls on, 1-based and clamped — `index` is the number `Regex.Index` gives, and it counts UTF-16 units | [the cursor](#the-cursor) |
@@ -55,6 +56,37 @@ everything here works the same in both.
 | `ReadOnly` | shown but not editable. **The program can still write to it**, which is what a log pane needs |
 | `Modified` | the editing flag. **Clear it after saving**: nothing else does, and it is what a window title's asterisk and a *save before closing?* are read from |
 | **event** `Change()` | the value changed, including from an assignment in code — the round trip goes out to GTK and back |
+
+## Formatting
+
+| | |
+|---|---|
+| `Format([indent])` | re-indents the selected lines, or every line when nothing is selected, to the file's nesting depth — **leading whitespace only**: strings, comments, template literals and regular expressions are not braces, and a line it cannot attribute keeps its indentation. `indent` is spaces per level, 4 unless told (0 to 16). One undo step; no reflow and no wrapping. **O(n) and only when called**, so nothing is paid while typing |
+
+**It is a reindenter and not a pretty-printer.** The tokens are read well
+enough to know that a brace inside a string, a comment, a template literal or a
+regular expression is not a brace, and a line whose state cannot be attributed
+— inside a block comment or a multi-line template — is left exactly as it was.
+The depth is the delimiters and not only braces: a call's arguments, an array's
+elements and an object literal's properties each get a level, and a closer
+aligns with the line that opened it. A `case` body is one level deeper than its
+case, a nested switch adds its own, and a block opened on the case line is not
+indented twice. A line already formatted does not change, and a file already
+formatted raises no `Change` and marks nothing modified.
+
+**A selection formats its own lines and leaves the rest alone**, using the whole
+file to know the depth they are at. The cursor and the selection are kept by
+line and by their place in the line, so formatting a word does not move the
+caret off it. With no selection the whole file is formatted, and the work is
+O(n) in the text — done when `Format` is called and at no other time, so typing
+pays nothing for it.
+
+```js
+/* The IDE's Format code, and the same verb in an application. */
+Editor_KeyPress(key, ctrl, shift) {
+    if (key === "F8" && ctrl) this.Ed.Format();
+}
+```
 
 ## The cursor
 

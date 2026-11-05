@@ -17,7 +17,7 @@ nothing highlighted.
 | `Text` | everything in the buffer | [the one thing that is its own](#the-one-thing-that-is-its-own) |
 
 Everything else is [`Editor`](Editor.md)'s — `Append`, `Insert`, `Clear`,
-`Modified`, `ReadOnly`, `Wrap`, `Line`, `Column`, `Selection`, `GotoLine`,
+`Format`, `Modified`, `ReadOnly`, `Wrap`, `Line`, `Column`, `Selection`, `GotoLine`,
 `Select`, `Undo`, `Redo`, `CanUndo`, `CanRedo`, and the `Change` and `Cursor`
 events — and everything above that is [`Widget`](Widget.md)'s.
 

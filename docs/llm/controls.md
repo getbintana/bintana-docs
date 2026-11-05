@@ -955,6 +955,7 @@ shape — a `GtkSourceView` *is* a `GtkTextView`.
 | `ScrollMaxX` / `ScrollMaxY` (ro) | the furthest `ScrollX` can go — the content's width less the part on screen, and `0` when it all fits |
 | `Append(text)` | at the end, **scrolling there**, whatever the cursor was doing — which is what a log pane wants and what makes a read-only editor the right control for one |
 | `Clear()` | empties it |
+| `Format([indent])` | re-indents the selected lines, or every line when nothing is selected, to the file's nesting depth — **leading whitespace only**: strings, comments, template literals and regular expressions are not braces, and a line it cannot attribute keeps its indentation. `indent` is spaces per level, 4 unless told (0 to 16). One undo step; no reflow and no wrapping. **O(n) and only when called**, so nothing is paid while typing |
 | `GotoLine(line)` | puts the cursor there and scrolls to it |
 | `CursorBounds()` → `{ X, Y, Width, Height }` | where the insertion cursor is drawn, in the control's own coordinates — what `Popover.Show(content, editor, { Rect })` points at for a hint beside the cursor. Only once the control has been laid out; a cursor scrolled out of view answers a rectangle outside the control, which is the truth and the caller's to test. Read it once the control has a rectangle; before the window is up there is nothing to be drawn in |
 | `PositionAt(x, y)` → `{ Line, Column, Index }` | which character is under that point of the control, in the coordinates `MouseMove` reports — `null` when the point is not over text, so a pointer past the end of a line has no answer to give |
@@ -1620,6 +1621,11 @@ Do not file an issue for these; the argument is written down and settled.
   the field beside it). Menus have mnemonics; controls have `Shortcut`. The
   reasoning is in [widgets.md](../widgets.md#known-limitations).
 - **A blocking `MsgBox`** — a question is a form.
+- **Multiple cursors.** The editor has one caret and one selection; `Selection`,
+  `Insert`, `Format` and the IDE's rename all speak about that one. A second
+  caret is a second selection model, and every editing verb would have to say
+  what it means with several — a cost that has not been paid, and the one caret
+  is what keeps those verbs unambiguous.
 - **A list of check boxes** (`CheckedListBox`, a `Checked(row)` the list keeps) —
   a [`RowList`](#rowlist) whose rows carry a `CheckButton`, and **the ticks live
   in your data**. That last half is the whole argument and not a workaround: a
