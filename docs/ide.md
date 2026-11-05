@@ -324,6 +324,14 @@ the shape of the tree, not the value of a property. Under the strip they showed
 up beneath the property grid too, which is a row of buttons answering a question
 that page never asked.
 
+The *Form* menu carries the alignment commands. **Centre horizontally** and
+**centre vertically** work with one control -- it goes in the middle of its
+container -- and with several, which are pulled onto the primary's centre line.
+**Centre in form** centres every selected control in the container it lives in
+(which is the form for the usual case), both axes at once. The board draws the
+same 4-pixel lattice its moves snap to, one `DrawingArea` over the selection
+chrome, so where a control lands is something one can see rather than infer.
+
 **Saving is not one of them.** There is one `Save`, in the toolbar, and it saves
 whatever the active tab is — a `.form` through the designer, a `.js` through the
 editor. The design bar used to carry a second one that did exactly the same
