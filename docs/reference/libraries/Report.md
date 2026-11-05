@@ -64,6 +64,28 @@ every `Field` and `Total` shows a sample value while it is arranged. The running
 report loads the saved `Sections` with the ordinary property loader and the
 application fills `Data`, so the page that prints is the page that was drawn.
 
+**What it does not do** — the line between the page and the code:
+
+- **Data.** Every `Field` and `Total` shows a sample value; the designer never
+  sees the rows. `Data` stays in code, and so does anything computed from it.
+- **Computed or translated text.** A `Text` element is a literal in the
+  `.form`; `Locale.Text`, `Locale.Date(Day.Today, …)` and any other expression
+  are code. A report whose labels are translated or whose date is today needs
+  those elements assigned in code (or a literal the designer wrote).
+- **Conditional `Color`/`Font`.** `{ Field: "Severity" }` is a value the library
+  reads off the row; the designer's colour and font buttons edit plain strings,
+  so a conditional style is code.
+- **An `Image` held as `Bytes`.** A chart drawn at run time cannot be saved in
+  a `.form`; the designer refuses it. Use a `File`, or set the element in code.
+- **Per-element details beyond the rows it shows.** `Decimals` and a few
+  options of the format are not in the panel; they are code.
+- **Fine layout.** Drag moves and the property fields resize; there are no
+  resize handles, alignment, z-order, multi-select, grid or undo inside the
+  dialog. A banded page is fine; pixel work is tedious.
+- **A `Sections` the code assigns after loading wins.** If `Form_Open` does
+  `this.Report.Sections = …`, it overwrites the designed shape; the form is the
+  design only while the code leaves it alone.
+
 ## The paper
 
 | | |
