@@ -1299,6 +1299,48 @@ noise that reads as if it had worked.
 [language.md](https://github.com/getbintana/bintana-llm/blob/main/docs/llm/language.md). This is one class with the operations an application
 performs on a file, and no view/buffer distinction to learn.
 
+## Bitmap
+
+A picture as a value: load it, scale it, crop it, turn it, and hand it to
+[`Picture.Source`](controls.md#picture) or [`Painter.Image`](controls.md#painter).
+It is what those two show, without either control being what you transform.
+
+```js
+const logo    = Bitmap.Load("logo.png");
+const thumb   = logo.Scale(64);               // 64x43: the height follows
+const square  = logo.Crop(10, 10, 120, 120);  // clipped at the edge
+const turned  = square.Rotate(90);            // exact: the sides swap
+const slanted = square.Rotate(12.5);          // the canvas grows to fit
+
+picture.Source = thumb;
+painter.Image(Bitmap.FromBytes(download), x, y, 40);
+```
+
+| | |
+|---|---|
+| `Bitmap.Load(path)` | the picture a `Picture` would show: PNG, JPEG, WebP, TIFF, BMP, and an SVG only where this machine has a loader. A path that is not one is refused by name, where `Probe.Image` answers `null` |
+| `Bitmap.FromBytes(bytes)` | the picture already in memory -- what `Http` answers with and `File.LoadBytes` reads -- decoded once |
+| `Width` (ro), `Height` (ro) | pixels, read-only |
+| `Scale(width, [height])` | a new picture. One side is enough: the other follows the picture's own proportions; both make that exact size, distorting if it has to |
+| `Crop(x, y, width, height)` | the box kept. A box that runs past the edge is clipped to it, the way `Bytes.Slice` clamps; one with no overlap at all is refused |
+| `Rotate(degrees)` | clockwise, like `Painter.Rotate`; 90/180/270 are exact, any other angle expands the canvas to the turned rectangle |
+| `Flip(horizontal, [vertical])` | a mirror; both together is the same as `Rotate(180)` |
+| `Save(path)` | writes PNG, like `DrawingArea.Save` |
+| `ToPng()` | the same PNG in memory, for an upload or a `Record` field |
+
+**Nothing mutates.** Every transform answers a new `Bitmap`; the original is
+unchanged, which is what makes one safe to keep in a record and hand to two
+controls. **There is no `new Bitmap`**: a picture comes from a path or from
+bytes, and the constructor throws with the sentence naming both.
+
+**It works in a `Task`** — the pixels are GdkPixbuf, which needs no display —
+but **a `Bitmap` does not cross a task boundary**: values that cross are plain
+data, `Decimal` and `Bytes`. A thumbnail comes back as `ToPng()` and the main
+thread reads it with `Bitmap.FromBytes`.
+
+`Picture.Source` is the third source after `File` and `LoadBytes`, and the last
+one set wins. It is **not saved in a `.form`** — a Bitmap is runtime data.
+
 ## Decimal
 
 Exact base-10 arithmetic, **with the ordinary operators**. This is what money is.

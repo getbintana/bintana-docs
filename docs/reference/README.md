@@ -141,6 +141,7 @@ members, twice — once in its summary and once where it is explained.
 |---|---|
 | [Application](globals/Application.md) | the running program: what it is called, where its files are, and how it ends |
 | [AudioPlayer](globals/AudioPlayer.md) | sound with no window |
+| [Bitmap](globals/Bitmap.md) | a picture as a value: load it, scale it, crop it, turn it |
 | [Bytes](globals/Bytes.md) | a file's contents, when they are not text |
 | [Cancellable](globals/Cancellable.md) | a cancellation signal a task and a blocking call can share |
 | [Clipboard](globals/Clipboard.md) | copy and paste, which are not symmetrical |

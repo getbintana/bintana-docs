@@ -469,12 +469,13 @@ A photograph, which is not an icon.
 
 | Member | |
 |---|---|
-| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](../reference/widgets/Image.md) draws one and this does not |
-| `LoadBytes(bytes)` | the photograph out of memory instead — a download shown without a temporary file. Clears `File`; `SourceWidth`/`SourceHeight` measure it the same way |
+| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](../reference/widgets/Image.md) draws one and this does not. Setting it clears `Source` |
+| `LoadBytes(bytes)` | the photograph out of memory instead — a download shown without a temporary file. Clears `File` and `Source`; `SourceWidth` and `SourceHeight` measure it the same way |
+| `Source` | a `Bitmap` to show -- the value `Scale`, `Crop` and `Rotate` answer. Setting it clears `File`; `null` clears it. The getter answers the `Bitmap` it was given, or `null` for a file or bytes. **Not saved**: a Bitmap is runtime data, like `LoadBytes` |
 | `Fit` | what to do with the room there is: `Contain` (the whole picture, letterboxed), `Cover` (fill the room, cropping), `Fill` (stretch, distorting) or `ScaleDown` (never enlarge). Default `"Contain"` |
 | `Zoom` | how big to be, whatever the room is: a factor, where `1` is one image pixel to one screen pixel. `0` means *let `Fit` decide* |
-| `SourceWidth` (ro) | what is really in the file, which is the number a zoom is computed from and the one a title bar shows. `0` when nothing is loaded |
-| `SourceHeight` (ro) | the file's own height |
+| `SourceWidth` (ro) | what is really in the picture — the file's or the Bitmap's — which is the number a zoom is computed from and the one a title bar shows. `0` when nothing is loaded |
+| `SourceHeight` (ro) | the picture's own height, from the file or the Bitmap |
 
 ## TextBox
 
@@ -1121,7 +1122,7 @@ measures with.
 | `ClosePath()` | back to where the path started |
 | `CurveTo(x1, y1, x2, y2, x, y)` | a cubic Bézier: two control points and the end |
 | `Fill()` | fill the path, and clear it |
-| `Image(path or bytes, x, y, [width], [height])` | a picture, put down with its top-left corner there. **One of `width`/`height` is enough** — the other follows the image's own proportions. With neither it is drawn at its natural size, one image pixel to one. A **string** is a file, absolute or relative to the working directory; **`Bytes`** are the image itself, which is what `Http` answers with. Missing, or not an image, **throws** and ends the frame. A path is decoded once and cached, so a drawing may paint the same logo every frame; **bytes are decoded on every call** — the cache is keyed on the path, and bytes have no key that stays true. Measured: 2.7 ms a call for a 640×480 PNG against 0.045 ms for the same file cached. A handler painting the same bytes every frame wants a `Picture` with `LoadBytes` instead |
+| `Image(path or bytes, x, y, [width], [height])` | a picture, put down with its top-left corner there. **One of `width`/`height` is enough** — the other follows the image's own proportions. With neither it is drawn at its natural size, one image pixel to one. A **string** is a file, absolute or relative to the working directory; **`Bytes`** are the image itself, which is what `Http` answers with; a **`Bitmap`** is a picture already decoded and transformed, and its pixels are what get drawn. Missing, or not an image, **throws** and ends the frame. A path is decoded once and cached, so a drawing may paint the same logo every frame; **bytes and a Bitmap are downloaded into cairo on every call** — the cache is keyed on the path, and neither has a key that stays true. A `Bitmap` is the one to reach for when the picture is scaled, cropped or turned first: the work happens once, in the value. Measured: 2.7 ms a call for a 640×480 PNG against 0.045 ms for the same file cached. A handler painting the same bytes every frame wants a `Picture` with `LoadBytes` instead |
 | `LineTo(x, y)` | a segment |
 | `MoveTo(x, y)` | start somewhere |
 | `Polygon(points)` | the same, closed |
