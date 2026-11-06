@@ -2317,6 +2317,13 @@ on a message is a sample of a long loop. The stop says which pass it is
 the dialog, beside the field, instead of reaching the runtime as a breakpoint
 that comes off.
 
+**A breakpoint inside a `Task` stops the task, not the window.** The worker
+stops on its own thread and the stack, the values, the box, the pointer and the
+steps are about it -- *Call stack: task Sum* says whose -- while the window keeps
+running. A breakpoint in the window's code reached meanwhile waits its turn and
+stops after the task is continued. Two things are the window's alone: *Pause*,
+and a field watch, which is refused inside a task with the reason in the log.
+
 **Every breakpoint is on one page, and one can be switched off.** *Breakpoints*,
 beside *Debug* in the bottom panel, lists them all -- file and line, condition,
 pass, message, and how many times each has been passed in this run (asked at
