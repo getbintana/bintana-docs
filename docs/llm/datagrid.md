@@ -22,8 +22,8 @@ Form_Open() {
     this.Lines.Columns = [
         { Text: "Code",   Width: 70 },
         { Text: "Client", Width: 160 },
-        { Text: "Qty",    Width: 70,  Alignment: "End", Total: "sum" },
-        { Text: "Amount", Width: 100, Alignment: "End", Total: "sum", Decimals: 2 },
+        { Text: "Qty",    Width: 70,  Alignment: "Right", Total: "sum" },
+        { Text: "Amount", Width: 100, Alignment: "Right", Total: "sum", Decimals: 2 },
         { Text: "Notes",  Width: 240, Editor: "Text" },
     ];
     this.Lines.Frozen   = 2;          // Code and Client stay put
@@ -36,6 +36,11 @@ Lines_CellEdit(row, column, text) {
     try { new Decimal(text); } catch (e) { return false; }   // not an amount: refused
 }
 ```
+
+**`examples/sales` is the whole of it running**: a year of sales with the sale
+and the client frozen, exact totals of quantity and amount, a filter, quantity
+and price editable with the amount worked out again, and rows copied to and
+pasted from a spreadsheet.
 
 **A column is always its declared index**, whichever half draws it: `Cell`,
 `SetCell`, `CellEdit` and `Totals` count from the first column declared, frozen

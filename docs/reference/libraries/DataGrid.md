@@ -21,12 +21,17 @@ Form_Open() {
     this.Lines.Columns = [
         { Text: "Code",   Width: 70 },
         { Text: "Client", Width: 160 },
-        { Text: "Amount", Width: 100, Alignment: "End", Total: "sum", Decimals: 2 },
+        { Text: "Amount", Width: 100, Alignment: "Right", Total: "sum", Decimals: 2 },
     ];
     this.Lines.Frozen = 2;
     this.Lines.AddRows(rows);
 }
 ```
+
+**`examples/sales` is the whole of it running**: a year of sales with the sale
+and the client frozen, exact totals of quantity and amount, a filter, quantity
+and price editable with the amount worked out again, and rows copied to and
+pasted from a spreadsheet.
 
 ## Every member
 
