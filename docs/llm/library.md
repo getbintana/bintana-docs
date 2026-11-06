@@ -2146,16 +2146,18 @@ srv.Start();
 | `Start()` | listens; throws naming the reason (a busy port says which one). A second `Start` is refused |
 | `Stop()` | `true` while something was listening, `false` after — like signalling a reaped child. **From inside a handler it waits for the handler**: `Answer` fills the message in and soup sends it when the handler returns, so `req.Answer(200, "bye"); srv.Stop();` answers first and disconnects after. `Running` stays true until the deferred disconnect runs |
 | `Running`, `Port`, `Url` | `Port` is declared until `Start`, actual after; `Url` is `""` until then, and empty again after `Stop` |
-| `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType`. **The second argument is always the body and the third always the options** |
+| `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType`. **The second argument is always the body and the third always the options**. Answers `true`; **`false` for a held request that already ended** — the deadline answered first, or the server stopped — since answering after that is an ordinary outcome. **A client that closed its end is noticed only when the answer is written**, so `true` means handed to the connection, not read. A second `Answer` throws |
 | `req.Method`, `req.Path`, `req.Query`, `req.Headers`, `req.Body`, `req.Remote` | `Headers` lower-cased and `Body` always `Bytes`, like the client's answers; `Query` repeats keep one; `Remote` is the IP |
-| second `Answer`, late `Answer` | refused: the request was already answered / already ended. A handler that returns without answering gets a `500` |
+| `Hold([timeout])` | **answer this request later**: asked inside the handler, it lets the handler return without the `500` an unanswered request gets, and hands back the request to `Answer` from a callback — a `Task`'s `Done`, an `Exec`'s exit, another `Http` reply. **Gives up after 30 s with `503`**; `timeout` is in milliseconds and `0` waits for ever. A held request the program lets go of unanswered is answered `500`, and one whose server stops ends there. Only inside the handler, once |
+| second `Answer`, late `Answer` | a second is refused; a late one is refused unless the request was held, and on a held one that already ended (deadline, `Stop`) it answers `false`. A handler that returns without answering, and did not hold, gets a `500` |
 
 A listening server counts like a watch: a console project that returned from
 `main` with one running stays for its requests. Dropping it without `Stop`
-disconnects. **The handler answers before it returns**: there is no deferred
-answer, so a route that must ask a database or another server first has nowhere
-to wait — a `Wait` inside the handler freezes the loop the server answers on,
-and returning to answer later gets the `500`. `examples/serve` is a static file
+disconnects. **A route that must ask something first holds the request**:
+`const later = req.Hold()` in the handler, then `later.Answer(…)` from the
+callback that has the data — never a `Wait`, which freezes the loop the server
+answers on. A client that closed its end is not noticed until the answer is
+written. `examples/serve` is a static file
 server in ten lines of handler; it carries no `".."` refusal because soup
 normalizes dot-segments before the handler runs.
 

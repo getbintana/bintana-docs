@@ -38,6 +38,7 @@ srv.Start();
 | | | |
 |---|---|---|
 | `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType` | [answering](#answering) |
+| `Hold([timeout])` | **answer this request later**: asked inside the handler, it lets the handler return without the `500` an unanswered request gets, and hands back the request to `Answer` from a callback — a `Task`'s `Done`, an `Exec`'s exit, another `Http` reply | [answering](#answering) |
 | `Body` | always [`Bytes`](Bytes.md) | [what arrived](#what-arrived) |
 | `Headers` | lower-cased | [what arrived](#what-arrived) |
 | `Method` | `GET`, `POST`, … | [what arrived](#what-arrived) |
@@ -81,13 +82,27 @@ port is still held.
 | | |
 |---|---|
 | `Request` | assign `(req) => …`. **Required before `Start`**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
-| `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType`. **The second argument is always the body and the third always the options** |
+| `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType`. **The second argument is always the body and the third always the options**. Answers `true`; **`false` for a held request that already ended** — the deadline answered first, or the server stopped — since answering after that is an ordinary outcome. **A client that closed its end is noticed only when the answer is written**, so `true` means handed to the connection, not read. A second `Answer` throws |
+| `Hold([timeout])` | **answer this request later**: asked inside the handler, it lets the handler return without the `500` an unanswered request gets, and hands back the request to `Answer` from a callback — a `Task`'s `Done`, an `Exec`'s exit, another `Http` reply. **Gives up after 30 s with `503`**; `timeout` is in milliseconds and `0` waits for ever. A held request the program lets go of unanswered is answered `500`, and one whose server stops ends there. Only inside the handler, once |
 
-**The handler answers before it returns.** There is no deferred answer, so a
-route that must ask a database or another server first has nowhere to wait: a
-`…Wait` inside the handler freezes the loop the server answers on, and returning
-to answer later gets the `500`. A second `Answer`, or a late one, is refused —
-the request was already answered, or already ended.
+**A route that must ask something first holds the request.** A `…Wait` inside
+the handler freezes the loop the server answers on; `req.Hold()` lets the
+handler return without the `500` and hands back the request to answer from a
+callback — a `Task`'s `Done`, an `Exec`'s exit, another `Http` reply:
+
+```js
+srv.Request = (req) => {
+    const later = req.Hold(5000);                 // 503 after 5 s if nobody answers
+    api.Get("/price", (r) => later.Answer(200, r.Body));
+};
+```
+
+A second `Answer` is refused. A late one on a request that was not held is
+refused too; on a held one it answers `false` once the request has ended — the
+deadline answered `503`, or the server stopped. **A client that closed its end
+is not noticed while the request waits**: soup sees it only when it writes, so
+`true` means handed to the connection. A held request dropped unanswered is a
+`500`, and a `Stop` right after a late `Answer` waits for it to be sent.
 
 Why that is so, and what else was deliberately left out — WebSocket, CGI shapes
 — is in [../../plans/http-server-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/http-server-plan.md), with the argument for

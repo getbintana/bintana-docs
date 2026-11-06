@@ -3176,14 +3176,30 @@ srv.Start();   // throws naming the GError: a busy port says which one
 | `req.Multipart()` | the upload parsed into a `Multipart` (`Part(index)` reads `{ Name, Filename, Type, Data }`); refused on a plain body |
 | when it applies | `Port`/`Host`/`Tls`/`ServerName` apply at `Start`, so re-`Start`ing moves all of them; `Allow`, `Auth` and `Request` take effect at once, which is what makes banning mid-run possible |
 | `Answer(status, [body], [opts])` | `body` follows the client's rules (an object serialises canonical); `opts` carries `Headers` and `ContentType`. Positional, so a JSON body never reads as options: the second argument is always the body, the third always the options |
-| second `Answer`, late `Answer` | refused (`already answered` / `already ended`); a handler that returns without answering gets a `500` |
+| `req.Hold([timeout])` | **answer this request later**: asked inside the handler, the handler returns with no `500` and the request is answered from a callback. `503` after 30 s by default, `0` waits for ever; dropped unanswered it is a `500` |
+| second `Answer`, late `Answer` | a second is refused (`already answered`); a late one on a request that was not held is refused (`already ended`), and on a held one that already ended answers `false`. A handler that returns without answering, and did not hold, gets a `500` |
 
-**The handler answers before it returns.** There is no deferred answer yet, so a
-route that has to ask a database or another server first has nowhere to wait: a
-`Wait` inside the handler would freeze the very loop the server answers on, and
-returning to answer later gets the `500` above. Handlers serve what is already
-in hand. libsoup can pause a message and it is what a later phase would build
-on; today it is a limit worth knowing before designing a route around it.
+**A route that has to ask something first holds the request.** A `Wait` inside
+the handler would freeze the very loop the server answers on, so the handler
+says `req.Hold()`, keeps what it returns, and answers from the callback that has
+the data:
+
+```js
+srv.Request = (req) => {
+    const later = req.Hold();                     // 503 after 30 s if nobody answers
+    const lines = [];
+    Exec(["git", "log", "-1"],
+         (line) => lines.push(line),
+         (code) => later.Answer(code === 0 ? 200 : 500, lines.join("\n")));
+};
+```
+
+`Answer` answers `true`, and `false` when the held request already ended -- its
+deadline answered `503`, or the server stopped. **A client that closed its end is
+not noticed while the request waits**: soup sees it only when the answer is
+written, so `true` means handed to the connection, not read. A held request the
+program lets go of without answering is a `500`, and a `Stop` right after a late
+`Answer` waits for it to be sent.
 
 A listening server counts like a watch: a console project that returned from
 `main` with one running stays for its requests, and `Application.Quit(code)`
