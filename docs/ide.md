@@ -1430,6 +1430,13 @@ a row per test: failures first, each with its message, the passing ones with
 their time. The tab says how many failed. Double-click a failure to go to its
 line. What the run prints that is not a result goes to Output.
 
+*Project → Debug tests* runs the same thing under the debugger --
+`bintana test --debug --json` -- so a breakpoint inside a test stops it, with
+the stack, the values, the steps and the pointer's values as for the program,
+and the results still arrive on the Tests page. **With the caret inside a test
+method, only that test runs**: a failing test is the one being debugged, and
+the other forty would only pass on the way to it.
+
 The runtime runs the tests and the IDE reads its answer, so what the IDE shows
 is what CI gets. `tests/` is not in `sources` and Check does not ask for it to
 be: a normal run never loads it. See [`Test`](reference/globals/Test.md).
