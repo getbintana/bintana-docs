@@ -2291,6 +2291,16 @@ program is still going, so it is a line of the run and not a row of the values
 panel. An expression that throws records its message and carries on, the same
 rule a broken condition follows.
 
+**And one can say which pass it stops on.** The dialog's third field is a hit
+count in the words Visual Studio taught everybody: `5` (or `== 5`) stops on the
+fifth pass only, `>= 5` on the fifth and every one after, `% 10` on every tenth.
+A pass is one the condition let through, so `i % 2 === 0` with `== 3` is the
+third even turn; and the count decides for a logpoint as for a stop, so `% 100`
+on a message is a sample of a long loop. The stop says which pass it is
+(*Stopped on pass 9.*), and a count that is not one of the three is refused in
+the dialog, beside the field, instead of reaching the runtime as a breakpoint
+that comes off.
+
 **One Stop for both.** Whichever of *Run* and *Debug* started a child, the Stop
 button is what ends it -- a second button for *stop the one being debugged*
 would be a second answer to a question that has one.
