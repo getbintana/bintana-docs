@@ -175,7 +175,7 @@ the language's way.
 
 | | |
 |---|---|
-| `Mark(line, kind, [text])` | a gutter mark. `kind` is `Error` `Warning` `Info` `Bookmark` — or `Added` `Removed` `Gap`, which **paint the line** — and `text` is its tooltip |
+| `Mark(line, kind, [text])` | a gutter mark. `kind` is `Error` `Warning` `Info` `Bookmark`, or `Inactive` — a hollow circle, a mark that is there and switched off (a disabled breakpoint) — or `Added` `Removed` `Gap`, which **paint the line** — and `text` is its tooltip. Like every mark it moves with the editing |
 | `Unmark(line, [kind])` | takes marks off that line |
 | `Marks([kind])` | **a record per mark**, in line order: `{ Line, Kind, Text }` — not a list of line numbers, which is what "the lines that carry one" was read as by the first thing that used it |
 | `ClearMarks([kind])` | takes them off every line |

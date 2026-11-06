@@ -2310,6 +2310,25 @@ on a message is a sample of a long loop. The stop says which pass it is
 the dialog, beside the field, instead of reaching the runtime as a breakpoint
 that comes off.
 
+**Every breakpoint is on one page, and one can be switched off.** *Breakpoints*,
+beside *Debug* in the bottom panel, lists them all -- file and line, condition,
+pass, message, and how many times each has been passed in this run (asked at
+every stop, and kept readable after the run until the next one starts). The
+tick switches one off without losing it: the gutter shows it **hollow** (the
+editor's `Inactive` mark, which moves with the editing like any mark), its
+condition, message and count stay, and the runtime is simply not told of it.
+A double click goes to its line; the bar removes the chosen one, switches all of
+them off or back on, or removes them all. F9 on a breakpoint, on or off, takes
+it away.
+
+**Breakpoints and watches are the project's, and they are remembered.** They
+are kept with the project's session -- the open tabs and their lines -- in the
+person's settings and never in the project, for the reason the session already
+gives: where *I* stop is not part of what is handed to somebody else. Opening a
+project puts its own back before its tabs reopen, and forgets the last
+project's: before, a project opened after another inherited its breakpoints by
+relative path, so `Main.js:12` of one armed in the other's `Main.js`.
+
 **One Stop for both.** Whichever of *Run* and *Debug* started a child, the Stop
 button is what ends it -- a second button for *stop the one being debugged*
 would be a second answer to a question that has one.

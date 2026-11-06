@@ -1031,7 +1031,7 @@ own. It is [`Editor`](#editor--inherited-by-both-editors) plus everything below.
 | `ClearMarks([kind])` | takes them off every line |
 | `FindNext()` | moves to the next match, wrapping around. **Opens every fold** first, as `Search` does |
 | `FindPrevious()` | and backwards |
-| `Mark(line, kind, [text])` | a gutter mark. `kind` is `Error` `Warning` `Info` `Bookmark` — or `Added` `Removed` `Gap`, which **paint the line** — and `text` is its tooltip |
+| `Mark(line, kind, [text])` | a gutter mark. `kind` is `Error` `Warning` `Info` `Bookmark`, or `Inactive` — a hollow circle, a mark that is there and switched off (a disabled breakpoint) — or `Added` `Removed` `Gap`, which **paint the line** — and `text` is its tooltip. Like every mark it moves with the editing |
 | `Marks([kind])` | **a record per mark**, in line order: `{ Line, Kind, Text }` — not a list of line numbers, which is what "the lines that carry one" was read as by the first thing that used it |
 | `Diagnostic(line, column, length, kind, text)` | underlines `length` characters from `column` on `line` — both 1-based, as `Select` and `GotoLine` count — with `kind` `Error` `Warning` or `Info`, and shows `text` in a tooltip where the pointer rests on it. **It stays on its line**: a length past the end stops there, a column at or past the end underlines the last character (where a parser points for *unexpected end*), and an empty line the last character above it. The range moves with the text; **clear and add them again after an edit**, as `Live` does on its pause. Several may share a line |
 | `ClearDiagnostics([kind])` | takes them all off, or only one kind. How many went |
