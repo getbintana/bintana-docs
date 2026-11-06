@@ -1744,7 +1744,7 @@ one has its name, a manifest lists a source that is not there, a `.js` sits on
 disk that nothing loads. Those are just as wrong in a file nobody has open, and
 until this nothing looked.
 
-**Nine checks, and every one of them was measured before it was written** — by
+**Ten checks, and every one of them was measured before it was written** — by
 writing it wrong on purpose and watching what the runtime did:
 
 | Written | What happens |
@@ -1758,6 +1758,7 @@ writing it wrong on purpose and watching what the runtime did:
 | source that does not compile | refused at the first line, **in every `.js` and not only in the ones with a `.form` beside them** — a module is most of a project, and the save-time check reads the tab in front of you, so a module was read by nobody at any point and its mistake arrived as a `ReferenceError` in whichever *other* file called it |
 | a handler whose control is gone | `Btn1_Click()` after `Btn1` was renamed or deleted in the designer is called by nobody. Reported when the half after the underscore is **an event some control raises** — so `save_draft` is a helper and stays quiet — and not for a name the file builds itself (`this.Btn1 =` or `"Btn1"` in it), which binds by `Name` like a declared one |
 | a call to a name this language took | `setTimeout(fn, 100)` says `setTimeout is not part of this language: use Timer.After(delay, tick) — the delay comes first`. The table is the runtime's own (`Application.Replacements()`), built out of the rows it deletes the names with, and the check is asked of **call targets and nothing else** — a member on somebody else's object, a declaration, a key and a mention inside a string are all quiet, because a check that reports those is a check somebody switches off |
+| a name nothing declares | `helpr()` or `totl = 3` compiles, loads, and is a `ReferenceError` the day that line runs. The compiler says which names a file leaves to somebody else (`Application.FreeNames`), and the check reads them against what the project and its libraries publish: `helpr is not declared anywhere: did you mean helper?`, or, for a name another module declares and does not export, `MOD_IVA is declared in Prices.js and not exported`. A use behind `typeof X` is left alone, and so is the word the caret is in |
 
 The collision pair is the subtle one, and it is why the test is `in` against a
 **bare `Form`**: the same mistake resolves two different ways depending on what
