@@ -2277,6 +2277,15 @@ and not `total` is not an immediate window. So the runtime compiles the
 expression as a function of the frame's own names and calls it with the frame's
 own values: the panel and the box cannot disagree about what is in scope.
 
+**And the pointer asks too.** While the program is stopped, resting the pointer
+on a name in the editor -- `total`, `client.address.city`, `this.Ok.Text` --
+asks it where the chosen frame stands and shows `name = value` in the tooltip,
+the way Visual Basic and Delphi show a variable under the mouse. It is the same
+question as the box, answered to the pointer instead of the log. A word the
+frame cannot answer -- a keyword, a name that is not in scope there -- shows
+what it is, as it does with nothing running, and moving away before the answer
+comes drops it.
+
 **A breakpoint can carry a condition**, evaluated in the frame before the stop
 is reported -- so a breakpoint inside a loop stops on the turn that matters
 instead of on all of them. One whose condition is broken does **not** stop: that
