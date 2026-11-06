@@ -40,6 +40,10 @@ not repeated here.
 | `Reorderable` | lets the person drag a heading to another place | [moving a column](#moving-a-column) |
 | `RowHeight` (ro) | how tall one row is, as GTK measured it | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `RowLines` | rules between the rows | [the columns](#the-columns) |
+| `ColumnWidths` (ro) | how wide each declared column is drawn, in pixels, by declared index -- `0` for a hidden one | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `Headers` | whether the row of column headings is shown | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `ScrollMaxX` (ro) | the largest `ScrollX`: the columns' width less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `ScrollX` | how far across the columns are scrolled, in pixels | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Selection` (ro) | every selected row, as an array of indices in order | [the selection](#the-selection) |
@@ -88,6 +92,7 @@ not repeated here.
 | `Data(row, column)` | a cell is needed — **the answer is the return value** | [on demand](#on-demand-a-table-that-holds-nothing) |
 | `Filter(row)` | asked of each row — **returning `false` hides it** | [filtering](#filtering) |
 | `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
+| `ColumnResize(column, width)` | the person dragged a heading's edge | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
@@ -702,6 +707,11 @@ GTK *does* publish, and each has a trap.
 | `HeaderMinHeight` | a floor for the row of column headings, in pixels. **The heading does not follow the control's font** -- the theme sizes it -- so this is what makes a taller one. `0`, nothing said |
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment. Assigning **clamps** to `[0, ScrollMaxY]`, so a number past the end means the end |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view. `0` when there is nothing to scroll |
+| `ScrollX` | how far across the columns are scrolled, in pixels. Assigning **clamps** to `[0, ScrollMaxX]`. What a row of totals under a wide table follows, from that table's `Scroll` |
+| `ScrollMaxX` (ro) | the largest `ScrollX`: the columns' width less one view. `0` when they all fit |
+| `ColumnWidths` (ro) | how wide each declared column is drawn, in pixels, by declared index -- `0` for a hidden one. **Measured on the headings**, so a column that sized itself answers its real width; `Columns` keeps what was declared. With `Headers` off, the width a column was fixed at |
+| `Headers` | whether the row of column headings is shown. Default `true`; off for a table that is part of something larger -- a frozen half, a row of totals |
+| **event** `ColumnResize(column, width)` | the person dragged a heading's edge: `column` is the declared index and `width` the pixels it has now. Raised while the drag moves. Not raised by assigning `Columns` |
 
 ```js
 const rowsTop = this.Table.HeaderHeight;           // where the first row starts

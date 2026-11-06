@@ -858,6 +858,10 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `HeaderHeight` (ro) | how tall the row of column headings is. `0` before the first allocation |
 | `HeaderMinHeight` | a floor for the row of column headings, in pixels. **The heading does not follow the control's font** -- the theme sizes it -- so this is what makes a taller one. `0`, nothing said |
 | `ScrollY` | how far down the rows are scrolled, in pixels -- the wheel, a scrollbar, the keyboard or an assignment. Assigning **clamps** to `[0, ScrollMaxY]`, so a number past the end means the end |
+| `ScrollX` | how far across the columns are scrolled, in pixels. Assigning **clamps** to `[0, ScrollMaxX]`. What a row of totals under a wide table follows, from that table's `Scroll` |
+| `ScrollMaxX` (ro) | the largest `ScrollX`: the columns' width less one view. `0` when they all fit |
+| `ColumnWidths` (ro) | how wide each declared column is drawn, in pixels, by declared index -- `0` for a hidden one. **Measured on the headings**, so a column that sized itself answers its real width; `Columns` keeps what was declared. With `Headers` off, the width a column was fixed at |
+| `Headers` | whether the row of column headings is shown. Default `true`; off for a table that is part of something larger -- a frozen half, a row of totals |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view. `0` when there is nothing to scroll |
 | `Sortable` | makes the headers clickable. **The table does not reorder itself** — it raises `Sort`. Default `false` |
 | `Selection` (ro) | every selected row, as an array of indices in order. In a tree they are positions of the rows shown, which a fold moves -- `SelectedKeys` names the nodes |
@@ -900,6 +904,7 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | **event** `CellChange(row, column)` | the current cell moved — a press, `EditCell`, F2, or an assignment to `CurrentCell`. `row` is an index in a flat table and a key in a tree; **`null` and `-1` say it was cleared**. `CurrentCell` is where it is now |
 | **event** `CellLink(row, column, uri)` | a `Link` cell was activated — a click, or Enter on it. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it** and nothing is opened, as in `CellEdit`; anything else lets the desktop open `uri` |
 | **event** `ColumnMove(column, position)` | the person dragged a heading to another place: `column` is its declared index and `position` its place in the view now. Raised with `Reorderable`, after the move; `ColumnOrder` is the whole order. Not raised by `MoveColumn` |
+| **event** `ColumnResize(column, width)` | the person dragged a heading's edge: `column` is the declared index and `width` the pixels it has now. Raised while the drag moves. Not raised by assigning `Columns` |
 | **event** `HeaderClick(column, button, ctrl, shift)` | a column heading was pressed — the one pointer event a heading raises, because GTK claims its press before the bubble phase. `button` is `1` primary, `2` middle, `3` secondary. **The return value is the menu of the secondary click**: an array replaces `HeaderMenu` for that click, anything else falls back to it. A primary click also raises `Sort` when `Sortable`, on the release |
 
 **The heading's menu is built for each click**, which is what lets an item act on the column it was opened over — and it is why the state a program sets on an item from code does not survive the next right-click. A menu that depends on the context answers it from `HeaderClick`, and a program that wants its own order turns `Sortable` off and orders in the handler.
