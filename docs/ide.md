@@ -2325,6 +2325,18 @@ stops after the task is continued. *Pause* reaches a task too -- pressed while
 the window waits and a task spins, it is the task that stops -- and a field of a
 task's object can be watched like any other, stopping the task where it changes.
 
+**Edit and continue, a member at a time.** A method, getter, setter or static
+saved while the program runs under the debugger is put on the running class,
+and **the next call runs it** -- a handler edited and saved answers the next
+click with the new code. What is already running does not change: a call in
+progress finishes with the code it started with (said when the program is
+stopped inside it), and a function already made -- an arrow handed to a timer --
+is the function it was. What a running program cannot take is said on its line
+in Problems and the tab turns italic until the program is started again: a
+field, the constructor, a class's heading or top-level code; a method using a
+private field (`#x`); one using a name its module keeps to itself; a class its
+module does not export.
+
 **Every breakpoint is on one page, and one can be switched off.** *Breakpoints*,
 beside *Debug* in the bottom panel, lists them all -- file and line, condition,
 pass, message, and how many times each has been passed in this run (asked at
