@@ -841,6 +841,18 @@ on an `Xvfb` with `xfwm4`: a flat `ComboBox` at rest is the window's own
 `srgb(246,245,244)`, under the pointer `srgb(213,214,214)` against the theme's
 own flat button at `srgb(218,214,210)`, and a disabled one stays flat.
 
+**One selection in several tables** is the sheet's other rule. The theme draws
+a selected row in the selection colour only while its own list holds the focus,
+and grey otherwise — right for one table, wrong for two that are one grid:
+[`lib/datagrid`](llm/datagrid.md)'s frozen columns and the rest showed the same
+rows blue on one side and grey on the other. On a container wearing
+`shared-selection`, a table without the focus draws its selection as focused
+while *any* table inside has it, and they all go grey together when the focus
+leaves. The colours are the theme's named `@theme_selected_bg_color` and
+`@theme_selected_fg_color`; the table holding the focus keeps the theme's own
+rule, hover included. Measured on an `Xvfb` with `xfwm4`: the frozen half went
+from `srgb(197,197,197)` to the focused half's `srgb(53,132,228)`.
+
 What the sheet will not do is guess a colour: an accent, a destructive action or
 a per-project tint is a rule of the project's own in `app.css`, which is the next
 section.

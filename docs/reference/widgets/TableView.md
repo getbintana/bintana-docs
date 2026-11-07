@@ -42,6 +42,7 @@ not repeated here.
 | `RowLines` | rules between the rows | [the columns](#the-columns) |
 | `ColumnWidths` (ro) | how wide each declared column is drawn, in pixels, by declared index -- `0` for a hidden one | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Headers` | whether the row of column headings is shown | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `HoverRow` | the row drawn as if the pointer were over it, by position as shown, `-1` for none: what a table beside this one assigns from its own `Hover`, so two tables that are one grid light the same row | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollMaxX` (ro) | the largest `ScrollX`: the columns' width less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollX` | how far across the columns are scrolled, in pixels | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `ScrollMaxY` (ro) | the largest `ScrollY` that still shows a row: the rows' height less one view | [beside something else](#beside-something-else-the-geometry-it-can-say) |
@@ -93,6 +94,7 @@ not repeated here.
 | `Filter(row)` | asked of each row — **returning `false` hides it** | [filtering](#filtering) |
 | `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
 | `ColumnResize(column, width)` | the person dragged a heading's edge | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `Hover(row)` | the pointer moved onto another row | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
@@ -712,6 +714,20 @@ GTK *does* publish, and each has a trap.
 | `ColumnWidths` (ro) | how wide each declared column is drawn, in pixels, by declared index -- `0` for a hidden one. **Measured on the headings**, so a column that sized itself answers its real width; `Columns` keeps what was declared. With `Headers` off, the width a column was fixed at |
 | `Headers` | whether the row of column headings is shown. Default `true`; off for a table that is part of something larger -- a frozen half, a row of totals |
 | **event** `ColumnResize(column, width)` | the person dragged a heading's edge: `column` is the declared index and `width` the pixels it has now. Raised while the drag moves. Not raised by assigning `Columns` |
+| `HoverRow` | the row drawn as if the pointer were over it, by position as shown, `-1` for none: what a table beside this one assigns from its own `Hover`, so two tables that are one grid light the same row. The pointer's own row is the theme's and is not this |
+| **event** `Hover(row)` | the pointer moved onto another row: its position as shown, or `-1` when it left the rows. Once per row, not per motion |
+
+**Two tables that are one grid also share a selection's look and a hover.** The
+theme draws a selection in its colour only in the table holding the focus, and
+lights only the row the pointer is in: the `shared-selection` class on a
+container around them draws every table's selection as focused while any of them
+has the focus, and `Hover` assigned to the other's `HoverRow` lights the same row
+across (see [the runtime's own sheet](../../widgets.md#the-runtimes-own-sheet)):
+
+```js
+Left_Hover(row)  { this.Right.HoverRow = row; }
+Right_Hover(row) { this.Left.HoverRow = row; }
+```
 
 ```js
 const rowsTop = this.Table.HeaderHeight;           // where the first row starts

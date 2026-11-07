@@ -126,7 +126,12 @@ rectangle of cells, so `Copy` takes the selected rows with every column, and
 Four [`TableView`](../widgets/TableView.md)s -- `FrozenView`, `MainView`,
 `FrozenTotals`, `MainTotals` -- kept in line by properties every table has:
 `ScrollY` and `ScrollX` from the other's `Scroll`, `ColumnWidths` for the widths
-drawn, `ColumnResize` for a heading's edge dragged, `Headers` off for the totals.
+drawn, `ColumnResize` for a heading's edge dragged, `Headers` off for the totals,
+`Hover` and `HoverRow` for the row under the pointer, lit in both halves, and
+the `shared-selection` class on the panel around them, so the selection is one
+colour in both while either has the focus. The row of totals is chosen in both
+halves at once, and **it and the rows are one selection**: choosing the totals
+lets go of the rows (raising `Select`), and choosing a row lets go of the totals.
 They are reachable for what the grid does not say itself. **Groups are not done
 yet**: folding a tree node raises no event, so two halves cannot be kept folded
 alike.

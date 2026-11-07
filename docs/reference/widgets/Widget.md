@@ -261,7 +261,7 @@ because a container refuses a widget that already has a parent.
 
 | | |
 |---|---|
-| `Style` | the CSS classes it wears, space separated: `"card title-3"`. **The first thing to reach for**: the theme draws `suggested-action`, `destructive-action`, `dim-label`, `title-1`…`title-4`, `heading`, `card`, `frame`, `boxed-list`, `toolbar`, `flat`, `linked`, `pill`, `monospace`. A name that could not be a class is refused |
+| `Style` | the CSS classes it wears, space separated: `"card title-3"`. **The first thing to reach for**: the theme draws `suggested-action`, `destructive-action`, `dim-label`, `title-1`…`title-4`, `heading`, `card`, `frame`, `boxed-list`, `toolbar`, `flat`, `linked`, `pill`, `monospace`; the runtime adds `shared-selection`, for a container whose tables are one grid: their selection is drawn as focused while any of them has the focus. A name that could not be a class is refused |
 | `Background` | any CSS colour — a value, not a reference: `"@view_bg_color"` is one too, and is refused. **For a ground, `Style` is what to reach for**: a theme paints a surface with a class, and a control that has to be on the same ground as another one wears the same class. `""` restores the theme's. The **exception** to `Style`, for when the colour is data — a status, a category, a swatch |
 | `Foreground` | likewise, for the text |
 | `Font` | a Pango description — `"Cantarell Bold 12"` — or a partial one: `"Bold"`, `"12"`. `""` restores the theme |

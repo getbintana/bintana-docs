@@ -81,7 +81,11 @@ shown. A column with a `Total` is what puts the row of totals under the grid.
 **What it is made of**: four `TableView`s kept in line by properties every table
 has -- `ScrollY` and `ScrollX` assigned from the other's `Scroll`,
 `ColumnWidths` for the widths really drawn, `ColumnResize` when a heading's
-edge is dragged, `Headers` off for the totals. They are reachable as
+edge is dragged, `Headers` off for the totals, `Hover` and `HoverRow` for the
+row under the pointer, and `shared-selection` on the panel around the halves so
+the selection is one colour in both. Choosing the row of totals lets go of the
+rows (and raises `Select`), and choosing a row lets go of the totals. They are
+reachable as
 `FrozenView`, `MainView`, `FrozenTotals` and `MainTotals` for what the grid does
 not say itself (a row height floor, a heading menu).
 
