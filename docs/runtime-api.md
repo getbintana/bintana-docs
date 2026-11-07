@@ -3267,6 +3267,7 @@ Printer.ToFile(this.Sheet, path, { Pages: 12 })  // a PDF, and no dialog
 | Member | |
 |---|---|
 | `Send(area, [setup], cb)` | the print dialog, then paper. **Async**; `cb({ Copies, From, To })`, and not called on a cancel |
+| `Preview(area, [setup], [cb])` | the pages in a window of the runtime's, each drawn by the control's own `DrawPage`; *Print…* opens `Send` with the same setup and `cb`. → the window |
 | `ToFile(area, path, [setup])` | the same sheets as one PDF, no dialog. → how many pages |
 | `Names` | the printers this session can reach. `[]` for none, `null` if this build cannot ask |
 | `Default` | the one it would use. `""` for none, `null` if it cannot ask |

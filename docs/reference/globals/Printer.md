@@ -22,6 +22,7 @@ Printer.ToFile(this.Sheet, path, { Pages: 12 })  // a PDF, and no dialog
 | `Default` | the one it would use | [what the machine has](#what-the-machine-has) |
 | `Names` | the printers this session can reach | [what the machine has](#what-the-machine-has) |
 | `Papers` | `{ A4: { Width, Height }, Letter: …, A5: … }`, in **points** | [the paper sizes](#the-paper-sizes) |
+| `Preview(area, [setup], [cb])` | the pages on the screen before paper, and the window they are in: one of this runtime's, with every page drawn by the control's own `DrawPage`, a zoom, and *Print…*, which opens `Send`'s dialog with the same setup and hands it `cb` | [previewing](#previewing) |
 | `Send(area, [setup], cb)` | the print dialog, then a printer | [sending](#sending) |
 | `ToFile(area, path, [setup])` | the same sheets as one PDF, with **no dialog**; → how many pages it wrote | [to a file](#to-a-file) |
 
@@ -151,6 +152,33 @@ This was synchronous once, and answered `null` for a cancel. Both halves were
 wrong the same way: it was the one dialog in the runtime a program had to treat
 differently, and synchronous never meant safe — the loop went on running
 underneath it either way.
+
+## Previewing
+
+| | |
+|---|---|
+| `Preview(area, [setup], [cb])` | the pages on the screen before paper, and the window they are in: one of this runtime's, with every page drawn by the control's own `DrawPage`, a zoom, and *Print…*, which opens `Send`'s dialog with the same setup and hands it `cb`. Also what the print dialog's own *Preview* button opens -- GTK4 has none and handed a PDF to Evince or Papers, failing without them |
+
+```js
+BtnPreview_Click() { Printer.Preview(this.Invoice.Canvas, { Paper: "A4" }, () => this.Saved()); }
+```
+
+**The page on the screen is the page on paper**: each one is drawn by the
+control's own `DrawPage` (through [`Painter.Render`](../../llm/controls.md#painter)),
+on the printable area of the paper the setup names -- A4 is 559 × 784 points
+inside GTK's default margins -- on a white sheet. How many pages is the
+control's `Paginate` at that size, as `Send` asks it, else the setup's `Pages`.
+The window has the pages (Page Up, Page Down, Home, End), a zoom from *Fit page*
+to 200%, and *Print…*; looking prints nothing, and `cb` is called only if the
+person prints from it, as `Send` calls it.
+
+**GTK4 has no preview of its own**: the print dialog's *Preview* wrote a PDF
+and opened Evince or Papers, and where neither was installed the program went
+down. `Send` answers that button with this window instead -- when GTK draws the
+dialog itself. Where the dialog comes through the desktop portal, which GTK
+4.22 does outside Flatpak too, the button belongs to the portal and does what
+the portal does; a program that wants a preview it can count on offers its own
+button and calls `Preview`.
 
 ## To a file
 

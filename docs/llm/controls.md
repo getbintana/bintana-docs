@@ -1139,6 +1139,7 @@ measures with.
 | `Pop()` | back to the last `Push` |
 | `Push()` | remember the colour, the pen, the transform and the clip |
 | `Rectangle(x, y, width, height)` | into the path |
+| `Render(area, page, width, height)` | another control's page drawn here, at `width` by `height`, through its own `DrawPage` -- or `Draw` for page 0, or for a control that declares none -- as `Printer` would draw it. Under this painter's transform, so `Scale` first makes a preview or a thumbnail |
 | `Rotate(degrees)` | degrees, like `Arc` |
 | `Scale(x, [y])` | one argument scales both |
 | `Stroke()` | stroke the path, and clear it |

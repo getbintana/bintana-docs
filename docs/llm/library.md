@@ -808,6 +808,10 @@ takes.
 
 - `Printer.Send(area, [setup], cb)` — the print dialog, then a printer. **Async**
 - `Printer.ToFile(area, path, [setup])` — a PDF, with **no dialog**
+- `Printer.Preview(area, [setup], [cb])` — the pages in a window of the
+  runtime's, drawn by the control's own `DrawPage`, with *Print…*; → the
+  window. **Offer this for a preview**: the print dialog's own *Preview* is the
+  desktop portal's when GTK draws the dialog through it
 - `Printer.Names` — the printers this machine has, or `null` if it cannot say
 - `Printer.Default` — the one it would use, `""` for none, `null` if it cannot say
 - `Printer.Papers` — the paper sizes, in points
