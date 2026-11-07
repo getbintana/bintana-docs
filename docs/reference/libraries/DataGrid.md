@@ -40,6 +40,9 @@ pasted from a spreadsheet.
 | `Columns` | the columns, as `TableView`'s `{ Text, Width, Alignment, Editor, Link, Visible }` with `Total` (`"sum"`, `"count"`, `"avg"`, `"min"`, `"max"`) and `Decimals` for the row of totals | [the columns](#the-columns) |
 | `Frozen` | how many leading columns stay put while the rest scroll across | [the columns](#the-columns) |
 | `Sortable` | whether a click on a heading sorts the rows, in both halves | [the columns](#the-columns) |
+| `GroupBy` | the declared column whose values group the rows, `-1` for none | [groups](#groups) |
+| `ExpandAll()` | opens every group | [groups](#groups) |
+| `CollapseAll()` | closes every group | [groups](#groups) |
 | `Add(row)` | adds a row, the array of its values in declared column order | [the rows](#the-rows) |
 | `AddRows(rows)` | adds many rows in one change to both halves | [the rows](#the-rows) |
 | `Clear()` | takes every row away | [the rows](#the-rows) |
@@ -121,6 +124,36 @@ Ctrl+C and Ctrl+V in the grid do the same. A table selects rows, not a
 rectangle of cells, so `Copy` takes the selected rows with every column, and
 `Paste` writes from the current cell down and across without making new rows.
 
+## Groups
+
+| | |
+|---|---|
+| `GroupBy` | the declared column whose values group the rows, `-1` for none. Each group is a row of its own over its rows -- its value and how many, then each `Total` worked out for the group alone -- and folds in both halves at once. Default `-1` |
+| `ExpandAll()` | opens every group |
+| `CollapseAll()` | closes every group |
+
+```js
+this.Grid.GroupBy = 1;          // by client: "Casa Rivas (12)", its subtotals, its sales
+this.Grid.CollapseAll();        // one line per client
+this.Grid.GroupBy = -1;         // flat again
+```
+
+**A group's row says what it is in the grouping column** -- the room its values
+already have -- or in the first column when that one is hidden, and carries
+each `Total` worked out over the group's rows alone, drawn as a heading. Groups
+come in the order of their value (numbers as numbers), the rows under each in
+the grid's order; sorting by a heading sorts within each group, and sorting by
+the grouping column orders the groups. The row of totals under the grid stays
+the grand total.
+
+**The grid still speaks of rows by index**: `Index`, `Selection`, `Cell`,
+`CellEdit` and `Filter` mean the same row grouped or flat, and a group's row is
+no row of the data -- `Index` is `-1` on it, it opens no editor, `Copy` leaves it
+out. `Paste` and Tab go down the rows as they are shown, skipping a folded
+group. A fold made with a group's arrow folds both halves, and stays folded when
+a filter, a sort or a new row rebuilds the groups; an edit to a grouping cell
+moves its row to its new group.
+
 ## What it is made of
 
 Four [`TableView`](../widgets/TableView.md)s -- `FrozenView`, `MainView`,
@@ -138,9 +171,8 @@ before, across both halves in declared order and on to the next row at the end
 of one, skipping hidden columns and filtered rows. Past the first cell or the
 last the focus leaves the grid; Ctrl+Tab leaves it from anywhere. The rows
 chosen stay chosen while the cell moves along a row.
-They are reachable for what the grid does not say itself. **Groups are not done
-yet**: folding a tree node raises no event, so two halves cannot be kept folded
-alike.
+
+They are reachable for what the grid does not say itself.
 
 ## See also
 

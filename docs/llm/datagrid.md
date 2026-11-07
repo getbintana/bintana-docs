@@ -54,6 +54,9 @@ or not.
 | `Frozen` | how many leading columns stay put while the rest scroll across. Default `0`, every column scrolling |
 | `Sortable` | whether a click on a heading sorts the rows, in both halves. Default `false` |
 | `MultiSelect` | more than one row at a time, in both halves. Default `false` |
+| `GroupBy` | the declared column whose values group the rows, `-1` for none. Each group is a row of its own over its rows -- its value and how many, then each `Total` worked out for the group alone -- and folds in both halves at once. Default `-1` |
+| `ExpandAll()` | opens every group |
+| `CollapseAll()` | closes every group |
 | `Count` (ro) | how many rows the grid holds |
 | `Index` | the selected row, `-1` for none. Assigning selects it in both halves |
 | `Selection` (ro) | every selected row, as an array of indices in order |
@@ -91,8 +94,13 @@ reachable as
 `FrozenView`, `MainView`, `FrozenTotals` and `MainTotals` for what the grid does
 not say itself (a row height floor, a heading menu).
 
-**What it does not do yet**: groups -- folding a tree node raises no event, so
-two halves cannot be kept folded alike -- and a rectangle of cells marked on
-screen, since a table selects rows. `Copy` takes the selected rows, every
+**Groups**: `GroupBy = 1` puts a row per value of column 1 over its rows -- the
+value and count in the grouping column, each `Total` over the group's rows --
+folding both halves together. Rows are still addressed by index (`Index`,
+`Cell`, `CellEdit`); a group's row is `-1`, opens no editor and is left out of
+`Copy`. Sorting sorts within groups, and by the grouping column orders them.
+
+**What it does not do yet**: a rectangle of cells marked on screen, since a
+table selects rows. `Copy` takes the selected rows, every
 column; `Paste` writes from the current cell down and across, and makes no new
 rows.

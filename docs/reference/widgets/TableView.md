@@ -95,6 +95,7 @@ not repeated here.
 | `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
 | `ColumnResize(column, width)` | the person dragged a heading's edge | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Hover(row)` | the pointer moved onto another row | [beside something else](#beside-something-else-the-geometry-it-can-say) |
+| `NodeToggle(key, open)` | the person opened or closed a node with its arrow | [a tree](#a-tree) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
@@ -193,7 +194,7 @@ scrollbar away from the rows, which is the opposite of what was wanted.
 
 | | |
 |---|---|
-| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible, Tree }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack. **`Visible: false` hides the column** -- and it keeps its place in the list, so the numbers the program uses (`Cell`, `SetCell`, `SortColumn`, `HeaderClick`) are the ones it declared, and a column that comes back does not shift the ones after it. **`Editor` makes the cells fields**, and is a kind's name or `{ Kind, ... }`: `"Text"`; `{ Kind: "Number", Min, Max, Step, Decimals }`, answering with a point and rounding a half away from zero; `"Date"`, a field with a calendar whose day is `YYYY-MM-DD` (the arrows move the day, Enter or Space picks it); `{ Kind: "Check", ActiveText, InactiveText }`, a tick holding one of the two (`"true"`/`"false"`); `{ Kind: "Combo", Items }`; and `"Custom"`, which opens nothing and raises `CellEditor`. The kinds are `Widget.PropertyOptions("TableView", "Columns.Editor")`. A click or F2 opens a cell, Enter or the focus leaving commits, Escape gives up, and `CellEdit` decides. **A cell is still text** -- every kind reads it and writes it back. `Editable: true` is `Editor: "Text"`. `Link: true` makes each cell a link -- underlined, a pointer over it, a focus stop, Enter -- whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **`Tree: true` puts a tree's expander** -- the arrow and the indent -- in that column instead of the first; only where it is drawn moves, every index stays the declared one. One column at most says it, a flat table keeps it for when it becomes a tree, and a marked column that is `Visible: false` hands the expander to the first column shown. **A column is edited or a link, never both**, and a misspelt option is refused by name |
+| `Columns` | an array of `{ Text, Width, Alignment, Editor, Link, Visible, Tree }`. `Text` is **translated**; `Width: 0` sizes itself and the last column takes the slack. **`Visible: false` hides the column** -- and it keeps its place in the list, so the numbers the program uses (`Cell`, `SetCell`, `SortColumn`, `HeaderClick`) are the ones it declared, and a column that comes back does not shift the ones after it. **`Editor` makes the cells fields**, and is a kind's name or `{ Kind, ... }`: `"Text"`; `{ Kind: "Number", Min, Max, Step, Decimals }`, answering with a point and rounding a half away from zero; `"Date"`, a field with a calendar whose day is `YYYY-MM-DD` (the arrows move the day, Enter or Space picks it); `{ Kind: "Check", ActiveText, InactiveText }`, a tick holding one of the two (`"true"`/`"false"`); `{ Kind: "Combo", Items }`; and `"Custom"`, which opens nothing and raises `CellEditor`. The kinds are `Widget.PropertyOptions("TableView", "Columns.Editor")`. A click or F2 opens a cell, Enter or the focus leaving commits, Escape gives up, and `CellEdit` decides. **A cell is still text** -- every kind reads it and writes it back. `Editable: true` is `Editor: "Text"`. `Link: true` makes each cell a link -- underlined, a pointer over it, a focus stop, Enter -- whose address is the cell's text unless `SetUri` or `Data` says another, and a cell with no text is plain. **`Tree: true` puts a tree's expander** -- the arrow and the indent -- in that column instead of the first; only where it is drawn moves, every index stays the declared one. One column at most says it, a flat table keeps it for when it becomes a tree, and a marked column that is `Visible: false` hands the expander to the first column shown. **`Tree: false` on every column draws no outline at all**: the rows still nest and fold, with no arrow and no indent -- a tree beside another table that draws it for both. **A column is edited or a link, never both**, and a misspelt option is refused by name |
 | `ColumnLines` | rules between the columns. Default `false` |
 | `RowLines` | rules between the rows. Default `true` |
 
@@ -253,8 +254,8 @@ row shorter than there are columns simply reads blank in the rest.
 
 | | |
 |---|---|
-| `Add(values, [options])` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
-| `AddRows(rows)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. Refused on a tree, whose rows are nodes with keys, and it clears an on-demand `Count` as one `Add` does |
+| `Add(values, [options])` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon, Style }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), `Icon` is the picture for its first column — the same one `TreeView.Add` takes — and `Style` the theme class on every cell of the row (`"heading"` for a group's), so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
+| `AddRows(rows)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. **`AddRows(rows, nodes)` is a tree's**: `nodes[i]` is the `{ Key, Parent, Icon, Style }` that `Add` takes for `rows[i]`, a parent may be earlier in the same batch, and the nodes enter with one change per parent -- grouping 20 000 rows node by node took 23 s. A key empty, taken or given twice, or a parent that is nowhere, refuses the whole batch before anything changes. Without `nodes` it is refused on a tree, and it clears an on-demand `Count` as one `Add` does |
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 | `Cell(row, column)` | one value. Refused on an on-demand table, which has no cells to answer about |
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
@@ -640,7 +641,7 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 
 | | |
 |---|---|
-| `Add(values, { Key, Parent, Icon })` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), and `Icon` is the picture for its first column — the same one `TreeView.Add` takes, so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
+| `Add(values, { Key, Parent, Icon })` | one row, as an array of strings. A row shorter than there are columns reads `""` for the rest. Clears an on-demand `Count`. **`options` is `{ Key, Parent, Icon, Style }`, and a row with a `Key` is a node**: the first one makes this table a tree, `Parent` is the key of the node it goes under (absent is a root), `Icon` is the picture for its first column — the same one `TreeView.Add` takes — and `Style` the theme class on every cell of the row (`"heading"` for a group's), so a node need not be added and then decorated. **For many rows at once, `AddRows`**: one change to the list instead of one per row |
 | `Key` | the selected node's key; assigning selects it alone, opening the way to it. `""` selects nothing. **With several selected it is the one the reader is on**: the `CurrentCell` row when that row is selected, otherwise the first selected node shown. A tree only |
 | `SelectedKeys` | every selected node's key, in the order shown -- `[]` for none, and one key without `MultiSelect`. Assigning selects exactly those, opening the way to each, and `[]` selects nothing; **it raises no `Select`**. A key that is not there is refused before anything changes, and so are several without `MultiSelect`. `[]` on a flat table, which refuses the assignment. A fold drops the selection of the rows it hides, as GTK does |
 | `Exists(key)` | whether that node is there. `false` on a flat table rather than a refusal: it is the question you ask *before* you know |
@@ -650,10 +651,34 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 | `ExpandAll()` | opens every node |
 | `CollapseAll()` | closes every node |
 | `Expanded(key)` | whether it is open |
+| `AddRows(rows, nodes)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. **`AddRows(rows, nodes)` is a tree's**: `nodes[i]` is the `{ Key, Parent, Icon, Style }` that `Add` takes for `rows[i]`, a parent may be earlier in the same batch, and the nodes enter with one change per parent -- grouping 20 000 rows node by node took 23 s. A key empty, taken or given twice, or a parent that is nowhere, refuses the whole batch before anything changes. Without `nodes` it is refused on a tree, and it clears an on-demand `Count` as one `Add` does |
+| **event** `NodeToggle(key, open)` | the person opened or closed a node with its arrow: `key` is the node's and `open` whether it is open now. Raised just after, not inside the fold, and not for the children a closing parent hides. Not raised by `ExpandNode`, `CollapseNode`, `ExpandAll`, `CollapseAll` or `AutoExpand` |
 | `Count` (ro here) | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 
 **A parent goes in before its children**: `Parent` names a key, and a key that
 nothing has added yet is not there to go under.
+
+**A tree of many rows goes in with `AddRows(rows, nodes)`**, one `{ Key, Parent,
+Icon, Style }` per row: a parent may come earlier in the same batch, and the
+nodes enter with one change per parent rather than one per node -- added one at
+a time, 20 000 rows grouped under 40 parents took 23 s, and in one batch 0.2 s.
+A key that is empty, taken or given twice, or a parent that is nowhere, refuses
+the whole batch before anything changes. **`Style` is the theme class on every
+cell of the row** -- a group's heading -- given with the node, since a
+`SetStyle` per cell tells the list the row changed each time.
+
+**`NodeToggle(key, open)` says the person folded a node** with its arrow, after
+the fold and once: a closing parent's children are not reported, and the verbs
+fold without raising it, so a handler that folds another table to match does
+not hear its own doing. **`Tree: false` on every column draws no outline** --
+no arrow, no indent -- while the rows still nest and fold: the table beside one
+that draws it for both, as `lib/datagrid`'s scrolling half does. The keyboard
+does not fold a table's node: the expander's own keys want the focus on it,
+which a row never hands over.
+
+```js
+Left_NodeToggle(key, open)  { open ? this.Right.ExpandNode(key) : this.Right.CollapseNode(key); }
+```
 
 **The expander -- the arrow and the indent -- is in the first column, unless a
 column says `Tree: true`.** A plan that shows its Id first marks the name:
