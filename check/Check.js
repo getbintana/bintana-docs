@@ -271,7 +271,7 @@ const GLOBAL_SECTIONS = [
     ["Time",              "Time"],
     ["Logger",            "Logger"],
     ["Record and Field",  "Record", "Field"],
-    ["Database and Table", "Connection", "Table"],
+    ["Database and Table", "Connection", "Table", "Cursor"],
     ["Http",              "Http", "HttpClient", "Multipart"],
     ["Http Server",       "HttpServer", "HttpRequest"],
     ["AudioPlayer",       "AudioPlayer"],

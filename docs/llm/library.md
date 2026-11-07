@@ -1940,7 +1940,8 @@ clients.Save(c);                                      // UPDATE, by the key
 | `Count([sql], ...params)` | a number, building no records |
 | `Save(rec)` | `Insert` when the key is at its starting value, else `Update` |
 | `Insert(rec)` | INSERT, and tells the record its new key |
-| `Update(rec)` | UPDATE by key; **throws** when it matched no row |
+| `Update(rec)` | UPDATE by key, **only the columns that changed** since it was read or written; **throws** when it matched no row |
+| `Cursor([sql], ...params)` | a [`Cursor`](../reference/globals/Database.md): the rows a statement answers, counted, and read a window at a time |
 | `Delete(rec)` | DELETE by key; throws when it matched no row |
 | `Name`, `Shape`, `Connection` (ro) | |
 
@@ -1954,6 +1955,29 @@ clients.Save(c);                                      // UPDATE, by the key
 | `Tables` (ro) | the tables and views, ordered |
 | `Dialect` (ro) | `{ Placeholder, Quote, NewKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
 | `Path`, `Open` (ro), `Close()` | this driver's own |
+| `Each(sql, [params], fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Cursor(sql, [params], [{ Window }])` | a [`Cursor`](../reference/globals/Database.md): the rows a statement answers, counted, and read a window at a time |
+
+| On a cursor | |
+|---|---|
+| `Count` (ro) | how many rows, asked once until `Refresh()` |
+| `Row(index)` | one row, from the window around it |
+| `Rows(start, count)` | several, in one statement |
+| `Each(fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Refresh()` | forgets the count and the window |
+| `Window` (ro) | rows per window, 200 unless `{ Window }` said |
+
+- **For many rows use a cursor, not `Query`**: `Query` builds every row in an
+  array. A grid on demand is `Grid.Count = cur.Count` and
+  `Grid_Data(row, col)` answering from `cur.Row(row)`; an export is
+  `cur.Each(fn)`.
+- **A cursor's statement must say `ORDER BY`** — `LIMIT`/`OFFSET` without one is
+  undefined, and a cursor does not add one. Order by the key for big tables; an
+  order by an expression re-sorts the table for every window.
+- **Names in the language's order: `ORDER BY locale_key(name)`**, and
+  `COLLATE LOCALE` to compare (`WHERE name < ? COLLATE LOCALE`). Plain
+  `ORDER BY name` compares bytes and puts `Álvarez` after `Zapata`. Per
+  statement only; neither can be indexed.
 
 - **All five of sqlite's storage classes**: TEXT (`Field.Text`, `Enum`, `Date`,
   `Time`, `Decimal`), INTEGER (`Int`, `Bool`), REAL (`Number`), BLOB

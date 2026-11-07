@@ -2836,6 +2836,7 @@ it:
 | A driver answers | |
 |---|---|
 | `Query(sql, [params])` | rows, as plain objects |
+| `Each(sql, [params], fn)` | the rows one at a time, never an array; how many |
 | `Execute(sql, [params])` | `{ Changes, LastId }` |
 | `Transaction(fn)` | all of it or none; nested through savepoints |
 | `Columns(table)` | `[{ Name, Type, Required, Key }]` |
@@ -2843,7 +2844,42 @@ it:
 | `Dialect` | `{ Placeholder, Quote, NewKey }` |
 
 `Database.Sqlite` adds `Script(sql)` (several statements, no parameters — a
-schema), `Path`, `Open` and `Close()`.
+schema), `Path`, `Open` and `Close()`. **`Table` and `Cursor` come for nothing**:
+both are the portable half, in `rad.js`, and a second driver that answers the
+table above has them.
+
+### A cursor: many rows, a window at a time
+
+| | |
+|---|---|
+| `conn.Cursor(sql, [params], [{ Window }])` | the rows counted and read a window at a time, 200 unless `Window` says |
+| `table.Cursor([sql], ...params)` | the same over a table, each row a record |
+| `Count`, `Row(i)`, `Rows(start, count)`, `Each(fn)`, `Refresh()`, `Window` | how many; one row from the window around it; several in one statement; every row one at a time; read again; the window's size |
+
+`Query` answers every row in an array; a cursor answers `Count` with one
+`SELECT count(*)` and a row from a window read with `LIMIT`/`OFFSET`, so a
+`TableView` on demand (`Count`, `Data(row, column)`) over a big table costs a
+statement every `Window` rows. **The statement says its order** — `LIMIT` and
+`OFFSET` with no `ORDER BY` are undefined — and over 200 000 rows ordered by the
+key the last window reads in 2 ms; ordered by an expression with no index, every
+new window sorts the table again. What it read it keeps until `Refresh()`.
+
+### The language's order in SQL: `locale_key` and `COLLATE LOCALE`
+
+`ORDER BY name` compares bytes and puts `Álvarez` after `Zapata`. Registered on
+every connection, as the decimal ones are: `ORDER BY locale_key(name)` sorts in
+`Locale.Compare`'s order with a key worked out once per row (200 000 names:
+0.29 s, against 2.3 s for `COLLATE LOCALE` and 0.11 s for bytes), and `COLLATE
+LOCALE` compares in it (`WHERE name < ? COLLATE LOCALE`, `GROUP BY`). Named per
+statement, never in a schema; neither can be indexed, since the order is the
+desktop's.
+
+### An update writes what changed
+
+`Update` writes only the columns that changed since the `Table` read the record or
+last wrote it, so two windows editing different fields of one row both keep their
+edit. A record the program built with a key writes every column; nothing changed
+is no statement.
 
 ### Which of sqlite's types a field maps to
 
@@ -2930,8 +2966,7 @@ exist for is machinery to make lazy loading safe, and lazy loading is what turns
 one screen into a thousand statements and hides it.
 
 Not built yet, and named so it is not looked for: **a detail saved with its
-master**, a cursor over a query for a grid, and a `.conn` file as a project
-resource.
+master**, and a dialog for the `.conn` file a project names its database in.
 
 ### A decimal column, and sqlite's limitation
 
@@ -3005,7 +3040,7 @@ create index i on clients(balance)            no such collation sequence: DECIMA
 A `.db` that only this runtime can query is not a `.db`. So: declare the column
 `TEXT`, and say `COLLATE DECIMAL` in the statements that need it. The one thing
 per-statement collation cannot give you is a useful **index** on that column,
-which is what stage 3's cursor will have to answer.
+which a cursor ordered by that column pays for by sorting on every window.
 
 The same three are also what read a decimal **somebody else** wrote as text.
 

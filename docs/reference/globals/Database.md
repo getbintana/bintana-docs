@@ -38,6 +38,8 @@ clients.Save(c);                                      // UPDATE, by the key
 | `Open` (ro) | whether it still is |
 | `Path` | the file this connection is |
 | `Query(sql, [params])` | the rows a statement answers, as **plain objects** — for the report, the `GROUP BY`, the join that is not one shape |
+| `Each(sql, [params], fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Cursor(sql, [params], [options])` | a [`Cursor`](Database.md): the rows a statement answers, counted, and read a window at a time |
 | `Script(sql)` | several statements and **no parameters**: a schema, a migration |
 | `Table(name, RecordClass)` | a [`Table`](Database.md): the rows of `name` as records of `Shape` |
 | `Tables` (ro) | the tables and views, ordered |
@@ -50,14 +52,26 @@ clients.Save(c);                                      // UPDATE, by the key
 | `All()` | → every row, as records |
 | `Connection` (ro) | the connection it came from |
 | `Count([sql], …params)` | → a number, building no records |
+| `Cursor([sql], …params)` | a [`Cursor`](Database.md): the rows a statement answers, counted, and read a window at a time |
 | `Delete(rec)` | DELETE by key; **throws** when it matched no row |
 | `Find(…key)` | → one record or `null`; one value per key field, in declaration order |
 | `Insert(rec)` | INSERT, and tells the record its new key |
 | `Name` (ro) | the table's name |
 | `Save(rec)` | `Insert` when the key is at its starting value, else `Update` |
 | `Shape` (ro) | the record class it maps |
-| `Update(rec)` | UPDATE by key; **throws** when it matched no row |
+| `Update(rec)` | UPDATE by key, **only the columns that changed**; **throws** when it matched no row |
 | `Where(sql, …params)` | → the rows matching, as records |
+
+**A cursor**
+
+| | |
+|---|---|
+| `Count` (ro) | how many rows the statement answers, asked once until `Refresh()` |
+| `Row(index)` | one row by its position, from the window around it |
+| `Rows(start, count)` | `count` rows from `start`, in one statement |
+| `Each(fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Refresh()` | forgets the count and the window |
+| `Window` (ro) | how many rows a window reads |
 
 ## The two halves
 
@@ -101,6 +115,74 @@ something a mapper should make silently.
 | `Open` (ro) | whether it still is |
 | `Close()` | let it go |
 | `Table(name, RecordClass)` | a [`Table`](Database.md): the rows of `name` as records of `Shape` |
+
+## A cursor: many rows, a window at a time
+
+| | |
+|---|---|
+| `conn.Cursor(sql, [params], [{ Window }])` | the rows a statement answers, counted and read a window at a time (200 rows unless `Window` says) |
+| `table.Cursor([sql], …params)` | the same over a table, each row a record; the filter is `Where`'s |
+| `Count` (ro) | how many rows the statement answers, asked once until `Refresh()` |
+| `Row(index)` | one row by its position, `0` to `Count - 1`, from the window around it |
+| `Rows(start, count)` | `count` rows from `start`, fewer at the end, in one statement |
+| `Each(fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Refresh()` | forgets the count and the window, so the next question reads again |
+| `Window` (ro) | how many rows a window reads |
+| `conn.Each(sql, [params], fn)` | the connection's own: `fn(row)` for each row as `Query` would make it, never an array. Answers how many. `Close()` is refused while it reads |
+
+`Query` answers **every row in an array**, which is right for a screenful and
+wrong for a grid over a table of a year, or an export. A cursor answers `Count`
+with one `SELECT count(*)` and a row from a window read with `LIMIT`/`OFFSET`
+around it, so a [`TableView`](../widgets/TableView.md) asking `Data(row, column)`
+as it draws costs a statement every `Window` rows:
+
+```js
+this.cur = db.Cursor("SELECT * FROM sales ORDER BY id");
+this.Grid.Count = this.cur.Count;                     // on demand
+
+Grid_Data(row, column) { return String(this.cur.Row(row)[NAMES[column]]); }
+```
+
+**The statement says its order.** `LIMIT`/`OFFSET` over a statement with no
+`ORDER BY` is undefined in SQL — two windows could overlap or miss a row — and a
+cursor does not parse a statement to add one. Over 200 000 rows ordered by the
+key, the last window is read in 2 ms; ordered by an expression with no index, such
+as `locale_key(name)`, every new window sorts the table again (0.45 s), so keep
+that order for a short list or give it a column of its own with an index.
+
+**What it has read it keeps until `Refresh()`** — the count and the window. A
+program that wrote a row asks again.
+
+`Each` is the one a driver must provide for a cursor never to hold every row:
+stepping a statement is the engine's. `fn` may run other statements on the
+connection, which sqlite allows while a read is stepping; closing it is refused
+until `Each` returns.
+
+## The language's order: `COLLATE LOCALE` and `locale_key`
+
+Text compares byte by byte, so `ORDER BY name` puts `Álvarez` after `Zapata`.
+Two names registered on every connection give [`Locale.Compare`](Locale.md)'s
+order in the statement:
+
+```js
+db.Query("SELECT name FROM clients ORDER BY locale_key(name)")       // to sort
+db.Query("SELECT * FROM clients WHERE name < ? COLLATE LOCALE", ["M"]) // to compare
+```
+
+`locale_key(x)` is the order worked out once per row, and the one to sort with:
+over 200 000 names, 0.29 s, against 2.3 s for `ORDER BY name COLLATE LOCALE` and
+0.11 s for bytes. `COLLATE LOCALE` is for what a key cannot do — a comparison, a
+`GROUP BY`. Both are named in the statement, never in a schema, and **neither can
+be indexed**: the order is the desktop's, and an index would keep one desktop's
+order in a file another opens.
+
+## An update writes what changed
+
+`Update` writes **only the columns that changed** since the table read the record
+— by `Find`, `Where`, `All` or a cursor — or last wrote it. Two windows editing
+different fields of one row both keep their edit; the last writer used to replace
+every column. A record the program built and gave a key has no such past, and
+every column is written. Nothing changed is no statement at all.
 
 ## Transactions
 
