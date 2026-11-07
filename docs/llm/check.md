@@ -24,8 +24,8 @@ and the library beside itself under `share/bintana/`; the source tree finds
 ## What it finds
 
 - two controls of one name, a `.form` losing the first one silently;
-- a control named `Actions` (or another read-only member of `Form`), which
-  would make the form refuse to load;
+- a control named `Actions` or `Close` -- a read-only member or a method of
+  `Form` -- which makes the form refuse to load;
 - a property the class does not have, which the loader applies and ignores;
 - a `.js` that does not compile, whether or not a `.form` sits beside it;
 - a `.js` on disk that `sources` does not list, so it is never loaded;
@@ -33,6 +33,9 @@ and the library beside itself under `share/bintana/`; the source tree finds
 - `this.Control.Member` where the class has no such member, and a
   `Control_Event` handler for an event the control does not raise;
 - a name two modules export and a file uses without importing it;
+- a member of a component or a form that hides a control's with another shape
+  (`Expand(key)` over the layout property `Expand`, `get Remove` over the
+  method `Remove()`): rename it for what it does;
 - a control a screen reader cannot name, at the severity `project.json`'s
   `"accessibility"` chooses: `"warning"` (default), `"info"` or `"off"`. The
   same word governs the IDE's panel and the command.

@@ -1758,28 +1758,22 @@ writing it wrong on purpose and watching what the runtime did:
 |---|---|
 | two controls of one name | the first is **gone**: two nodes in the file, one control on the window. A menu item and a command are bound by name too, so two of either is the same loss |
 | a control named `Actions` | `this.Actions` answers the *form's* actions, so the control has no name at all. The runtime refuses such a form now -- control, menu item and command alike -- so this reports it as an **error**: the program will not start, and saying so before it is run is the whole of what is left to do about it |
-| a control named `Close` | the other way: the control wins and the **method** is lost. The form still runs, so this is a **warning**, and it is the only thing that will ever say so |
+| a control named `Close` | a **method** of `Form`: binding the control over it used to succeed and the form lost its own `Close()`. A control's methods are not writable now, so the runtime refuses that form too, and this is an **error** |
 | a property the class lacks | applied, ignored, never mentioned |
 | a `.js` `sources` does not list | never loaded; the symptom is a `ReferenceError` in another file |
 | a key nothing reads | ignored — `"format"` was in one of this repository's own examples |
 | source that does not compile | refused at the first line, **in every `.js` and not only in the ones with a `.form` beside them** — a module is most of a project, and the save-time check reads the tab in front of you, so a module was read by nobody at any point and its mistake arrived as a `ReferenceError` in whichever *other* file called it |
 | a handler whose control is gone | `Btn1_Click()` after `Btn1` was renamed or deleted in the designer is called by nobody. Reported when the half after the underscore is **an event some control raises** — so `save_draft` is a helper and stays quiet — and not for a name the file builds itself (`this.Btn1 =` or `"Btn1"` in it), which binds by `Name` like a declared one |
 | a call to a name this language took | `setTimeout(fn, 100)` says `setTimeout is not part of this language: use Timer.After(delay, tick) — the delay comes first`. The table is the runtime's own (`Application.Replacements()`), built out of the rows it deletes the names with, and the check is asked of **call targets and nothing else** — a member on somebody else's object, a declaration, a key and a mention inside a string are all quiet, because a check that reports those is a check somebody switches off |
-| a name nothing declares | `helpr()` or `totl = 3` compiles, loads, and is a `ReferenceError` the day that line runs. The compiler says which names a file leaves to somebody else (`Application.FreeNames`), and the check reads them against what the project and its libraries publish: `helpr is not declared anywhere: did you mean helper?`, or, for a name another module declares and does not export, `MOD_IVA is declared in Prices.js and not exported`. A use behind `typeof X` is left alone, and so is the word the caret is in |
+| a name nothing declares | `helpr()` or `totl = 3` compiles, loads, and is a `ReferenceError` the day that line runs. The compiler says which names a file leaves to somebody else (`Application.FreeNames`), and the check reads them against what the project and its libraries publish: `helpr is not declared anywhere: did you mean helper?`, or, for a name another module declares and does not export, `MOD_IVA is declared in Prices.js and not exported`. A use behind `typeof **The collision is asked of a bare `Form`** -- the class, through
+| a member that hides a control's | a component or a form declaring `Expand(key)` hides the `Expand` every control has: it works until a `.form` says `Expand: true`, which puts a value on that control and the method is gone. Said when a method meets a property, or a method takes another number of parameters -- `Grid.Expand(key) hides Component's Expand, a property every control has`. The same shape is an override and is left alone, and so is an arity the base leaves open (`[x]`, `...rest`). It is the rule `tests/api.sh` holds the runtime's own classes to |
+`Widget.Member`, and not the project's `MainForm`, which would answer yes for
+every control and method the IDE itself has and flag a user's `Tabs` or
+`Editor`. A read-only member or a method stops the program starting; a settable
+property is shadowed, the form runs, and the warning is the only thing that
+will ever say so.
 
-The collision pair is the subtle one, and it is why the test is `in` against a
-**bare `Form`**: the same mistake resolves two different ways depending on what
-it lands on — a method is shadowed by the control, a getter with no setter
-shadows it. Asked of `MainForm` instead, which is the obvious thing to reach for,
-it would answer yes for every control and method the IDE itself has and flag a
-user's `Tabs` or `Editor`.
-
-**Which of the two it is, is asked by trying it** — `form[name] = undefined` on
-that same bare `Form`, taken back again — because a getter with no setter throws
-under strict mode and every source here is strict. That is the same question the
-loader asks, which is the only way the answer cannot drift from it, and it is one
-throw per collision found rather than per control. It matters because the two
-futures are different things to do about: a read-only member stops the program
+tops the program
 starting, a shadowed method does not.
 
 The manifest's legal keys are **`ProjectFile`'s own**: it is a `Record`, so
