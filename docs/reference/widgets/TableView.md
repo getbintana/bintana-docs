@@ -95,7 +95,7 @@ not repeated here.
 | `ColumnMove(column, position)` | the person dragged a heading to another place | [moving a column](#moving-a-column) |
 | `ColumnResize(column, width)` | the person dragged a heading's edge | [beside something else](#beside-something-else-the-geometry-it-can-say) |
 | `Hover(row)` | the pointer moved onto another row | [beside something else](#beside-something-else-the-geometry-it-can-say) |
-| `NodeToggle(key, open)` | the person opened or closed a node with its arrow | [a tree](#a-tree) |
+| `NodeToggle(key, open)` | the person opened or closed a node | [a tree](#a-tree) |
 | `HeaderClick(column, button, ctrl, shift)` | a heading was pressed — **the answer is the menu** | [the heading's menu](#the-headings-menu) |
 | `Select()` | move the selection from code | [the selection](#the-selection) |
 | `Sort(column, ascending)` | a heading was clicked — **the handler decides** | [sorting](#sorting) |
@@ -652,7 +652,7 @@ Give a row a `Key` and the table becomes a hierarchy with headings over it.
 | `CollapseAll()` | closes every node |
 | `Expanded(key)` | whether it is open |
 | `AddRows(rows, nodes)` | many rows in one call, each the array `Add` takes. **The whole batch is one change to the list**, which is what makes filling a table from a query linear: `Add` appends one item and raises `items-changed` per call, so the ordinary loop was quadratic — 40 000 rows took 17 s (D3 of the October audit), and this is a `splice`. **`AddRows(rows, nodes)` is a tree's**: `nodes[i]` is the `{ Key, Parent, Icon, Style }` that `Add` takes for `rows[i]`, a parent may be earlier in the same batch, and the nodes enter with one change per parent -- grouping 20 000 rows node by node took 23 s. A key empty, taken or given twice, or a parent that is nowhere, refuses the whole batch before anything changes. Without `nodes` it is refused on a tree, and it clears an on-demand `Count` as one `Add` does |
-| **event** `NodeToggle(key, open)` | the person opened or closed a node with its arrow: `key` is the node's and `open` whether it is open now. Raised just after, not inside the fold, and not for the children a closing parent hides. Not raised by `ExpandNode`, `CollapseNode`, `ExpandAll`, `CollapseAll` or `AutoExpand` |
+| **event** `NodeToggle(key, open)` | the person opened or closed a node -- its arrow, or Right, Left, `+`, `-`, `*` on its row: `key` is the node's and `open` whether it is open now. Raised just after, not inside the fold, and not for the children a closing parent hides. Not raised by `ExpandNode`, `CollapseNode`, `ExpandAll`, `CollapseAll` or `AutoExpand` |
 | `Count` (ro here) | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 
 **A parent goes in before its children**: `Parent` names a key, and a key that
@@ -672,9 +672,14 @@ the fold and once: a closing parent's children are not reported, and the verbs
 fold without raising it, so a handler that folds another table to match does
 not hear its own doing. **`Tree: false` on every column draws no outline** --
 no arrow, no indent -- while the rows still nest and fold: the table beside one
-that draws it for both, as `lib/datagrid`'s scrolling half does. The keyboard
-does not fold a table's node: the expander's own keys want the focus on it,
-which a row never hands over.
+that draws it for both, as `lib/datagrid`'s scrolling half does.
+
+**The keyboard folds as a file manager does**, on the focused row: **Right**
+opens a closed node and goes to the first child of an open one, **Left** closes
+an open node and goes to the parent of a closed one or a leaf, and `+`, `-` and
+`*` open, close, and open everything under. Each fold is a `NodeToggle`, as an
+arrow clicked is; a key with nothing to do -- Right on a leaf -- is left alone.
+Not while a cell is being edited, and not with Ctrl or Alt.
 
 ```js
 Left_NodeToggle(key, open)  { open ? this.Right.ExpandNode(key) : this.Right.CollapseNode(key); }
