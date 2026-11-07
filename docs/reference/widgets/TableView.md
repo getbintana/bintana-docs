@@ -287,7 +287,7 @@ perfectly until somebody selects two.
 
 | | |
 |---|---|
-| `Index` | the selected row, `-1` for none. Assigning selects it. Default `-1` |
+| `Index` | the selected row, `-1` for none. Assigning selects it, brings it into view, and makes it the row the keyboard comes back to when Tab brings the focus in again. Default `-1` |
 | `Selection` (ro) | every selected row, as an array of indices in order. In a tree they are positions of the rows shown, which a fold moves -- `SelectedKeys` names the nodes |
 | `MultiSelect` | more than one row at a time, in a flat table or a tree, set before the rows or after them. Ctrl+click adds or takes a row, Shift+click selects a range, and Shift+Up/Down grows or shrinks the range from the row the reader is on; a plain click or arrow goes back to one. A Ctrl or Shift click opens no editor. Default `false` |
 | `Select(index)` | move the selection from code. `Select` leaves the others alone where several are allowed. In a tree the index is a position of the rows shown, as `Index` is |
@@ -329,7 +329,7 @@ Ask `Selection` whenever `MultiSelect` is on.
 
 | | |
 |---|---|
-| `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none. **Assigning moves it and selects the row**, opening the way to it; `null` clears it. A cell that is not editable is a cell all the same: it can be current, and F2 is what opens it |
+| `CurrentCell` | the cell the reader is on, as `{ Row, Column }` — the row is a key in a tree and an index in a flat table, the column is an index — or `null` for none. **Assigning moves it and selects the row**, opening the way to it and bringing the cell into view -- **a row already selected keeps the selection as it is**, so a cell moved along a row of a `MultiSelect` table leaves the other rows chosen; `null` clears it. A press on any cell makes it current, editable or not: a cell that is not editable is a cell all the same, and F2 is what opens it |
 | **event** `CellChange(row, column)` | the current cell moved — a press, `EditCell`, F2, or an assignment to `CurrentCell`. `row` is an index in a flat table and a key in a tree; **`null` and `-1` say it was cleared**. `CurrentCell` is where it is now |
 
 **A row is selected; a cell inside it is current**, and that finer cursor is the
@@ -354,6 +354,17 @@ application's. `CellEdit` says so in its `how`, so **an edit that ends with one
 is reported even when the text did not change**: the whole message is *this edit
 is over, move on*. Enter arrives as `KeyPress` before the view activates the
 row, so a grid can use it without the row's dialog opening instead.
+
+**Outside an edit, Tab leaves the table**, as it leaves any list: the arrows
+walk the rows, and Shift+Tab or Tab coming back in lands on the row the table
+was on, **without choosing another**. GTK's own default walked every row with
+Tab and, coming in backwards, went to the last row -- and selected it when it
+was scrolled away. A row chosen from code (`Index`, `CurrentCell`) is the one the
+keyboard comes back to, and is brought into view. A grid that wants Tab to walk
+its cells takes it in `KeyPress`, as [`lib/datagrid`](../libraries/DataGrid.md)
+does, and moves `CurrentCell` itself; assigning it on a row already selected
+leaves the selection as it is, so a cell moved along a row of a `MultiSelect`
+table keeps the other rows chosen.
 
 ## Filtering
 

@@ -132,6 +132,12 @@ the `shared-selection` class on the panel around them, so the selection is one
 colour in both while either has the focus. The row of totals is chosen in both
 halves at once, and **it and the rows are one selection**: choosing the totals
 lets go of the rows (raising `Select`), and choosing a row lets go of the totals.
+
+**Tab walks the cells**, as in a spreadsheet: the next cell, Shift+Tab the one
+before, across both halves in declared order and on to the next row at the end
+of one, skipping hidden columns and filtered rows. Past the first cell or the
+last the focus leaves the grid; Ctrl+Tab leaves it from anywhere. The rows
+chosen stay chosen while the cell moves along a row.
 They are reachable for what the grid does not say itself. **Groups are not done
 yet**: folding a tree node raises no event, so two halves cannot be kept folded
 alike.

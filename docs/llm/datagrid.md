@@ -84,7 +84,9 @@ has -- `ScrollY` and `ScrollX` assigned from the other's `Scroll`,
 edge is dragged, `Headers` off for the totals, `Hover` and `HoverRow` for the
 row under the pointer, and `shared-selection` on the panel around the halves so
 the selection is one colour in both. Choosing the row of totals lets go of the
-rows (and raises `Select`), and choosing a row lets go of the totals. They are
+rows (and raises `Select`), and choosing a row lets go of the totals. **Tab and
+Shift+Tab walk the cells** across both halves and on to the next row, leaving the
+grid past the first or last cell (Ctrl+Tab leaves from anywhere). They are
 reachable as
 `FrozenView`, `MainView`, `FrozenTotals` and `MainTotals` for what the grid does
 not say itself (a row height floor, a heading menu).
