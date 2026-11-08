@@ -561,11 +561,12 @@ has it: a report sizing a logo on a thread is what it was for.
 
 ## PdfDocument
 
-A PDF, read: pages, their size and text, metadata, and a page drawn on a
-`Painter`. Pages count from **1**; sizes are in **points**.
+A PDF: pages, their size and text, metadata, a page drawn on a `Painter`; and
+written -- fields, encryption, a signature -- with its signatures verified.
+Pages count from **1**; sizes are in **points**.
 
 ```js
-const doc = PdfDocument.Load("manual.pdf");       // or Open(path, password)
+const doc = PdfDocument.Load("manual.pdf");       // or Load(path, password)
 doc.Pages; doc.PageSize(1); doc.Text(3); doc.Title;
 Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print, a preview
 ```
@@ -598,15 +599,28 @@ Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print
 - **Writing**: `AddFields(fields)` puts AcroForm fields into the document's
   own file (a `Report` with `Input`/`Signature` does it for you), and
   `Encrypt(path, { Password, OwnerPassword, Permissions })` writes an AES-256
-  copy. A signature field is left empty for the signer's own application.
+  copy. A signature field is left empty, for `Sign` or the signer's own
+  application.
+- **Signing**: `Sign(path, { Certificate, Signer, Field, Reason })` --
+  `Certificate` is PEM text or DER `Bytes`, and `Signer(digest, "SHA256")`
+  returns the signature as `Bytes` from wherever the key is (a token, a card, a
+  service, `Exec.Wait(["openssl", "pkeyutl", "-sign", ...])`). Never ask for a
+  `.p12` path as the API: the runtime holds no key. RSA only. A signed field is
+  refused, never signed over; with no `Field` the next free name is used.
+- **Verifying**: `doc.Signatures` -> `[{ Field, Signer, Issuer, Time, Signature,
+  Certificate }]`. Trust `Signature === "Valid"` for "not changed" and
+  `Certificate === "Trusted"` for "signed by someone this machine trusts"; a
+  self-signed certificate is `UntrustedIssuer`, an empty field `Missing`.
 - Read with poppler, written with PoDoFo; `PdfDocument.CanRead`/`CanWrite` say
   which this build has, and a member of a missing half refuses naming its
   package. `Load` needs neither. `PdfForm` is gone: it was the writing half.
 
 | Writing | |
 |---|---|
-| `AddFields(fields)` | form fields written into this document's file, **in place**, and how many. Each is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty for the signer's own application. Every field is checked first, and a failure leaves the file as it was. Needs PoDoFo (`CanWrite`) |
+| `AddFields(fields)` | form fields written into this document's file, **in place**, and how many. Each is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty, for `Sign` naming it or the signer's own application. Every field is checked first, and a failure leaves the file as it was. Needs PoDoFo (`CanWrite`) |
 | `Encrypt(path, { Password, OwnerPassword, Permissions })` | this document written to `path` **encrypted**, AES-256: `Password` opens it, `OwnerPassword` lifts the restrictions, and `Permissions` lists what is allowed without it -- `Print`, `HighPrint`, `Copy`, `Edit`, `EditNotes`, `FillAndSign`, `Accessible`, `Assemble`; every one when absent. `path` may be this document's own, which is replaced whole and read from then on with the new password. Needs PoDoFo (`CanWrite`) |
+| `Sign(path, { Certificate, Signer, Field, Rect, Reason, Location, Name })` | this document **signed** into `path`, as an incremental update, so an earlier signature stays valid: PAdES-B, SHA-256, an RSA key. **Where the key is is the program's**: `Signer(digest, algorithm)` answers the signature over the digest as `Bytes` -- a token, a smart card, a remote service -- and the runtime never holds it. `Certificate` is the signer's, DER `Bytes` or PEM text. `Field` names an empty signature field (a report's) or a new one, invisible on page 1 unless `Rect` is `{ Page, X, Y, Width, Height }` in PDF points, bottom-left; with none, the first free of `Signature`, `Signature2` ... A field signed already is refused, never signed over. A throw in `Signer` is what `Sign` throws, and the copy it was writing is removed. Needs PoDoFo (`CanWrite`) |
+| `Signatures` (ro) | the signatures in it, **verified**: `{ Field, Signer, Issuer, Time, Signature, Certificate }` each -- the signer's and the issuer's common names, and when it was signed. `Signature` is whether the signed bytes are intact -- `Valid`, `Altered` (changed after signing), `Invalid`, `Unreadable`, `Missing` (an empty field, with `Time` null), `NotVerified`, `Error`; `Certificate` is whether this machine trusts the signer -- `Trusted`, `UntrustedIssuer` (self-signed, or a CA the system store lacks), `UnknownIssuer`, `Revoked`, `Expired`, `NotVerified` (an altered signature's is not looked at), `Error`. No OCSP: nothing goes over the network unasked. Needs poppler 23.07 (`CanRead`); an older one says so |
 
 
 

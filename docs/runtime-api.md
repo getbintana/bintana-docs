@@ -1085,7 +1085,7 @@ build without it.
 
 ## PdfDocument
 
-`PdfDocument.Load(path, [password])`, in `bta_poppler.c` over poppler-glib: a
+`PdfDocument.Load(path, [password])`, in `bta_pdf.c` over poppler-glib: a
 PDF's pages, their size in points and text in reading order, its metadata (`""`
 for a text the file does not say, `null` for a date), and `Draw(painter, page,
 [width], [height])`, which puts a page on a `Draw`'s painter at its origin and
@@ -1117,7 +1117,14 @@ from a supplier -- is the supplier's format; a library promises the text. The
 same object writes, with PoDoFo through `bta_pdf_podofo.cpp`: `AddFields(fields)`
 puts AcroForm fields into its own file in place (what `Report.SavePdf` does for a
 form), and `Encrypt(path, { Password, OwnerPassword, Permissions })` writes an
-AES-256 copy, re-opening itself on the new file when `path` is its own. It was
+AES-256 copy, re-opening itself on the new file when `path` is its own.
+`Sign(path, { Certificate, Signer, ... })` signs it -- PAdES-B, SHA-256, RSA, as
+an incremental update so earlier signatures hold -- with the key wherever the
+program keeps it: `Signer(digest, "SHA256")` answers the signature as `Bytes`,
+so a token, a card, a service or `openssl` signs and the runtime never holds a
+key. `Signatures` reads them back verified by poppler: `Signature` (`Valid`,
+`Altered`, `Missing` ...) and `Certificate` (`Trusted`, `UntrustedIssuer` ...),
+no OCSP. It was
 `PdfForm` for the writing half until a PDF became one object. Each half is
 optional at build time -- `CanRead`, `CanWrite` -- and `Load` needs neither.
 
