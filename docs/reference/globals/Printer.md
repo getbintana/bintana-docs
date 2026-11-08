@@ -176,8 +176,8 @@ person prints from it, as `Send` calls it.
 and opened Evince or Papers, and where neither was installed the program went
 down. `Send` answers that button with this window instead -- when GTK draws the
 dialog itself. Where the dialog comes through the desktop portal, which GTK
-4.22 does outside Flatpak too, the button belongs to the portal and does what
-the portal does; a program that wants a preview it can count on offers its own
+4.22 does outside Flatpak too, it is the portal's -- and GNOME's has **no
+*Preview* button at all**. So a program that wants a preview offers its own
 button and calls `Preview`.
 
 ## To a file
