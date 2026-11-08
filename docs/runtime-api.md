@@ -1085,7 +1085,7 @@ build without it.
 
 ## PdfDocument
 
-`PdfDocument.Open(path, [password])`, in `bta_poppler.c` over poppler-glib: a
+`PdfDocument.Load(path, [password])`, in `bta_poppler.c` over poppler-glib: a
 PDF's pages, their size in points and text in reading order, its metadata (`""`
 for a text the file does not say, `null` for a date), and `Draw(painter, page,
 [width], [height])`, which puts a page on a `Draw`'s painter at its origin and
@@ -1095,7 +1095,7 @@ last is what makes a viewer, a print and a preview one code: `lib/pdfview`'s
 
 | | |
 |---|---|
-| `PdfDocument.Open(path, [password])` | reads a PDF and answers it. Throws, saying which: no such file, encrypted and wants a password, the wrong password, or not a PDF this machine reads |
+| `PdfDocument.Load(path, [password])` | reads a PDF and answers it. Throws, saying which: no such file, encrypted and wants a password, the wrong password, or not a PDF this machine reads |
 | `Author` (ro) | who the file says wrote it; `""` when it says nothing |
 | `Close()` | let it go; closing twice is not an error |
 | `Created` (ro) | when the file says it was made, a `Date`; `null` when it says nothing |
@@ -1114,9 +1114,12 @@ last is what makes a viewer, a print and a preview one code: `lib/pdfview`'s
 
 **Generic reading, on purpose.** What a particular layout means -- an invoice
 from a supplier -- is the supplier's format; a library promises the text. The
-name is the object's and not a `Pdf` theme beside `PdfForm` (PoDoFo writing
-form fields into a PDF Cairo drew): one word per meaning. Optional at build
-time; without poppler-glib `Open` and `Probe.Pdf` refuse naming the package.
+same object writes, with PoDoFo through `bta_pdf_podofo.cpp`: `AddFields(fields)`
+puts AcroForm fields into its own file in place (what `Report.SavePdf` does for a
+form), and `Encrypt(path, { Password, OwnerPassword, Permissions })` writes an
+AES-256 copy, re-opening itself on the new file when `path` is its own. It was
+`PdfForm` for the writing half until a PDF became one object. Each half is
+optional at build time -- `CanRead`, `CanWrite` -- and `Load` needs neither.
 
 
 ## Exec
@@ -3346,21 +3349,6 @@ own; a build without it answers **`null`** -- a third value, because `[]` cannot
 be told apart from a machine with no printer and a throw would make a capability
 question something a program has to catch. Printing itself is core GTK and works
 either way.
-
-## PdfForm
-
-The form layer of a PDF: Cairo writes the page and PoDoFo adds the AcroForm
-widgets. Optional at build time; without it `PdfForm.Available` is false and
-`AddFields` refuses naming the package.
-
-| | |
-|---|---|
-| `Available` (ro) | whether this build has PoDoFo |
-| `AddFields(path, fields)` | adds fields to an existing PDF, in place, and answers how many. Each field is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`; `Rect` is in PDF points with the origin at the bottom-left. A signature field is left empty for the signer's application |
-
-`Report.SavePdf` uses this when the report declares an `Input` or a
-`Signature`; an application calls it directly only for a static PDF it already
-has.
 
 ## Drawing
 

@@ -83,7 +83,7 @@ logo on a thread is the caller a widget could not have served anyway.
 
 | | |
 |---|---|
-| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Open`. A build without poppler says so |
+| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Load`. A build without poppler says so |
 
 ```js
 Probe.Pdf("manual.pdf")   // { Pages: 12, Width: 595, Height: 842, Title: "Manual", Author: "", Encrypted: false }

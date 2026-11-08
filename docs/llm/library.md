@@ -540,7 +540,7 @@ Probe.Image("notes.txt")         // null
 
 | | |
 |---|---|
-| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Open`. A build without poppler says so |
+| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Load`. A build without poppler says so |
 | `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **A file's header and nothing else**: the size of a picture already in memory is the handle's to answer, off the decode it already did. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
 
 The size is in pixels; a vector picture answers the size it declares (an SVG's
@@ -565,14 +565,14 @@ A PDF, read: pages, their size and text, metadata, and a page drawn on a
 `Painter`. Pages count from **1**; sizes are in **points**.
 
 ```js
-const doc = PdfDocument.Open("manual.pdf");       // or Open(path, password)
+const doc = PdfDocument.Load("manual.pdf");       // or Open(path, password)
 doc.Pages; doc.PageSize(1); doc.Text(3); doc.Title;
 Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print, a preview
 ```
 
 | | |
 |---|---|
-| `PdfDocument.Open(path, [password])` | whether it still is |
+| `PdfDocument.Load(path, [password])` | a PDF, opened -- `Load` as `Bitmap.Load`, since `Open` is what an opened one answers (whether it still is). Throws, saying which: there is no such file, it is encrypted and wants a password, the password is wrong, or it is not a PDF this machine reads (the last three where this build reads PDFs) |
 | `Author` (ro) | who the file says wrote it; `""` when it says nothing |
 | `Close()` | let it go; closing twice is not an error |
 | `Created` (ro) | when the file says it was made, a `Date`; `null` when it says nothing |
@@ -595,8 +595,19 @@ Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print
 - **To show a PDF, use [`PdfView`](pdfview.md)** (`uses: ["pdfview"]`); to print
   or preview it, `Printer.Send`/`Printer.Preview` over its `Canvas`.
 - What a file is without keeping it: `Probe.Pdf(path)`.
-- Optional at build time: without poppler-glib, `Open` refuses naming the
-  package.
+- **Writing**: `AddFields(fields)` puts AcroForm fields into the document's
+  own file (a `Report` with `Input`/`Signature` does it for you), and
+  `Encrypt(path, { Password, OwnerPassword, Permissions })` writes an AES-256
+  copy. A signature field is left empty for the signer's own application.
+- Read with poppler, written with PoDoFo; `PdfDocument.CanRead`/`CanWrite` say
+  which this build has, and a member of a missing half refuses naming its
+  package. `Load` needs neither. `PdfForm` is gone: it was the writing half.
+
+| Writing | |
+|---|---|
+| `AddFields(fields)` | form fields written into this document's file, **in place**, and how many. Each is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty for the signer's own application. Every field is checked first, and a failure leaves the file as it was. Needs PoDoFo (`CanWrite`) |
+| `Encrypt(path, { Password, OwnerPassword, Permissions })` | this document written to `path` **encrypted**, AES-256: `Password` opens it, `OwnerPassword` lifts the restrictions, and `Permissions` lists what is allowed without it -- `Print`, `HighPrint`, `Copy`, `Edit`, `EditNotes`, `FillAndSign`, `Accessible`, `Assemble`; every one when absent. `path` may be this document's own, which is replaced whole and read from then on with the new password. Needs PoDoFo (`CanWrite`) |
+
 
 
 ## Exec
@@ -924,37 +935,6 @@ const printers = Printer.Names;
 if (printers === null)      … // this build cannot say
 else if (!printers.length)  … // it can, and there are none
 ```
-
-## PdfForm
-
-The form layer of a PDF. **Cairo draws the page; PoDoFo adds the fields a PDF
-viewer can fill.** Optional at build time, the sqlite mould: without PoDoFo
-`PdfForm` still exists, `Available` is false, and `AddFields` refuses naming the
-package.
-
-A [`Report`](report.md#report) with an `Input` or a `Signature` element uses
-this for you; an application calls it directly only when it already has a
-static PDF and wants to turn it into a form.
-
-| | |
-|---|---|
-| `Available` (ro) | whether this build has PoDoFo, which is what `AddFields` needs; when false the verb refuses with a sentence naming the package |
-| `AddFields(path, fields)` | adds the fields to the PDF at `path`, **in place**, and answers how many. Each field is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty for the signer's own application. The PDF must exist and be one this build's PoDoFo can parse; a failure leaves the file as it was |
-
-```js
-PdfForm.AddFields("solicitud.pdf", [
-    { Page: 1, Name: "nombre", Type: "Text",
-      Rect: { X: 160, Y: 734, Width: 300, Height: 24 }, Value: "Matías" },
-    { Page: 1, Name: "acepto", Type: "Check",
-      Rect: { X: 160, Y: 692, Width: 16, Height: 16 }, Checked: true },
-    { Page: 1, Name: "firma", Type: "Signature",
-      Rect: { X: 160, Y: 592, Width: 250, Height: 60 }, Reason: "Conformidad" },
-]);
-```
-
-**A signature field is a `/Sig` widget with no signature in it.** The user's own
-application — Acrobat, Preview, a browser or the platform's signing tool — fills
-it with their certificate; Bintana never needs the private key.
 
 ## Drawing
 
