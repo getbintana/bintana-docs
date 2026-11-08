@@ -275,6 +275,10 @@ const GLOBAL_SECTIONS = [
     ["Database and Table", "Connection", "Table", "Cursor"],
     ["Http",              "Http", "HttpClient", "Multipart"],
     ["Http Server",       "HttpServer", "HttpRequest"],
+    ["Socket",            "Socket"],
+    ["ServerSocket",      "ServerSocket"],
+    ["UdpSocket",         "UdpSocket"],
+    ["WebSocket",         "WebSocket"],
     ["AudioPlayer",       "AudioPlayer"],
     ["Profile",           "Profile"],
 ];

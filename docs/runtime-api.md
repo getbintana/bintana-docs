@@ -3413,6 +3413,55 @@ drawn at the size it was measured. A new painter per call, and it refuses once
 the caller passed the function and is on the stack. A worker does not install it
 — cairo and pango are drawing, and a worker installs no painter.
 
+## Sockets and WebSocket
+
+The transports beside HTTP, answered on the loop the application already
+runs. A TCP or Unix connection is [`Socket`](reference/globals/Socket.md), a
+listener [`ServerSocket`](reference/globals/ServerSocket.md), a datagram port
+[`UdpSocket`](reference/globals/UdpSocket.md), and a WebSocket
+[`WebSocket`](reference/globals/WebSocket.md).
+
+```js
+const print = new Socket({ Host: "192.168.1.50", Port: 9100, Line: true });
+print.OnConnected = () => print.Write("STATUS\n");
+print.OnLine = (line) => this.Lbl.Text = line;
+print.Connect();
+
+const door = new ServerSocket({ Host: "local", Port: 7000 });
+door.OnConnection = (client) => client.OnLine = (line) => client.Write(line + "\n");
+door.Listen();
+
+const udp = new UdpSocket({ Port: 9000 });
+udp.OnData = (bytes, from) => udp.Send(bytes, from);
+udp.Bind();
+```
+
+**A TCP chunk is not a message.** `OnData` hands the bytes one read returned;
+`Line: true` is the only framing the runtime does, and it raises `OnLine` per
+`EndOfLine`. `Write` queues and never blocks; `OnWritable` says the queue is
+empty. `Tls` on `Socket` is `true` for the system's store or `{ Ca, Cert }`
+for a named CA and/or a pinned certificate; `ServerSocket.Tls` is
+`{ Cert, Key }`. A `Task` worker has no loop and refuses these names.
+
+A WebSocket client is the same shape, with `OnMessage(bytes, isText)` and a
+close handshake:
+
+```js
+const ws = new WebSocket({ Url: "wss://example.com/feed" });
+ws.OnMessage = (bytes, isText) => this.add(bytes, isText);
+ws.OnOpen = () => ws.Send("subscribe");
+ws.Open();
+```
+
+The server half is `Http.Server.WebSocket`, the upgrade handler at `/`: the
+connection is already open, and the handler itself is the open event.
+
+```js
+const srv = Http.Server({ Port: 7000 });
+srv.WebSocket = (ws) => { ws.OnMessage = (b, text) => ws.Send(b, text); };
+srv.Start();
+```
+
 ## AudioPlayer
 
 Sound with no window, over GStreamer -- the `Video` widget's engine without

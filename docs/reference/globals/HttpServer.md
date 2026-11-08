@@ -26,6 +26,7 @@ srv.Start();
 | `Host` | `"local"` is loopback only and the default | [listening](#listening) |
 | `Port` | `8080` unless told | [listening](#listening) |
 | `Request` | assign `(req) => …` | [answering](#answering) |
+| `WebSocket` | assign `(socket) => …`: a `WebSocket` already open, for the upgrade path `/` | [answering](#answering) |
 | `Running` | `Port` is declared until `Start`, actual after | [listening](#listening) |
 | `ServerName` | the `Server:` header | [listening](#listening) |
 | `Start()` | listens; throws naming the reason (a busy port says which one) | [listening](#listening) |
@@ -107,6 +108,30 @@ is not noticed while the request waits**: soup sees it only when it writes, so
 Why that is so, and what else was deliberately left out — WebSocket, CGI shapes
 — is in [../../plans/http-server-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/http-server-plan.md), with the argument for
 each.
+
+## WebSocket
+
+Assign `srv.WebSocket = (socket) => …` before `Start`, and the server upgrades
+`/` to a WebSocket instead of answering it as HTTP. The handler is the open
+event: the connection it is handed is already open, and its `OnMessage`,
+`OnClosed` and `OnError` are set there.
+
+```js
+const srv = Http.Server({ Port: 7000 });
+srv.WebSocket = (ws) => {
+    ws.OnMessage = (bytes, isText) => ws.Send(bytes, isText);
+};
+srv.Start();
+```
+
+A server with `WebSocket` and no `Request` is a WebSocket-only listener: no
+HTTP route and no body guard are installed. A server with neither is refused
+at `Start`. The server holds each connection until it closes; `Stop` closes
+the live ones. The client side is [`WebSocket`](WebSocket.md).
+
+| | |
+|---|---|
+| `WebSocket` | assign `(socket) => …`: a `WebSocket` already open, for the upgrade path `/`. Set its `OnMessage`/`OnClosed` handlers here; **the handler itself is the open event**. `Request` is not required when this is set |
 
 ## What arrived
 

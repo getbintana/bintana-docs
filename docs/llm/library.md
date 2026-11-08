@@ -149,6 +149,86 @@ finds a captive portal with a plain-HTTP request to a `204` URL (needs `Http`).
 **A machine that cannot check says `"Routed"`, so `Online` is `false` there**;
 decide with `Reach` or `Probe`. Advice, never a guarantee.
 
+## Socket
+
+A TCP or Unix connection; `OnData` is bytes, `Line: true` is lines, `Tls` is the trust.
+
+| | |
+|---|---|
+| `Close()` | close now; `OnClosed` is raised once. Answers the socket |
+| `Connect([host], [port])` | start connecting; the optional arguments are a TCP shorthand for the properties. Answers the socket |
+| `Connected` (ro) | whether the connection is up now |
+| `EndOfLine` | the line separator `Line` uses, `"\n"` by default: `"\r\n"` for many devices |
+| `Host` | the name or address to connect to. Set before `Connect`; a Unix socket uses `Path` instead |
+| `Line` | `true`: buffer and raise `OnLine` for each complete `EndOfLine`; `false` (the default): `OnData` with the bytes one read returned. **TCP has no messages**, so a chunk is not a frame |
+| `LocalHost` (ro) | the local address once connected, `""` before |
+| `LocalPort` (ro) | the local port once connected, `0` before |
+| `OnClosed` | assign `() => …`: the connection ended, by the peer, by `Close`, or after `OnError`. It is raised once per connection |
+| `OnConnected` | assign `() => …`: the connection is ready, and the first `Write` belongs here. `null` takes it off |
+| `OnData` | assign `(bytes) => …`: bytes arrived, **not** a message. `Line: true` uses `OnLine` instead |
+| `OnError` | assign `(err) => …` with `{ Message, Kind }`, `Kind` one of `"Dns"`, `"Refused"`, `"Unreachable"`, `"Timeout"`, `"Tls"`, `"NotAllowed"`, `"Cancelled"` or `"Error"`. `OnClosed` follows |
+| `OnLine` | assign `(line) => …`: one complete line, without the separator, in `Line: true` mode |
+| `OnWritable` | assign `() => …`: the write queue is empty and the socket can take more. `Write` never blocks, so this is the flow-control answer |
+| `Path` | a Unix domain socket path, instead of Host/Port. On Windows it makes `Connect` refuse; the portable local road is `Ipc.Pipe` |
+| `Port` | the TCP port to connect to, 1 to 65535. `0` is refused by `Connect` |
+| `RemoteHost` (ro) | the peer's numeric address (or Unix path) once connected |
+| `RemotePort` (ro) | the peer's port once connected, `0` for a Unix socket |
+| `Server` (ro) | the `ServerSocket` that accepted this socket, or `null` for one the program connected itself |
+| `Timeout` | how long `Connect` may take, in milliseconds; `0` is none. The read side waits as long as the peer takes, which is what a scale or a printer does |
+| `Tls` | `true` trusts the system's store; `{ Ca, Cert }` names a CA file and/or a certificate to pin; `null` (the default) is a plain socket. Read back as what was set |
+| `Write(data)` | queue text (UTF-8) or `Bytes`; answers the socket. It throws when the socket is not connected, which is a mistake and not a late answer |
+
+## ServerSocket
+
+A listener; `OnConnection` hands a connected `Socket`, and `Stop` closes what it holds.
+
+| | |
+|---|---|
+| `Count` (ro) | the connections that are alive now |
+| `Host` | `"local"` (loopback, the default) or `"any"`, the same two words `Http.Server` uses |
+| `Listen([port])` | start accepting; the optional port is shorthand for the property. Answers the server |
+| `Listening` (ro) | whether it is accepting now |
+| `OnConnection` | assign `(client) => …`: a `Socket` already connected. Set its handlers here; `client.Server` is this listener |
+| `OnError` | assign `(err) => …` with `{ Message, Kind }`; an accept error does not stop the listener |
+| `Path` | a Unix domain socket path, instead of Host/Port |
+| `Port` | the TCP port to listen on, 0 to 65535. `0` asks the system for one; read it back after `Listen` |
+| `Stop()` | stop accepting and close every connection the server still holds. Answers the server |
+| `Tls` | `{ Cert, Key }`: the PEM files every accepted connection is wrapped with, or nothing for a plain listener. A file that cannot be read is refused where it is written |
+
+## UdpSocket
+
+A datagram port; one `Send` is one `OnData`.
+
+| | |
+|---|---|
+| `Bind([port])` | hold a local port and start receiving; the optional port is shorthand for the property. Answers the socket |
+| `Bound` (ro) | whether it holds a local port now |
+| `Broadcast` | whether `Send` may reach a broadcast address. Set it before `Bind` (or later; the socket takes it while it is open) |
+| `Close()` | release the port; answers the socket |
+| `Host` | `"local"` (loopback, the default) or `"any"`, the interface the socket binds to. This stage binds IPv4 |
+| `OnData` | assign `(bytes, from) => …`: one datagram and its sender as `{ Host, Port }`. Datagram boundaries are the kernel's, not this file's: one `Send` is one `OnData` |
+| `OnError` | assign `(err) => …` with `{ Message, Kind }`; a receive error does not close the socket |
+| `Port` | the local port, 0 to 65535. `0` asks the system for one; after `Bind` this is the port really held |
+| `Send(data, host, port)` | send one datagram of text (UTF-8) or `Bytes`. `host` is an IP address, not a name; `from` is a record an `OnData` was handed, and `Send(data, from)` is the same call with its two fields. Sending before `Bind` binds an ephemeral port first |
+
+## WebSocket
+
+A client, and the connection `Http.Server.WebSocket` hands to its handler.
+
+| | |
+|---|---|
+| `Close([code], [reason])` | start the close handshake, code `1000` by default; answers the socket |
+| `OnClosed` | assign `(code, reason) => …`: the close handshake finished, from either side |
+| `OnError` | assign `(err) => …` with `{ Message, Kind }`; a fatal error is followed by `OnClosed` |
+| `OnMessage` | assign `(bytes, isText) => …`: one message; `isText` is the frame's type, not a guess from the bytes |
+| `OnOpen` | assign `() => …`: the handshake finished and `Send` is allowed. On a server-side connection the handler itself is the open event |
+| `Open()` | connect a client; answers the socket |
+| `Opened` (ro) | whether it can `Send` now |
+| `Protocol` (ro) | the subprotocol the handshake agreed on, `""` when there is none |
+| `Send(data, [text])` | one message: text or `Bytes`; `text` overrides the type the value implies. Answers the socket |
+| `State` (ro) | `"Connecting"`, `"Open"`, `"Closing"` or `"Closed"` |
+| `Url` (ro) | the `ws://` or `wss://` address the client opens; a server-side connection answers the path it arrived on |
+
 ## Notification
 
 A desktop notification: for when the window is **not what the user is looking
@@ -2243,6 +2323,7 @@ srv.Start();
 | `MaxBody` | bytes of request body accepted. **1 MiB when nothing is said**, `0` for no limit; a declared `Content-Length` past it is answered `413` **with the body never read**, and a body that arrives without one (chunked) stops being kept once it passes the number and is refused the same way. The handler runs for neither |
 | `req.Multipart()` | the upload parsed: a `Multipart` to read with `Part(index)` (or re-post). Refused on a plain body |
 | `Request` | assign `(req) => …`. **Required before `Start`**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
+| `WebSocket` | assign `(socket) => …`: a `WebSocket` already open, for the upgrade path `/`. Set its `OnMessage`/`OnClosed` handlers here; **the handler itself is the open event**. `Request` is not required when this is set |
 | `Start()` | listens; throws naming the reason (a busy port says which one). A second `Start` is refused |
 | `Stop()` | `true` while something was listening, `false` after — like signalling a reaped child. **From inside a handler it waits for the handler**: `Answer` fills the message in and soup sends it when the handler returns, so `req.Answer(200, "bye"); srv.Stop();` answers first and disconnects after. `Running` stays true until the deferred disconnect runs |
 | `Running`, `Port`, `Url` | `Port` is declared until `Start`, actual after; `Url` is `""` until then, and empty again after `Stop` |
