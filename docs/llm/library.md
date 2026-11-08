@@ -540,6 +540,7 @@ Probe.Image("notes.txt")         // null
 
 | | |
 |---|---|
+| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Open`. A build without poppler says so |
 | `Image(path)` | the picture's pixels, from its header. `null` when `path` is not a picture this machine's loaders read -- exactly the files a `Picture` would not show, an `.svg` included where no SVG loader is installed, and its declared size where one is -- or is not there. **A file's header and nothing else**: the size of a picture already in memory is the handle's to answer, off the decode it already did. **No widget and no display**, which is what makes it answerable in a `main` project and before anything has been drawn |
 
 The size is in pixels; a vector picture answers the size it declares (an SVG's
@@ -555,8 +556,48 @@ text is **refused**, so `Probe.Image(undefined)` never probes `./undefined`.
 loading, saving, hashing, watching — and `File.Info` already answers a `Type`, so
 a second question about the same file under `File` would be a second answer for
 one word. A probe is what `ffprobe`, `exiftool` and `identify` call reading a
-header, and the namespace grows by the *kind* of thing (`Image` now). A worker
+header, and the namespace grows by the *kind* of thing (`Image`, `Pdf`). A worker
 has it: a report sizing a logo on a thread is what it was for.
+
+## PdfDocument
+
+A PDF, read: pages, their size and text, metadata, and a page drawn on a
+`Painter`. Pages count from **1**; sizes are in **points**.
+
+```js
+const doc = PdfDocument.Open("manual.pdf");       // or Open(path, password)
+doc.Pages; doc.PageSize(1); doc.Text(3); doc.Title;
+Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print, a preview
+```
+
+| | |
+|---|---|
+| `PdfDocument.Open(path, [password])` | whether it still is |
+| `Author` (ro) | who the file says wrote it; `""` when it says nothing |
+| `Close()` | let it go; closing twice is not an error |
+| `Created` (ro) | when the file says it was made, a `Date`; `null` when it says nothing |
+| `Creator` (ro) | the program that made the document; `""` when it says nothing |
+| `Draw(painter, page, [width], [height])` | draws that page on a `Draw`'s painter, at its origin and under its transform: at its own size in points, or scaled to fit `width` by `height`, keeping its proportions. No white of its own: the paper is the caller's. What a `DrawPage` hands on, which is how a viewer, a print and a preview are the same code |
+| `Keywords` (ro) | the file's keywords, as it wrote them; `""` when it has none |
+| `Modified` (ro) | when the file says it was last changed, a `Date`; `null` when it says nothing |
+| `Open` (ro) | whether it still is |
+| `PageSize(page)` | that page's size in **points**, 72 to the inch; pages need not all be one size |
+| `Pages` (ro) | how many pages, numbered from 1 as `DrawPage` numbers them |
+| `Path` (ro) | the file it was opened from |
+| `Producer` (ro) | the program that wrote the PDF; `""` when it says nothing |
+| `Subject` (ro) | the file's own subject line; `""` when it has none |
+| `Text(page)` | the text on that page, in reading order, as the library reads it -- what a search or an index is built from. Generic: what a particular layout *means* is the program's |
+| `Title` (ro) | what the file says it is called; `""` when it says nothing |
+
+- **Reading is generic**: `Text(page)` is the page's text in reading order, for
+  a search or an index. Never write a parser for a particular supplier's
+  layout; that is the supplier's format, not PDF.
+- **To show a PDF, use [`PdfView`](pdfview.md)** (`uses: ["pdfview"]`); to print
+  or preview it, `Printer.Send`/`Printer.Preview` over its `Canvas`.
+- What a file is without keeping it: `Probe.Pdf(path)`.
+- Optional at build time: without poppler-glib, `Open` refuses naming the
+  package.
+
 
 ## Exec
 

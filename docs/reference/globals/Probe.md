@@ -19,6 +19,7 @@ display and cannot make a [`Picture`](../widgets/Picture.md) to ask.
 | | | |
 |---|---|---|
 | `Image(path)` | the picture's pixels, from its header | [image](#image) |
+| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom | [pdf](#pdf) |
 
 ## Image
 
@@ -77,6 +78,21 @@ There is deliberately no `Probe.File`, because a file's size and time are
 
 A worker has it: nothing in it calls back or keeps a list, and a report sizing a
 logo on a thread is the caller a widget could not have served anyway.
+
+## Pdf
+
+| | |
+|---|---|
+| `Pdf(path)` | what a PDF is, without keeping it: how many pages, the first one's size in **points**, and what it says it is called and by whom. `null` when `path` is not there or not a PDF; `{ Encrypted: true }` when it wants a password. Reading it -- its text, its pages drawn -- is `PdfDocument.Open`. A build without poppler says so |
+
+```js
+Probe.Pdf("manual.pdf")   // { Pages: 12, Width: 595, Height: 842, Title: "Manual", Author: "", Encrypted: false }
+Probe.Pdf("secret.pdf")   // { Encrypted: true }
+Probe.Pdf("notes.txt")    // null
+```
+
+The size is the **first** page's, in points; a document's pages need not all be
+one size, and [`PdfDocument`](PdfDocument.md) answers each.
 
 ## See also
 

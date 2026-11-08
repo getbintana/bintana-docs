@@ -1077,6 +1077,48 @@ a `Type`, so a second answer about the same file under the same owner is the
 ambiguity the name avoids. The namespace grows by the kind of thing, and there is
 no `Probe.File`. Installed in a worker too: a header read and a dictionary.
 
+`Probe.Pdf(path) -> { Pages, Width, Height, Title, Author, Encrypted }`: a PDF's
+page count, its first page's size in points and its title and author, or
+`{ Encrypted: true }` for one that wants a password, or `null` for a file that
+is not there or not a PDF -- through poppler, and refused naming the package in a
+build without it.
+
+## PdfDocument
+
+`PdfDocument.Open(path, [password])`, in `bta_poppler.c` over poppler-glib: a
+PDF's pages, their size in points and text in reading order, its metadata (`""`
+for a text the file does not say, `null` for a date), and `Draw(painter, page,
+[width], [height])`, which puts a page on a `Draw`'s painter at its origin and
+under its transform -- fitted to a size if given, with no white of its own. That
+last is what makes a viewer, a print and a preview one code: `lib/pdfview`'s
+`PdfView` is a `DrawingArea` whose `Draw` and `DrawPage` call it.
+
+| | |
+|---|---|
+| `PdfDocument.Open(path, [password])` | reads a PDF and answers it. Throws, saying which: no such file, encrypted and wants a password, the wrong password, or not a PDF this machine reads |
+| `Author` (ro) | who the file says wrote it; `""` when it says nothing |
+| `Close()` | let it go; closing twice is not an error |
+| `Created` (ro) | when the file says it was made, a `Date`; `null` when it says nothing |
+| `Creator` (ro) | the program that made the document; `""` when it says nothing |
+| `Draw(painter, page, [width], [height])` | draws that page on a `Draw`'s painter, at its origin and under its transform: at its own size in points, or scaled to fit `width` by `height`, keeping its proportions. No white of its own: the paper is the caller's. What a `DrawPage` hands on, which is how a viewer, a print and a preview are the same code |
+| `Keywords` (ro) | the file's keywords, as it wrote them; `""` when it has none |
+| `Modified` (ro) | when the file says it was last changed, a `Date`; `null` when it says nothing |
+| `Open` (ro) | whether it still is |
+| `PageSize(page)` | that page's size in **points**, 72 to the inch; pages need not all be one size |
+| `Pages` (ro) | how many pages, numbered from 1 as `DrawPage` numbers them |
+| `Path` (ro) | the file it was opened from |
+| `Producer` (ro) | the program that wrote the PDF; `""` when it says nothing |
+| `Subject` (ro) | the file's own subject line; `""` when it has none |
+| `Text(page)` | the text on that page, in reading order, as the library reads it -- what a search or an index is built from. Generic: what a particular layout *means* is the program's |
+| `Title` (ro) | what the file says it is called; `""` when it says nothing |
+
+**Generic reading, on purpose.** What a particular layout means -- an invoice
+from a supplier -- is the supplier's format; a library promises the text. The
+name is the object's and not a `Pdf` theme beside `PdfForm` (PoDoFo writing
+form fields into a PDF Cairo drew): one word per meaning. Optional at build
+time; without poppler-glib `Open` and `Probe.Pdf` refuse naming the package.
+
+
 ## Exec
 
 ```js
