@@ -3284,7 +3284,7 @@ srv.Start();   // throws naming the GError: a busy port says which one
 | | |
 |---|---|
 | `Server([opts])` | the options are an object, like the client's -- a bare port is refused. `Port` (`8080` unless told, `0` ephemeral and read back after `Start`), `Host: "local"` (loopback only) \| `"any"` (all interfaces -- an explicit word, since binding the world by default is the footgun), `ServerName` (the `Server:` header; `""` for soup's own), `Tls: { Cert, Key }` (files; `https` when set, missing ones fail at `Start` naming them), `Allow` (exact IPs, or nothing which is open -- refused remotes get `403` before the handler runs), `Auth: { Realm, Users }` (Basic over the whole server; nothing set is open, and `Auth`/`Tls` read back `null` when they are). `Allow` matches an address exactly, so a `Host: "any"` server on a dual-stack machine sees `::1` and `127.0.0.1` as two different remotes |
-| `Request` | assign `(req) => …`; required before `Start` (`Request is required`), replaceable while running; anything but a function is refused |
+| `Request` | assign `(req) => …`; required before `Start` unless `WebSocket` is set (`Request or WebSocket is required`), replaceable while running; anything but a function is refused |
 | `Start()` | listens now; a second `Start` while running is refused rather than rebound. `Port`/`Host`/`ServerName` apply here, so re-`Start`ing moves the server |
 | `Stop()` | `true` while something was listening, `false` after -- the `Exec` mold |
 | `Running`, `Port`, `Url` | `Port` is declared until `Start`, actual after; `Url` is `""` until then, and empty again after `Stop` |

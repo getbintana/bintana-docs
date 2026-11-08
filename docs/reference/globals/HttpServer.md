@@ -82,7 +82,7 @@ port is still held.
 
 | | |
 |---|---|
-| `Request` | assign `(req) => …`. **Required before `Start`**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
+| `Request` | assign `(req) => …`. **Required before `Start` unless `WebSocket` is set**, and replaceable while running — even from inside the handler: the running one finishes its request and the next goes to the new one |
 | `Answer(status, [body], [opts])` | `body` follows the client's rules — an object serialises as canonical JSON — and `opts` carries `Headers` and `ContentType`. **The second argument is always the body and the third always the options**. Answers `true`; **`false` for a held request that already ended** — the deadline answered first, or the server stopped — since answering after that is an ordinary outcome. **A client that closed its end is noticed only when the answer is written**, so `true` means handed to the connection, not read. A second `Answer` throws |
 | `Hold([timeout])` | **answer this request later**: asked inside the handler, it lets the handler return without the `500` an unanswered request gets, and hands back the request to `Answer` from a callback — a `Task`'s `Done`, an `Exec`'s exit, another `Http` reply. **Gives up after 30 s with `503`**; `timeout` is in milliseconds and `0` waits for ever. A held request the program lets go of unanswered is answered `500`, and one whose server stops ends there. Only inside the handler, once |
 
