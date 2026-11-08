@@ -142,7 +142,7 @@ the action — a menu of choices, a palette.
 
 ## What goes wrong
 
-- **The handler runs while the form is filling itself in.** Assigning `Index`
+- **The handler runs while the program fills the form in.** Assigning `Index` from code
   raises `Select`, so a method that rebuilds the list and then selects a row
   re-enters whatever `Select` does. Assigning `Items` and calling `Add` do
   **not** raise it. `examples/notes` carries a `showing` flag for exactly this,

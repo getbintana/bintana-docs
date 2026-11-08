@@ -390,6 +390,13 @@ A child node:
   same, and its rows are its `children`. `Widget.DeferredProperties(type)`
   is the list, so the order is the class's answer and not a rule each file has
   to remember.
+  **Applying a property raises no handler by name.** A setter GTK answers with
+  a signal -- `ComboBox.Index`, `TextBox.Text`, a `Notebook`'s first page --
+  would otherwise reach `Cmb_Select` before the controls declared after it are
+  on the form; while a `.form` is applied, `<name>_<event>` on its form is not
+  called, and a handler put on with `On` still is. The declared values are the
+  starting state, read in `Form_Open`. After the load, the same assignment from
+  code raises its event as it always has.
 - `children` nest to at most **128** deep. A container's children are added to
   it, not to the form.
 - `design` is the other dictionary a node may carry: see below.

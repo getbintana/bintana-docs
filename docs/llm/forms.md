@@ -351,6 +351,10 @@ Events: `Open`, `Close`, `Resize(width, height)`.
   close is allowed — a vetoed `Form_Close` keeps it — and is dropped on
   `HideOnClose` too, where a later `Show()` takes it again. Hiding with
   `Visible = false` does not end it: only closing does.
+- **A `.form`'s own values raise no handler.** `"Index": 1` on a combo does not
+  call `Cmb_Select` and `"Text"` on a text box does not call `Txt_Change`: the
+  file is the starting state, read in `Form_Open`. The same assignment from
+  code afterwards raises the event.
 - **`Show()` runs `Form_Open` before it returns.** Whatever the handler set is
   readable on the next line, with no waiting. What needs a frame is anything that
   *measures* — those are two different questions.

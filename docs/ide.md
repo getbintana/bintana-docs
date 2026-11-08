@@ -4342,13 +4342,13 @@ the written ones — before touching a row. Reading which handlers exist is **on
 read of the `.js` and not one per event, which is what `hasHandler` costs and what
 the menu beside it still pays.
 
-**One trap, measured.** A `Switcher` raises `Switch` when its first page makes
-`Current` go from nothing to zero, and the pages are built by the `.form` — which is
-read inside `Form`'s own constructor. A subclass's field initialisers run *after*
-`super()` returns, so `SideTabs_Switch` fires with every helper on `MainForm` still
-`undefined`. The note beside those fields claimed an initialiser runs before any
-event can; that is true of every event raised after the window exists and false of
-the ones the load itself raises. A handler reachable that way guards, and says so.
+**One trap, measured, and closed in the runtime.** A `Switcher` raises `Switch`
+when its first page makes `Current` go from nothing to zero, and the pages are built
+by the `.form` — which is read inside `Form`'s own constructor, before a subclass's
+field initialisers run — so `SideTabs_Switch` fired with every helper on `MainForm`
+still `undefined`, and nineteen handlers across the IDE, the libraries and the
+examples guarded against the same thing. A `.form` raises no handler by name while
+it loads now, and the guards are gone.
 
 ## Components of the project
 
