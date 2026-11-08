@@ -2016,7 +2016,8 @@ page name in the bottom panel is its console.
 
 **Where a database is comes from the project.** Three things name one: a
 `.conn` file (`{ "kind": "sqlite", "path": "data/clients.db" }`, now a
-*Connections* category of the project tree), a form's `Connection` part with
+*Connections* category of the project tree, written and edited by
+[its own dialog](#a-connection-edited)), a form's `Connection` part with
 its `Path`, and a `.db`/`.sqlite` file left in the tree. The path is the
 identity, so a `.conn` and a form that name the same file are one entry, and
 the models of every form are gathered onto it. **A database that is not there
@@ -2037,6 +2038,26 @@ over a `TableView`; `SELECT`, `PRAGMA`, `EXPLAIN` and `WITH` go through
 `Query`, everything else through `Execute`, whose answer is what changed.
 **The connection is the console's and is closed after each run** -- this is a
 window onto a file, not the application's session.
+
+#### A connection, edited
+
+*File > New connection...* writes a `.conn`, and *Edit connection...* on the
+project tree's menu opens one -- the double click stays the Data view's, since
+looking at a database is what a connection is opened for. The dialog
+(`ConnectionForm`) asks the kind (an SQLite file, the one driver there is) and
+where the file is, relative to the project so it travels with it, with a chooser
+on the field. **Under the fields it says what the path leads to**, asked of
+SQLite: *a database with 3 tables*, *not created yet* -- and looking does not
+create it; the program creates its database the first time it opens it -- or
+why SQLite will not open it, and whether the file is outside the project.
+
+A new connection is written **at the top of the project**, beside
+`project.json`, because that is where a form's `Source` looks for
+`<name>.conn`; and its name takes **no dot**, because `sales.clients` is split
+at the first one. A name another `.conn` already has is refused. Renaming one is
+the tree's *Rename*, like any other file. OK keeps the keys the dialog does not
+show, so a `.conn` that says more than the dialog knows is not written back
+smaller.
 
 What the page does not do is as deliberate as what it does: it does not edit
 rows, does not write a schema, and does not create a database. Those are the
@@ -2705,8 +2726,9 @@ the loader read.
 ## The project's own settings
 
 `Ctrl+Shift+P`, or *Project settings...* from the menu bar or from the tree's own
-menu, opens `ProjectForm`: the name, the form it starts at, the description, the
-libraries it uses, and the order its code is loaded in.
+menu, opens `ProjectForm`: the name, the form it starts at, the description, how
+loudly the accessibility check speaks, the libraries it uses, and the order its
+code is loaded in.
 
 The dialog **checks nothing itself**. It assigns to a `ProjectFile` and reports
 whichever setter refused, which is how the field that is wrong gets named without
@@ -2728,6 +2750,12 @@ Two things it knows that a text field could not:
   a text field for a function, because the IDE never loads the project's code and
   has no functions to offer. One is filled and the other emptied on the way to the
   file, so a manifest written from here cannot declare both.
+- **The accessibility box is `"accessibility"`**: *warnings*, *notes* or
+  *nothing*, the severity every row of the accessibility check
+  takes. It shows what the check will do with what the file says, and an
+  untouched box writes nothing -- a manifest that says no word keeps none, and
+  one whose word is not a level keeps it for the project check to report.
+  Choosing *warnings* takes the word out, since that is what no word means.
 - **The libraries are ticked, and what is offered is what this machine has.**
   `uses` was the last thing in a manifest that could only be written in a text
   editor: the runtime resolved it and the palette offered whatever it found, but
