@@ -27,6 +27,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`** | [when something throws](#when-something-throws) |
 | `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again | [a second run](#a-second-run) |
 | `Quit(code)` | quit with that exit status | [ending](#ending) |
+| `Theme` | `"dark"` or `"light"` to draw the whole application in that variant of the theme whatever the desktop prefers, `""` (the default) to follow it | [light or dark](#light-or-dark) |
 | `Replacements()` | every name this language takes away, and what to write instead | [asking about the machine](#asking-about-the-machine) |
 | `Version` | what the **project** calls its release | [the project](#the-project) |
 
@@ -236,6 +237,23 @@ silently: `xdg-desktop-portal-gtk` inhibits through GNOME's session manager,
 and elsewhere only `Idle`, through `org.freedesktop.ScreenSaver` if anything
 owns it — on a default XFCE nothing does. Asking logind and the desktop's
 power manager directly is planned.
+
+## Light or dark
+
+| | |
+|---|---|
+| `Theme` | `"dark"` or `"light"` to draw the whole application in that variant of the theme whatever the desktop prefers, `""` (the default) to follow it. Assignable at any time: open windows follow, a `Form` raises `ThemeChange` and `Dark` answers the new ground. `""` puts back what the desktop said. **The program outranks `--theme`**, which sets the starting value; a word that is not one of the three is refused. A theme forced with the `GTK_THEME` variable (`Adwaita:dark`) is beyond it |
+
+```js
+// a setting the person chose, applied before the first window is drawn
+Application.Theme = Settings.Get("theme", "");   // "", "light" or "dark"
+```
+
+A form hears the change as it hears the desktop's — `ThemeChange`, raised once
+the window has drawn a frame in the new colours, so `Dark` read in the handler is
+the new ground — and every control's `Dark` follows. It is the variant of the
+*same* theme: what a program wants when a person picks *Dark* in its own
+preferences, and not a way to load another theme.
 
 ## Ending
 

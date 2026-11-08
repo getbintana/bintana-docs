@@ -204,6 +204,7 @@ boundary is the process: the IDE already runs a project as a child.
 | `HasCommand(name)` | whether that program is on the PATH — `Exec` throws when it is not, so this is the question that does not need an exception |
 | `Icons([contains])` | every icon name the search path offers, sorted; narrowed by substring |
 | `DecorationLayout` | how this desktop arranges a window's title bar — `"icon,menu:minimize,maximize,close"` |
+| `Theme` | `"dark"`, `"light"`, or `""` to follow the desktop; assignable at any time, and it outranks `--theme`. Anything else is refused |
 | `CheckSource(text)` | `null` if the text is valid JavaScript, otherwise `{ Message, Line, Column }` |
 | `Symbols(text)` | `[{ Name, Kind, Line, Parent, Super, Params, End, Doc, Returns }]` — the classes, methods, top-level functions, functions assigned at the top level, variables and scopes the text declares, each with its line and its JSDoc comment, out of the parser that would run it |
 | `FreeNames(text)` | `[{ Name, Line }]` — every name the text uses that nothing in it declares and the runtime does not answer, one row per use, out of the compiler with nothing run. What is left is what the rest of the program has to declare — or a `ReferenceError` on the day that line runs. `typeof X` is not a use; `[]` for text that does not compile |

@@ -367,13 +367,16 @@ that is on a form needs none of that, and neither does the form: both answer
 correctly **before** the window is presented, which is what makes `Dark` usable
 in `Form_Open`.
 
-A `Form` raises **`ThemeChange`** when the desktop moves it, out of `GtkSettings`'
-`gtk-theme-name` and `gtk-application-prefer-dark-theme`. Three things about it:
-the colours are already the new ones inside the handler (measured: the ink goes
-from 0.20 to 0.93 luma across that call), so nothing has to wait an idle for GTK
-to catch up; **one change may raise it twice**, since a desktop can move either
-property, which is fine because the event carries nothing and a handler re-reads
-state; and it is the **form's** event and no other control's — what a theme
+A `Form` raises **`ThemeChange`** when the desktop moves it -- or the program,
+through `Application.Theme` -- out of `GtkSettings`' `gtk-theme-name`,
+`gtk-application-prefer-dark-theme` and, from GTK 4.20, `gtk-interface-color-scheme`.
+Three things about it: it is raised **once the window has drawn a frame in the
+new colours**, because inside GTK's own notification the styles are still the
+old ones (measured on GTK 4.22: `Dark` read there answered the ground being
+left), so `Dark` read in the handler is the new answer, and a form that is not
+on screen hears it when it is shown; it is raised **once per change**, however
+many of those settings moved; and it is the **form's** event and no other
+control's — what a theme
 change costs is the icons and colours an application chose for itself, and that
 is a decision a form made. `Form_Resize` is the same shape for the same reason.
 

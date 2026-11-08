@@ -30,7 +30,7 @@ dispatches every event to a method. A form is also a
 | **event** `Close()` | it is closing | [showing and closing](#showing-and-closing) |
 | **event** `Open()` | the first time it is shown, **before `Show()` returns** | [showing and closing](#showing-and-closing) |
 | **event** `Resize(width, height)` | the size GTK settled on — the same numbers `Bounds()` gives | [how it appears](#how-it-appears) |
-| **event** `ThemeChange()` | the desktop changed the theme. [`Dark`](Widget.md#how-it-looks) read inside the handler is already the new answer | [how it appears](#how-it-appears) |
+| **event** `ThemeChange()` | the desktop or `Application.Theme` changed the theme | [how it appears](#how-it-appears) |
 | **event** `Activate()` | the window became the one the user is working in: a click on it, alt-tab, or a dialog of its own closing | [how it appears](#how-it-appears) |
 | **event** `Deactivate()` | the window stopped being that one — another program's window, or **a dialog this form opened** | [how it appears](#how-it-appears) |
 | **event** `StateChange()` | [`Maximized`](Form.md) or [`FullScreen`](Form.md) changed, by the title bar, a key or the program itself | [how it appears](#how-it-appears) |
@@ -91,7 +91,7 @@ A field that should press the default button on Enter says so itself with
 | `Minimize()` | a verb because there is nothing to read back — GTK reports nothing about a minimised window |
 | `Center()` | **a no-op on Wayland**: the compositor places windows. [`Screen`](../../llm/library.md#screen) answers how big the desktop is, which is a different question from where a window goes |
 | **event** `Resize(width, height)` | the size GTK settled on — the same numbers `Bounds()` gives. Fires when the window is first given a size too |
-| **event** `ThemeChange()` | the desktop changed the theme. [`Dark`](Widget.md#how-it-looks) read inside the handler is already the new answer; **it may fire twice for one change**, so a handler re-reads and restyles rather than counting |
+| **event** `ThemeChange()` | the desktop or `Application.Theme` changed the theme. Raised **once per change, after the window's first frame in the new colours**, so [`Dark`](Widget.md#how-it-looks) read inside the handler is the new answer; a form that is not on screen hears it when it is shown |
 | **event** `Activate()` | the window became the one the user is working in: a click on it, alt-tab, or a dialog of its own closing. Where a form re-reads what another program may have changed, or resumes what `Deactivate` paused |
 | **event** `Deactivate()` | the window stopped being that one — another program's window, or **a dialog this form opened**. Raised only while the window is on screen, never as it closes |
 | **event** `StateChange()` | [`Maximized`](Form.md) or [`FullScreen`](Form.md) changed, by the title bar, a key or the program itself. Carries nothing: read the two properties. **May fire twice for one gesture** |
