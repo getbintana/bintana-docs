@@ -93,7 +93,7 @@ none of.
 **Style** is how a control is dressed: the CSS classes it wears, as a list —
 `"danger"`, `"card title-3"`. The classes come from `<project>/app.css`, which the
 runtime loads at `GTK_STYLE_PROVIDER_PRIORITY_APPLICATION` because it is found by
-name beside `project.json` (see [formats](formats.md)), or from the desktop's
+name beside `project.btp` (see [formats](formats.md)), or from the desktop's
 theme, which declares a good many of them already. **Under the project's sheet
 there is one of the runtime's own** (`runtime/css/base.css`, baked into the
 binary and loaded first), and it is where a class the theme writes for a node a
@@ -3777,7 +3777,7 @@ of boxes rather than coordinates uses instead.
   behave like VB's `MsgBox`; a confirmation with an answer is a form
   (`ConfirmForm`), not a runtime primitive.
 - `.js` load order matters when one class extends another of the same project.
-  `sources` in `project.json` fixes it.
+  `sources` in `project.btp` fixes it.
 - The designer edits menus in a dialog rather than on the canvas — there is
   nothing to reorder, since a GTK4 menu is a model wired to actions and not a
   widget. The board **does** show the form's menu bar: a `Panel` and a `Label`

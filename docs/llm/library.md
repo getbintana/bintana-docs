@@ -6,8 +6,8 @@ Every name here is a global: ambient, always present, no import.
 
 | | |
 |---|---|
-| `Name` | from `project.json` |
-| `Id` | from `project.json`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
+| `Name` | from `project.btp` |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `Directory` | the project directory, absolute. What a relative path in a project resolves against — an image a report draws, a document a viewer opens, a data file that ships with the application |
 | `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](../reference/globals/Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other |
@@ -167,7 +167,7 @@ Notification.Withdraw(id)
 | `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name; sending again with the same `Id` **replaces** what is showing. The title and body are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from |
 | `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error |
 
-**The project has to declare an `id`** in `project.json`: a notification is sent in
+**The project has to declare an `id`** in `project.btp`: a notification is sent in
 the name of an application, and without one GLib fails an assertion and sends
 nothing — so this refuses, saying what to declare. **A project with a `main` has no
 application at all** and refuses too; a tool says it is done on stdout.
@@ -284,7 +284,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 | `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
-| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.json` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
+| `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.btp` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 | `LoadXml(path)` | the file as a [`Xml`](../reference/globals/Xml.md) document. **The error names the file**, and the document's own declaration says what encoding it is in: this reads bytes, unlike `Load` |
 | `SaveXml(path, node)` | the canonical XML shape, atomically, honouring neither locale nor encoding guesses |
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
@@ -1968,7 +1968,7 @@ File.SaveJson(path, q);                           // one object
   Fields()` is refused — it used to declare no fields at all, silently.
 - **Naming a class in `static Fields` is a load-order dependency**, because the
   static field runs at declaration: `Lines: Field.List(Line)` needs `Line`'s file
-  ahead of it in `project.json`'s `sources`, the same way `extends` does, or it is
+  ahead of it in `project.btp`'s `sources`, the same way `extends` does, or it is
   `ReferenceError: Line is not defined` at the declaration. The thunk removes the
   dependency (`Field.List(() => Line)`) — but writing the order down is better
   than deferring it.

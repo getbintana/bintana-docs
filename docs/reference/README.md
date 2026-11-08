@@ -71,7 +71,7 @@ from the C, from a probe written to ask, or from an example that does it.
 |---|---|
 | `widgets/` | one page per **class**: `TableView`, `Label`, `Split`, `Form`. `Widget` is what they all inherit from, containers included, which is why the folder is called that and not `controls/` |
 | `globals/` | one page per **global**: `File`, `Logger`, `Timer`, `Locale`, `Decimal`, `Record`. It is what the rest of this tree calls them and what [`llm/library.md`](../llm/library.md) is the short form of |
-| `libraries/` | one page per **class a shipped library publishes**: `AboutBox`, `AskText`, `Chart`, `Confirm`, `Markdown`, `Metainfo`, `Nsis`, `Package`, `PropertyGrid`, `QrCode`, `QrView`, `Report`, `Xlsx`. They are reached with `uses` in `project.json`, which makes what they publish part of the contract exactly as a control's properties are |
+| `libraries/` | one page per **class a shipped library publishes**: `AboutBox`, `AskText`, `Chart`, `Confirm`, `Markdown`, `Metainfo`, `Nsis`, `Package`, `PropertyGrid`, `QrCode`, `QrView`, `Report`, `Xlsx`. They are reached with `uses` in `project.btp`, which makes what they publish part of the contract exactly as a control's properties are |
 
 A page's name is the class or the global it documents, exactly as it is spelt in
 code — `widgets/TableView.md`, `globals/File.md` — so the IDE can find the page

@@ -1,6 +1,6 @@
 # Forms
 
-## project.json
+## project.btp
 
 ```json
 {
@@ -805,7 +805,7 @@ frames — poll for the fact you need.
 ## Styles
 
 An application decides what it looks like once, in `<project>/app.css`. It is
-found by name; nothing in `project.json` points at it.
+found by name; nothing in `project.btp` points at it.
 
 ```css
 /* app.css */

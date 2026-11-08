@@ -2,7 +2,7 @@
 
 Android needs `R.string.save` because its resources are compiled into an APK and
 addressed by an integer. Here the **project directory is the resource tree** —
-`icons/` and `app.css` are found by name, with nothing in `project.json`
+`icons/` and `app.css` are found by name, with nothing in `project.btp`
 pointing at them, and nothing is compiled or packed. So of the four things
 Android bundles under "resources", three were already answered:
 
@@ -415,7 +415,7 @@ there, so without it the only way to find out is to try and catch — an excepti
 used as a question. It answers about an absolute path too, by looking at the file.
 
 *Project > Translation editor…* overrides the choice, and it is kept in
-`Settings` and not in `project.json`: a path to a program on this machine is not
+`Settings` and not in `project.btp`: a path to a program on this machine is not
 a property of the project, and putting it in the manifest would commit one
 person's setup to everybody's checkout. A configured command that has since been
 uninstalled falls back rather than failing — the setting is a preference, not a

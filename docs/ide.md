@@ -9,7 +9,7 @@ runtime is enough to write a real application in.
 
 ```
 ide/
-  project.json       startup MainForm, sources in dependency order
+  project.btp       startup MainForm, sources in dependency order
   forms/             a window each: the .form and the class that answers it
     MainForm         the whole window: toolbar, tree, tabs, designer, console
     AskForm          "type a name"                    ConfirmForm    yes/no
@@ -33,10 +33,10 @@ ide/
     Completion.js    what the editor proposes, and from what
     Finder.js        the find bar
     Runner.js        running the project, and reading what it printed
-    Manifest.js      project.json, and everything that writes to it
+    Manifest.js      project.btp, and everything that writes to it
     Recovery.js      the dirty tabs, copied aside against a crash
     Session.js       the desk as it was left: the window, and what was open
-    ProjectFile.js   project.json as a Record: what it may say -- name, version,
+    ProjectFile.js   project.btp as a Record: what it may say -- name, version,
                      startup, sources, description
     Strings.js       every string the project shows, walked out of its sources
     Translations.js  the catalogues: the .po format, the plural rules, msgmerge
@@ -484,7 +484,7 @@ form by name wherever the file is.
 
 The IDE's own tree is the first client: `ide/forms/` holds the twelve
 `.form`/`.js` pairs, `ide/modules/` the eighteen loose classes, and the root is
-`project.json`, `icons/` and `po/`. It had thirty-five files in it.
+`project.btp`, `icons/` and `po/`. It had thirty-five files in it.
 
 ## The tree, in two views
 
@@ -706,7 +706,7 @@ same generated topic. Back goes between generated topics and pages alike, and a 
 to the web -- *More detail* at the foot of a topic, the index's address of the long
 form -- is handed to `xdg-open` where there is one, and shown where there is not.
 
-**Accessibility is a check, and the project says how loudly.** The runtime can name a control to a screen reader (`AccessibleName`, `Label.For`, an icon-only button's short `Tooltip`), and nothing in it makes anyone do so; so the project check (`Check`, the same pass as names and properties) reads every `.form` and says, as a row in *Problems*, which controls Orca would call just "button", "text box" or "image". Three rules, each with a real fix: **a field** (`TextBox`, `SpinBox`, `DecimalBox`, `ComboBox`, `DatePicker`, `Slider`, `Switch`, the editors) with no `AccessibleName` and no `Label.For` pointing at it -- and when the label just above it has no `For`, the row says so, since that is almost always the fix; **a button** with no `Text`, no `Action` that has words and no `Tooltip` of 60 characters or fewer; **a picture** with no `AccessibleName`. **Every row is the severity `project.json` chose** -- `"accessibility": "warning"` (the default), `"info"`, or `"off"` -- one word for all three, because a project that thinks of it as advice thinks so about every rule. **A control that is only decoration says so with `AccessibleHidden`**, which is what a screen reader needs in order to skip it, and so the one way to quiet a row that is also the truth. It sees what a `.form` declares and nothing a program builds in code; `AccessibleInfo()` on the live control answers for those.
+**Accessibility is a check, and the project says how loudly.** The runtime can name a control to a screen reader (`AccessibleName`, `Label.For`, an icon-only button's short `Tooltip`), and nothing in it makes anyone do so; so the project check (`Check`, the same pass as names and properties) reads every `.form` and says, as a row in *Problems*, which controls Orca would call just "button", "text box" or "image". Three rules, each with a real fix: **a field** (`TextBox`, `SpinBox`, `DecimalBox`, `ComboBox`, `DatePicker`, `Slider`, `Switch`, the editors) with no `AccessibleName` and no `Label.For` pointing at it -- and when the label just above it has no `For`, the row says so, since that is almost always the fix; **a button** with no `Text`, no `Action` that has words and no `Tooltip` of 60 characters or fewer; **a picture** with no `AccessibleName`. **Every row is the severity `project.btp` chose** -- `"accessibility": "warning"` (the default), `"info"`, or `"off"` -- one word for all three, because a project that thinks of it as advice thinks so about every rule. **A control that is only decoration says so with `AccessibleHidden`**, which is what a screen reader needs in order to skip it, and so the one way to quiet a row that is also the truth. It sees what a `.form` declares and nothing a program builds in code; `AccessibleInfo()` on the live control answers for those.
 
 **Landing on a member is a search and not an anchor.** The finest anchor a page
 has is its class, and what F1 on a property means is *the row that describes it*:
@@ -979,7 +979,7 @@ is worse than one that refused:
 | a name already declared, or a class of a library the project `uses` | **refused**: the two would collide at load |
 | a local variable or a parameter of the same name | **refused**: a scope is not something this can see |
 | `<control>_<event>` | **refused**: rename the control, which carries its handlers along |
-| a form class | **refused**: F2 renames it, and moves its `.form` and `project.json` with it |
+| a form class | **refused**: F2 renames it, and moves its `.form` and `project.btp` with it |
 | a control | **refused**: the designer's rename is the one that carries its handlers |
 | a class a `.form` places as a control | renamed too: the form's `type` is rewritten through the same `retypeForms` F2 uses |
 
@@ -1295,7 +1295,7 @@ They live in three places and none of them means two things:
 
 | | where | versioned |
 |---|---|---|
-| the configurations themselves | `project.json`'s `launch` | **yes** — what a project needs to start is the project's |
+| the configurations themselves | `project.btp`'s `launch` | **yes** — what a project needs to start is the project's |
 | which one is chosen | `Settings` | no — two people on one project may run different ones |
 | a *suggestion* for new ones | `Settings` | no |
 
@@ -1777,7 +1777,7 @@ tops the program
 starting, a shadowed method does not.
 
 The manifest's legal keys are **`ProjectFile`'s own**: it is a `Record`, so
-what a `project.json` may hold is a list this class does not have to keep.
+what a `project.btp` may hold is a list this class does not have to keep.
 
 ### What it costs
 
@@ -2052,7 +2052,7 @@ create it; the program creates its database the first time it opens it -- or
 why SQLite will not open it, and whether the file is outside the project.
 
 A new connection is written **at the top of the project**, beside
-`project.json`, because that is where a form's `Source` looks for
+`project.btp`, because that is where a form's `Source` looks for
 `<name>.conn`; and its name takes **no dot**, because `sales.clients` is split
 at the first one. A name another `.conn` already has is refused. Renaming one is
 the tree's *Rename*, like any other file. OK keeps the keys the dialog does not
@@ -2149,7 +2149,7 @@ project**, which is how somebody with an empty IDE gets one. It asks twice --
 where from, then where to with the desktop's own folder chooser -- works out the
 name git would give it so it can say *that is already there* before anything
 runs, and opens what lands as a project. A clone of something that is not a
-Bintana project opens too, and says it has no `project.json`, which is a sentence
+Bintana project opens too, and says it has no `project.btp`, which is a sentence
 the IDE already had.
 
 ### What git does not do
@@ -2435,7 +2435,7 @@ and the prompt is kept as `ide.renamePrompt` so it can.
 
 
 Renaming a form (`F2`) moves **both** files, rewrites the class name inside the
-`.js`, and updates `sources` and `startup` in `project.json`. Moving only the
+`.js`, and updates `sources` and `startup` in `project.btp`. Moving only the
 `.form` would leave the runtime looking for a `<Class>.form` that no longer exists.
 
 **A handler is the control's name and one of its events, and nothing longer.**
@@ -2805,7 +2805,7 @@ library's components are on the palette from the moment the box is ticked.
 The tree marks it with a play triangle instead of the window icon: *this is the one
 that runs* is a fact about the project that used to live only in a key of a file.
 `listFiles` reads the manifest once per listing for it — a group node asking on its
-own would read `project.json` once per form.
+own would read `project.btp` once per form.
 
 Choosing it is *Set as startup form*, on the tree's context menu, which is where
 one is looking when the thought arrives. What is written down is the **qualified**
@@ -2819,7 +2819,7 @@ aiming at the row it was opened over would act on a different one. The left butt
 opens, so selecting a form and then asking is the gesture — and there is no *Open*
 on the menu for the same reason, since clicking the row already did it.
 
-## project.json, as a record
+## project.btp, as a record
 
 Every mutation of the manifest goes through one funnel, `withConfig`, which reads
 the file as a [`ProjectFile`](https://github.com/getbintana/bintana/blob/main/ide/modules/ProjectFile.js) — a `Record` — hands it to a
@@ -2875,7 +2875,7 @@ Four things follow, and each of them used to be somebody's job:
   before working. A manifest that is broken is still opened — refusing would leave
   the one program that can fix it unable to.
 
-And a key the record does not describe is written back untouched, so a project.json
+And a key the record does not describe is written back untouched, so a project.btp
 carrying a field from a newer version does not lose it to an older IDE that saved
 it.
 
@@ -2956,7 +2956,7 @@ runs means running it.
 
 The suggestion is best-effort (a project with no id yet still reaches the
 chooser); the refusals live where they can name the fix — no metainfo, a
-metainfo that disagrees with `project.json`, a tree that is not a staged
+metainfo that disagrees with `project.btp`, a tree that is not a staged
 runtime — and the compiler is the tree's own `share/bintana/tools/nsis` first,
 a `makensis` on the PATH after it. `tests/ide` drives the item with a double
 in the chooser and runs the script half on a scratch project; the mapping, the
@@ -3002,7 +3002,7 @@ same road a menu takes — and reads the arguments back, a space, a percent, a
 quote, a dollar, a backslash and an accent included.
 
 **The window's identity is the project's id, when it declares one.** The runtime
-hands `project.json`'s `id` to `GtkApplication` — Wayland's app id — and to the
+hands `project.btp`'s `id` to `GtkApplication` — Wayland's app id — and to the
 program name, which is what X11 builds `WM_CLASS` from; the entry then carries
 the same string as `StartupWMClass`, and a dock groups the running window under
 the entry that started it. A project with no id installs under a slug of the
@@ -3031,16 +3031,16 @@ directories do — what is missing is a format to write.
 *Project → Application info…* edits the project's `<id>.metainfo.xml`, the
 AppStream file a package, an installer and a software centre read. It is part of
 the project and not of a packaging step: a project created with an id gets a
-minimal one beside `project.json`, and the dialog writes one the first time it
+minimal one beside `project.btp`, and the dialog writes one the first time it
 is opened on a project that has none.
 
-The **id and the name are shown and not edited**: they are `project.json`'s, and
+The **id and the name are shown and not edited**: they are `project.btp`'s, and
 they are one identity in three places — the window's class, the package's name
 and what a software centre shows. The form writes them from the record on every
 save, so the two files cannot drift while it is the writer; editing them is
 *Project settings*, which renames the metainfo to follow and rewrites its
 `<id>`, `<launchable>`, a stock `<icon>` and its primary `<name>` with it --
-**after** `project.json` is written, so a metainfo that cannot follow (one that
+**after** `project.btp` is written, so a metainfo that cannot follow (one that
 does not parse, or a file already at the new name) is reported and costs the
 settings nothing. An open tab of the metainfo follows the file, as a form's tab
 follows a rename; left alone it would save the old file back beside the new
@@ -4096,7 +4096,7 @@ then ask* true without letting the item act on a row nobody pointed at.
 Which *external* program gets it is chosen the way an icon is: `poedit`,
 `gtranslator`, `lokalize`, `virtaal`, then `xdg-open`, first one installed
 (`Application.HasCommand`). *Project > Translation editor…* overrides it, in
-`Settings` rather than `project.json` — a path to a program on this machine is
+`Settings` rather than `project.btp` — a path to a program on this machine is
 not a property of the project.
 
 ### Starting a translation

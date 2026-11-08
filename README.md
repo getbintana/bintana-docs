@@ -11,7 +11,7 @@ should start at [`bintana-llm`](https://github.com/getbintana/bintana-llm).
 | [docs/llm/](docs/llm/) | the compact contract: [controls.md](docs/llm/controls.md) — every class and member, with signatures and accepted values — [library.md](docs/llm/library.md) — every global — [forms.md](docs/llm/forms.md), and one page per shipped library |
 | [docs/first-app.md](docs/first-app.md) | a five-minute tutorial in the IDE, ending in a greeting |
 | [docs/ide.md](docs/ide.md) | the IDE and its designer, as a Bintana application with no privileges |
-| [docs/formats.md](docs/formats.md) | `project.json`, the `.form` grammar, the serialiser, icons |
+| [docs/formats.md](docs/formats.md) | `project.btp`, the `.form` grammar, the serialiser, icons |
 | [docs/runtime-api.md](docs/runtime-api.md) | everything a project sees as a global, and what `rad.js` adds to the prototypes |
 | [docs/widgets.md](docs/widgets.md) | per-widget semantics: what each control is made of in GTK, and the behaviour a table cannot state |
 | [docs/resources.md](docs/resources.md) | text as a resource: prose properties, `po/` catalogues, `Locale`, extraction |

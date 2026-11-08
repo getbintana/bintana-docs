@@ -233,7 +233,7 @@ are the catalogue editor's pair and touch no catalogue at all.
 **A library crosses only when the file a worker imports is pure.** `xlsx` and
 `qr`'s encoder are modules with no widget in them, so a task imports them. A
 library of several modules declares the subset a task may evaluate in its
-`project.json`'s `worker` list. `markdown` declares an **empty** one: its only
+`project.btp`'s `worker` list. `markdown` declares an **empty** one: its only
 module is the control (`Markdown extends Component`), and it parses while it
 lays out, so importing it in a task refuses with that sentence. `report` and
 `charts` have no module to import at all, and their documents would need

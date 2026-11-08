@@ -45,7 +45,7 @@ makes one that exports nothing. An export is read-only outside its file and live
 **An `import` is standard JavaScript, and scoped to its file.** A path
 (`import { Parser } from "./Csv.js"`) is a file of the project -- or of the
 library the importing file is in -- and nothing outside them; a bare name
-(`import { Markdown } from "markdown"`) is a library `project.json`'s `uses`
+(`import { Markdown } from "markdown"`) is a library `project.btp`'s `uses`
 names, standing for the exports of all its module files at once (a name two of
 them export is refused as ambiguous when imported). The binding the import
 makes wins over the shared one in that file alone, so `as` renames an owner and
@@ -193,9 +193,9 @@ boundary is the process: the IDE already runs a project as a child.
 
 | Member | |
 |---|---|
-| `Name` | from `project.json` |
-| `Id` | the application's identity in reverse DNS, from `project.json`; `""` when it declares none. It becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
-| `Version` | what the project calls its own release, from `project.json`; `""` when it declares none. **Not the runtime's**, which is `BTA_VERSION` |
+| `Name` | from `project.btp` |
+| `Id` | the application's identity in reverse DNS, from `project.btp`; `""` when it declares none. It becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
+| `Version` | what the project calls its own release, from `project.btp`; `""` when it declares none. **Not the runtime's**, which is `BTA_VERSION` |
 | `Directory` | the project directory, absolute |
 | `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup** |
 | `Executable` | the `bintana` binary, from `/proc/self/exe`, so a project can re-invoke it |
@@ -216,7 +216,7 @@ boundary is the process: the IDE already runs a project as a child.
 | `Quit(code)` | quits the main loop with that exit status |
 
 **Two versions, and they are two questions.** `Application.Version` is the
-application's, out of its own `project.json`; `BTA_VERSION` is the runtime's, out
+application's, out of its own `project.btp`; `BTA_VERSION` is the runtime's, out
 of the one place it is declared — `project()` in `CMakeLists.txt`. Every program
 that shows a version had nowhere to read its own from and had to write it down a
 second time in its own source, which is the copy that goes stale; the IDE's own
@@ -752,7 +752,7 @@ to be argued from first principles when somebody is standing in front of one.
 
 **What gets collated is what a person reads.** A list of file names in a tree, the
 rows of a phone book, a chooser. What must *not* is an identifier or anything on
-its way into a file: `PropertyNames()` and the source list in a `project.json` are
+its way into a file: `PropertyNames()` and the source list in a `project.btp` are
 sorted plainly, because a file in version control that reordered itself when the
 desktop's language changed would be a diff nobody asked for.
 
@@ -1534,7 +1534,7 @@ fails while there is still a caller to fail at, rather than leaving a chooser
 open on half-applied options. A filter with no patterns is one of them — it
 matches nothing, so it hides every file and reads as an empty directory. An
 empty `Filters` list is not: it means the same as no `Filters` at all, the rule
-`sources` in a `project.json` already follows.
+`sources` in a `project.btp` already follows.
 
 `Color` opens the desktop's colour chooser at `current` (a colour that does not
 parse simply means there is nothing to start from) and answers with an `rgb(...)`
@@ -2728,8 +2728,8 @@ fields at all, in silence.
 **The thunk is also the answer to file order**, which is the case that bites
 without any recursion in sight. A static field that mentions a class runs while
 the class is being declared, so `Lines: Field.List(Line)` needs `Line` evaluated
-first — exactly the dependency `extends` creates, and `project.json`'s `sources`
-is where it is expressed (see [formats.md](formats.md#projectjson)). Get the order
+first — exactly the dependency `extends` creates, and `project.btp`'s `sources`
+is where it is expressed (see [formats.md](formats.md#projectbtp)). Get the order
 wrong and it is `ReferenceError: Line is not defined` pointing at the
 declaration, with nothing pointing at the load order. `Field.List(() => Line)`
 has no such dependency at all: the class is not looked at until the first value
@@ -2757,7 +2757,7 @@ It serialises as **text**, not as a JSON number: a number would be a double
 again on the way back in.
 
 **Names are a rule about the file, not a decision per field.** `Naming` says how
-the file spells them — `lower` for a `project.json`, `snake` for SQL — once,
+the file spells them — `lower` for a `project.btp`, `snake` for SQL — once,
 instead of an `as:` on every line. `as` is the exception for the field the rule
 does not fit.
 

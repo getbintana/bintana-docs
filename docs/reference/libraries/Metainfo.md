@@ -12,12 +12,12 @@ and the packaging step.
 const doc = Metainfo.load("/home/ana/Notes/io.github.you.Notes.metainfo.xml");
 
 Metainfo.read(doc).Summary;          // "Notes, kept simply"
-Metainfo.problems(doc, path, config); // [] when it agrees with project.json
+Metainfo.problems(doc, path, config); // [] when it agrees with project.btp
 ```
 
 It is the same file the IDE edits under *Project → Application info…* and the
 raw XML tab, and the same one `Package.Write` refuses to package when it
-disagrees with `project.json`.
+disagrees with `project.btp`.
 
 ## Every member
 
@@ -29,7 +29,7 @@ disagrees with `project.json`.
 | `read(doc)` | → the common fields as data | [the fields](#the-fields) |
 | `write(doc, fields, config)` | writes them, identity included | [the fields](#the-fields) |
 | `create(project, config)` | → a minimal one, written | [creating one](#creating-one) |
-| `problems(doc, path, config)` | → what disagrees with `project.json`, and what AppStream would refuse | [the identity](#the-identity) |
+| `problems(doc, path, config)` | → what disagrees with `project.btp`, and what AppStream would refuse | [the identity](#the-identity) |
 | `rename(project, newId, [newName])` | the file follows the id, and `<name>` the name | [the identity](#the-identity) |
 | `translations(doc)` | → the `xml:lang` names and summaries | [translations](#translations) |
 | `XMLNS` | the XML namespace, for `xml:lang` | [translations](#translations) |
@@ -70,13 +70,13 @@ and the translated ones are left where they were.
 ## The identity
 
 Two of those fields are not content. **The id and the primary name are the
-project's**, and `write` takes them from `project.json` on every save, so the
+project's**, and `write` takes them from `project.btp` on every save, so the
 two files cannot drift while this is the writer.
 
 `problems(doc, path, config)` is what reports a hand-edit that did:
 
-- `<id>` is not `project.json`'s `id`;
-- the primary `<name>` is not `project.json`'s `name`;
+- `<id>` is not `project.btp`'s `id`;
+- the primary `<name>` is not `project.btp`'s `name`;
 - the file's own name is not `<id>.metainfo.xml`;
 - the project declares no id at all, so there is nothing to agree with;
 - and three things `appstreamcli validate` refuses: an empty `<summary>`, a
@@ -94,7 +94,7 @@ is refused**, and nothing is moved: it is somebody's metainfo.
 ## Creating one
 
 `create(project, config)` writes a minimal, valid metainfo beside
-`project.json`: the id, the two licenses, the name, the summary from the
+`project.btp`: the id, the two licenses, the name, the summary from the
 project's description -- its first line, without a closing full stop, or
 `<Name>, made with Bintana` when there is none -- the description as its
 paragraphs (a sentence naming the application when there is none), the launchable

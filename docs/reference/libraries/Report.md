@@ -209,7 +209,7 @@ what it adds is a painter-level verb, and its `Refresh` answers:
 | `ReportDocument.PaintDesign(p, width, height, [sample])` | the design on a painter: the sheet, a tint and a rule for every band, and the elements where they will print. Scaled to fit `width`×`height`, as `Paint` scales a page; answers the same layout in the painter's coordinates, which is what a hit test wants. A missing image is a placeholder box, not a throw — the designer is where it is chosen. |
 
 ```js
-// project.json: { "main": "Main", "uses": ["report"] }
+// project.btp: { "main": "Main", "uses": ["report"] }
 function Main() {
     const d = new ReportDocument();
     d.Sections = sections();               // a function of your own, shared with a form

@@ -35,7 +35,7 @@ the files must say.
 |---|---|---|
 | `Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went | [writing](#writing) |
 | `defaults` | what the manifest carries when the caller says nothing | [the manifest](#the-manifest) |
-| `configOf(project)` | `project.json` as `{ Id, Name, Version, Dir }` | [the manifest](#the-manifest) |
+| `configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir }` | [the manifest](#the-manifest) |
 | `commandName(id)` | `bintana-notes` for `io.github.you.Notes` | [the command](#the-command) |
 
 ## Writing
@@ -46,7 +46,7 @@ is:
 
 | | |
 |---|---|
-| `Id` | the application's id, from `project.json` |
+| `Id` | the application's id, from `project.btp` |
 | `Command` | the launcher's name, `bintana-` and the id's last element |
 | `Manifest` | `<out>/<id>.json` |
 | `Metainfo` | `<out>/<id>.metainfo.xml` |
@@ -66,7 +66,7 @@ anywhere -- which is what a build machine needs.
 **before it writes anything**, so a refusal leaves no half-made build context.
 A project with no `id` (there is nothing to install under and no name for the
 metainfo), one with no metainfo, one with no icon or an icon it cannot tell
-apart (see below), and one whose metainfo disagrees with `project.json` or
+apart (see below), and one whose metainfo disagrees with `project.btp` or
 would fail `appstreamcli validate` (`Metainfo.problems`). Each of those fails
 half a build later otherwise, by another program, naming something nobody wrote.
 

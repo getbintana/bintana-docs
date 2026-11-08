@@ -11,7 +11,7 @@ project has:
 
 ```
 myapp/
-  project.json      what to run: `startup` names the class to open
+  project.btp      what to run: `startup` names the class to open
   forms/Form1.form  the window: a widget tree, in JSON
   forms/Form1.js    its behaviour: one class
 ```

@@ -29,14 +29,14 @@ and the library beside itself under `share/bintana/`; the source tree finds
 - a property the class does not have, which the loader applies and ignores;
 - a `.js` that does not compile, whether or not a `.form` sits beside it;
 - a `.js` on disk that `sources` does not list, so it is never loaded;
-- a key in `project.json` that nothing reads;
+- a key in `project.btp` that nothing reads;
 - `this.Control.Member` where the class has no such member, and a
   `Control_Event` handler for an event the control does not raise;
 - a name two modules export and a file uses without importing it;
 - a member of a component or a form that hides a control's with another shape
   (`Expand(key)` over the layout property `Expand`, `get Remove` over the
   method `Remove()`): rename it for what it does;
-- a control a screen reader cannot name, at the severity `project.json`'s
+- a control a screen reader cannot name, at the severity `project.btp`'s
   `"accessibility"` chooses: `"warning"` (default), `"info"` or `"off"`. The
   same word governs the IDE's panel and the command.
 
@@ -60,8 +60,8 @@ IDE:
 | `Check` | the pass over the project. `new Check(host).run()` answers every finding and reports them through the host; `forget()` takes them back; `applyFix(finding)` applies the one repair a finding carries (a caption's `Label.For`), which is what `bintana check --fix` and the IDE's *Fix* both call |
 | `Names` | the member and handler checks, and the taken-away-name table. It asks the host for a component's events (`componentEvents(type)`) and for the owners of an exported name (`owners()`) |
 | `Accessibility` | the three rules over a `.form`'s JSON, with `level(json)` and `kind(level)` |
-| `ProjectFile` | `project.json` as a record: the keys it may hold, validation, and `Kind` |
-| `LaunchConfig` | one named launch configuration, as `project.json` stores it |
+| `ProjectFile` | `project.btp` as a record: the keys it may hold, validation, and `Kind` |
+| `LaunchConfig` | one named launch configuration, as `project.btp` stores it |
 | `ProjectFiles` | the project's files and the `.form` beside a `.js`, for a console host |
 | `Owners` | which files export a top-level name, over `[{ path, text }]` |
 | `Lex` | the scanner that tells code from comments and strings, keeping offsets and line numbers |
@@ -73,7 +73,7 @@ needed, which is why the command is independent of the IDE.
 
 ## The manifest as a record
 
-`ProjectFile` is the shape `project.json` has, and `LaunchConfig` the shape of
+`ProjectFile` is the shape `project.btp` has, and `LaunchConfig` the shape of
 one entry in its `launch` list.
 
 ### ProjectFile

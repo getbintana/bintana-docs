@@ -333,7 +333,7 @@ has every property above, `Zoomable` included, and verbs of its own — `Paint`,
 | `ChartDocument.ToPng(width, height)` | the same drawing as `Save`, answered as `Bytes` — a chart to attach or put in a reply, with nothing on disk |
 
 ```js
-// project.json: { "main": "Main", "uses": ["charts"] }
+// project.btp: { "main": "Main", "uses": ["charts"] }
 function Main() {
     const c = new ChartDocument();
     c.Type   = "Bar";

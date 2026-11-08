@@ -118,7 +118,7 @@ MnuAbout_Click() {
 
 | Member | |
 |---|---|
-| `Show([options])` | builds the about box, shows it modal, and answers the shown window. The name, version and icon come out of `project.json` unless given; the summary, copyright and website are shown only when given, and the path of the runtime binary only when `Executable` is true. There is no callback: nothing is asked |
+| `Show([options])` | builds the about box, shows it modal, and answers the shown window. The name, version and icon come out of `project.btp` unless given; the summary, copyright and website are shown only when given, and the path of the runtime binary only when `Executable` is true. There is no callback: nothing is asked |
 | `Text` | the window title. **Translated**. `Caption` is an alias |
 | `Modal` | blocks its parent. Made transient for the active window on `Show()` |
 
@@ -135,7 +135,7 @@ MnuAbout_Click() {
 | `Title` | the window's title. `About <Name>` |
 | `Executable` | `true` adds a line with the path of the `bintana` binary running the program, ellipsized, the whole path in its tooltip — which build answered, on a machine with more than one. The IDE shows it |
 
-**What `project.json` already says is not asked again**, and what it cannot say
+**What `project.btp` already says is not asked again**, and what it cannot say
 is hidden until it is given — so no about box shows an empty line. **The
 version line says both versions**, the program's (`Application.Version`) and the
 runtime's (`BTA_VERSION`): a bug report needs the pair, and showing one where

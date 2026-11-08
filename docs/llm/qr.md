@@ -2,7 +2,7 @@
 
 Two classes, and the split is the whole idea: **`QrCode` is the encoder**, a
 value with no widget in it, and **`QrView` is the component that shows one**. It
-is reached the way any library is: name it in `project.json`, then use its class
+is reached the way any library is: name it in `project.btp`, then use its class
 in a `.form`, or call the encoder from code.
 
 ```json

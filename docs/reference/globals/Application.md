@@ -18,12 +18,12 @@ The running program: what it is called, where its files are, and how it ends.
 | `Executable` | the `bintana` binary that is running this, so a project can re-invoke it — which is how the IDE runs a project and how the test runner runs the suites | [where its files are](#where-its-files-are) |
 | `HasCommand(name)` | whether that program is on the PATH | [asking about the machine](#asking-about-the-machine) |
 | `HasIcon(name)` | whether that icon will actually **draw** something | [asking about the machine](#asking-about-the-machine) |
-| `Id` | from `project.json`: the application's identity in reverse DNS — `io.github.you.App` | [the project](#the-project) |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App` | [the project](#the-project) |
 | `Inhibit(reason, [what])` | keep the session from doing something while work runs — a backup, an export, a long download | [keeping the session awake](#keeping-the-session-awake) |
 | `Icons([contains])` | every icon name available, sorted, narrowed by substring — what an icon picker is built from | [asking about the machine](#asking-about-the-machine) |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once | [libraries](#libraries) |
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`** | [libraries](#libraries) |
-| `Name` | from `project.json` | [the project](#the-project) |
+| `Name` | from `project.btp` | [the project](#the-project) |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`** | [when something throws](#when-something-throws) |
 | `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again | [a second run](#a-second-run) |
 | `Quit(code)` | quit with that exit status | [ending](#ending) |
@@ -35,8 +35,8 @@ The running program: what it is called, where its files are, and how it ends.
 
 | | |
 |---|---|
-| `Name` | from `project.json` |
-| `Id` | from `project.json`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
+| `Name` | from `project.btp` |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `BTA_VERSION` | **a bare global, not a member of this** — the runtime's own release as text, the one number `CMakeLists.txt` declares, and what `bintana --version` prints. It is here because this is where the confusion lives; a worker has it too |
 | `Arguments` | whatever followed the project directory on the command line, as an array |
@@ -200,7 +200,7 @@ Application.OnSecondInstance = (args, directory) => {
 path has to be told apart first, as above; and `File.Absolute` resolves against the
 *first* instance's working directory, which is not where the second run was typed.
 
-**It needs `"id"` in `project.json`** — the id is the name the instances find each
+**It needs `"id"` in `project.btp`** — the id is the name the instances find each
 other by, on the session bus — and a project that says `singleInstance` without one
 is refused when it loads. **Without a session bus** (a bare container, a CI run)
 there is nothing to find, so every run is its own instance, as every project always

@@ -48,7 +48,7 @@ that go by the portal or a native service tell all four apart.
 
 ### The project needs an `id`
 
-A notification is sent in the name of an application, so `project.json` has to
+A notification is sent in the name of an application, so `project.btp` has to
 declare an `id` (reverse DNS, as [the project format](../../formats.md) says). With
 none, GLib fails an assertion and **sends nothing, without telling the program** —
 five calls and zero on the bus, measured — so this refuses with a sentence naming
@@ -102,7 +102,7 @@ error, and neither is withdrawing one the user already dismissed.
 - **Nothing appeared.** There is no notification daemon in the session, the user
   has turned notifications off for the application, or *do not disturb* is on. None
   of these is visible to the program.
-- **It threw about an `id`.** The project does not declare one in `project.json`.
+- **It threw about an `id`.** The project does not declare one in `project.btp`.
 - **It threw about the display.** The project declares `main`, which never
   initialises GTK.
 - **`"High"` looked the same as `"Normal"`.** It is the daemon's protocol; see above.

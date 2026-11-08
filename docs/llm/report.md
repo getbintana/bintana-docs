@@ -2,7 +2,7 @@
 
 `Report` is not a control. It is a **component** written in Bintana, in the
 `report` library that ships with the runtime, and it is reached the way any
-library is: name it in `project.json`, then use its class in a `.form`.
+library is: name it in `project.btp`, then use its class in a `.form`.
 
 ```json
 { "name": "Statement", "startup": "ReportForm", "uses": ["report"] }

@@ -5,7 +5,7 @@ file in it is meant to be readable and editable by hand as well as by the IDE.
 
 ```
 myproject/
-  project.json          what to run and in which order
+  project.btp          what to run and in which order
   MainForm.form         a widget tree
   MainForm.js           its behaviour
   Util.js               a module: plain classes and functions
@@ -23,7 +23,7 @@ compiled `.mo`, because nothing in a project directory is generated — and beca
 catalogues in the project tree and hands one to that tool rather than opening it
 itself; see [resources.md](resources.md).
 
-`app.css` is found the way `icons/` is — by name, with nothing in `project.json`
+`app.css` is found the way `icons/` is — by name, with nothing in `project.btp`
 pointing at it. It is loaded once at startup, above the desktop's theme and below
 the per-widget `Background`/`Foreground`/`Font`, and its classes are what a
 control wears through `Style`. **Under it the runtime loads a sheet of its own**
@@ -88,7 +88,7 @@ Two files at the **same depth** with one name is a genuine ambiguity: neither is
 "the" one, the runtime refuses to load either and says so, and the IDE warns as
 soon as it lists the files. Qualifying the name is the way out.
 
-## project.json
+## project.btp
 
 ```json
 {
@@ -212,9 +212,16 @@ its report with `lib/report`'s `ReportDocument` and its charts with
 `lib/charts`' `ChartDocument` — the same pages and the same pictures the controls
 show, in black ink, with no display.
 
-A missing `project.json` is not fatal: the IDE will open the directory and say the
+`project.btp` is the name the desktop knows: the installed IDE declares
+`application/x-bintana-project` in its menu entry, so a double click on the file
+opens the project (see [installing.md](https://github.com/getbintana/bintana/blob/main/docs/installing.md)).
+A project written before the rename keeps running from `project.json`: the
+runtime and the IDE read that name when there is no `.btp`, and nothing new
+writes it. New projects get `project.btp`.
+
+A missing `project.btp` is not fatal: the IDE will open the directory and say the
 project cannot run. Neither is a broken one: the IDE reads it as a `Record` (see
-[ide.md](ide.md#projectjson-as-a-record)), reports everything wrong with it in the
+[ide.md](ide.md#projectbtp-as-a-record)), reports everything wrong with it in the
 console, and opens the project anyway — refusing would leave the one program that
 can fix the file unable to open it. A key the runtime does not know is left
 untouched when the IDE saves, so a manifest from a newer version survives an older
@@ -222,16 +229,16 @@ one editing it.
 
 ## The metainfo: `<id>.metainfo.xml`
 
-An optional file beside `project.json`, and the only one in a project the
+An optional file beside `project.btp`, and the only one in a project the
 **runtime never reads**: it is AppStream metadata, so the programs that read it
 are a software centre, an installer and the packaging tool — the AppStream
 specification's own format, written and read with [`Xml`](reference/globals/Xml.md).
 
 | | |
 |---|---|
-| the name | `<id>.metainfo.xml`, from `project.json`'s `id`. A project with no id has none, and is the one thing that cannot be packaged |
-| `<id>` | the same string as `project.json`'s `id` |
-| the primary `<name>` | the same string as `project.json`'s `name`; a `<name xml:lang="es">` is a translation and is not that name |
+| the name | `<id>.metainfo.xml`, from `project.btp`'s `id`. A project with no id has none, and is the one thing that cannot be packaged |
+| `<id>` | the same string as `project.btp`'s `id` |
+| the primary `<name>` | the same string as `project.btp`'s `name`; a `<name xml:lang="es">` is a translation and is not that name |
 | everything else | AppStream's: `<summary>`, `<description>` and its `<p>` paragraphs, `<developer>`, the two licenses, `<url type="homepage">`, `<categories>`, `<releases>`, `<screenshots>`… |
 
 **The identity is checked, and the rest is not.** Those two strings are the
@@ -266,7 +273,7 @@ Everything a project can have beside its classes, a library can have too:
 
 | | |
 |---|---|
-| `<lib>/project.json` | **`sources` orders the library's own `.js`**, and **`worker` names the subset a `Task` worker may import**. A library with one class needs neither; one whose classes extend each other needs `sources`, because `BarChart extends Chart` sorts the wrong way round by path. `worker` is for a library that also has a widget module: the main thread loads `sources`, while a worker's `import` evaluates only `worker` (and what those files import by path). Without `worker`, a worker falls back to `sources`, which is the old behaviour; an empty `worker` list says the library has no safe half and refuses with a sentence. Reusing the names is the whole mechanism -- there is no second manifest format. Nothing else in that file means anything, and `bintana <library>` is not a thing to do |
+| `<lib>/project.btp` | **`sources` orders the library's own `.js`**, and **`worker` names the subset a `Task` worker may import**. A library with one class needs neither; one whose classes extend each other needs `sources`, because `BarChart extends Chart` sorts the wrong way round by path. `worker` is for a library that also has a widget module: the main thread loads `sources`, while a worker's `import` evaluates only `worker` (and what those files import by path). Without `worker`, a worker falls back to `sources`, which is the old behaviour; an empty `worker` list says the library has no safe half and refuses with a sentence. Reusing the names is the whole mechanism -- there is no second manifest format. Nothing else in that file means anything, and `bintana <library>` is not a thing to do |
 | `<lib>/po/<lang>.po` | its own catalogue, read **before** the project's. One table and several files, so a project that translates a string a library also translates has the last word; a language only a library ships is still offered by `Locale.Available` |
 | `<lib>/icons/` | on the icon search path after the project's, so a project can put its own drawing over a library's by shipping the same name |
 | `<lib>/app.css` | **not** read. A stylesheet belongs to an application: a library that restyled every `button` in the program would be the one thing here that cannot be overruled |
@@ -419,7 +426,7 @@ stopping the pass.
 **Every name the runtime looks something up by is ASCII**, and that is narrower
 than the language it is written in: QuickJS accepts `Peón` as an identifier and
 this does not. It holds for a node's `type` and `name`, for `startup` and
-`entry` in `project.json`, and for a `Task` subclass — the first letter must be
+`entry` in `project.btp`, and for a `Task` subclass — the first letter must be
 `A-Z`, `a-z`, `_` or `$`, and the rest those plus `0-9`. So a class called
 `Peón` is refused as *"'Peón' is not a valid class name"* and a control named
 `año` as *"form: 'año' is not a usable control name"*, and both refusals are

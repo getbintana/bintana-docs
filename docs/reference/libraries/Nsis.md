@@ -38,7 +38,7 @@ is pointed at. What cannot happen anywhere else is running a Windows
 script's path, the `.ico` beside it (or `null`, with `Note` saying which file
 would change that), and where `Stage` will put the payload the script compiles
 in. **Every refusal comes before the first write**, `Package`'s rule: no id,
-no metainfo, a metainfo that disagrees with `project.json`, a broken icon and
+no metainfo, a metainfo that disagrees with `project.btp`, a broken icon and
 an output inside the project all stop here with a sentence.
 
 What the metainfo becomes in NSIS, since a second reader should not have to

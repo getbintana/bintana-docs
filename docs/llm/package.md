@@ -29,7 +29,7 @@ user's files adds `--filesystem=home` (or a narrower one).
 |---|---|
 | `Package.Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went |
 | `Package.defaults` | what the manifest carries when the caller says nothing: the GNOME runtime, the shared BaseApp and its version, the branch, and the permissions an ordinary windowed application needs |
-| `Package.configOf(project)` | `project.json` as `{ Id, Name, Version, Dir }`, or a refusal naming what is missing |
+| `Package.configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir }`, or a refusal naming what is missing |
 | `Package.commandName(id)` | `bintana-notes` for `io.github.you.Notes` |
 
 `options` is laid over `Package.defaults` one key at a time: `Runtime`,
@@ -52,7 +52,7 @@ to `hicolor/scalable`, a PNG to `hicolor/<its size>`, read out of the file.
 **What it refuses is the point, and it refuses before it writes.** A project
 with no `id`, no metainfo, no icon, an `icons/` it cannot tell the icon in, a
 PNG icon that is not square or not a size the theme has (64 to 512), a metainfo
-whose `<id>`/`<name>` disagrees with `project.json`, or one `appstreamcli
+whose `<id>`/`<name>` disagrees with `project.btp`, or one `appstreamcli
 validate` would refuse (an empty or multi-line `<summary>`, an empty
 `<description>`) stops here with a sentence, and `out` is left as it was. Each of those becomes, half a build later and by another
 program, an application that installs under one name and claims another, an
@@ -86,9 +86,9 @@ this under *Project → Windows installer…*; the compiler is the tree's own
 | `Metainfo.fileName(id)` | `<id>.metainfo.xml` |
 | `Metainfo.load(path)` / `Metainfo.save(path, doc)` | `File.LoadXml` / `File.SaveXml` |
 | `Metainfo.read(doc)` | the common fields as data: id, name, summary, description, developer, the two licenses, the URLs, the categories |
-| `Metainfo.write(doc, fields, config)` | writes them, **taking the id and the name from `project.json`** and leaving every translated element alone |
-| `Metainfo.create(project, config)` | a minimal metainfo that `appstreamcli validate` accepts, written beside `project.json`: a one-line summary from the description's first line, and a description paragraph |
-| `Metainfo.problems(doc, path, config)` | what does not agree with `project.json` -- the id, the primary name, the file's own name -- and what the validator refuses: an empty or multi-line summary, an empty description |
+| `Metainfo.write(doc, fields, config)` | writes them, **taking the id and the name from `project.btp`** and leaving every translated element alone |
+| `Metainfo.create(project, config)` | a minimal metainfo that `appstreamcli validate` accepts, written beside `project.btp`: a one-line summary from the description's first line, and a description paragraph |
+| `Metainfo.problems(doc, path, config)` | what does not agree with `project.btp` -- the id, the primary name, the file's own name -- and what the validator refuses: an empty or multi-line summary, an empty description |
 | `Metainfo.rename(project, newId, [newName])` | moves the file with the id and rewrites `<id>`, `<launchable>`, a **stock** `<icon>` (a remote or local one is left alone) and, given `newName`, the primary `<name>`; refuses when a file is already at the new name |
 | `Metainfo.translations(doc)` | the `<name xml:lang>` and `<summary xml:lang>` values by language, which is what a `.desktop` carries as `Name[es]` |
 | `Metainfo.XMLNS` | the XML namespace, which is how `xml:lang` is spelled |
