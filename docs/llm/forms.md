@@ -94,7 +94,7 @@ Pure JSON. The loader knows no control in particular: it applies each entry of
 | `class` | the class this file belongs to. A class finds `<Class>.form` by name, anywhere in the tree |
 | `properties` | assigned to the form itself |
 | `menus` | the menu bar; forms only. See [Menus](#menus) |
-| `components` | the non-visual parts a form owns, forms only. Each entry is `{ "type", "name", "properties" }`; `type` is a `FormPart` class (`Timer`, `Connection`, `Model` or `HttpClient`), `name` is what the form reaches it by, and its handler is `<name>_<event>` |
+| `components` | the non-visual parts a form owns, forms only. Each entry is `{ "type", "name", "properties" }`; `type` is a `FormPart` class (`Timer`, `Connection`, `Model`, `HttpClient`, `Socket`, `ServerSocket`, `UdpSocket`, `WebSocket` or `SmtpClient`), `name` is what the form reaches it by, and its handler is `<name>_<event>` |
 | `children` | the widget tree |
 
 A child node:
@@ -773,9 +773,9 @@ drops the handle, so the next use starts with the new setting.
   tray is the place it lands. See [`controls.md`](controls.md#form) for the
   `Form.Components` list and the verbs.
 - **Only objects that are classes can be parts.** `Timer`, `Connection`,
-  `Model` and `HttpClient` are; `Exec` is a global with statics, so it would
-  need a wrapper
-  class before a `.form` could name it.
+  `Model`, `HttpClient`, `Socket`, `ServerSocket`, `UdpSocket`, `WebSocket`
+  and `SmtpClient` are; `Exec` is a global with statics, so it would need a
+  wrapper class before a `.form` could name it.
 
 ## Building a tree from code
 

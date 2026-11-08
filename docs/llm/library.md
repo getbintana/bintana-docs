@@ -229,6 +229,39 @@ A client, and the connection `Http.Server.WebSocket` hands to its handler.
 | `State` (ro) | `"Connecting"`, `"Open"`, `"Closing"` or `"Closed"` |
 | `Url` (ro) | the `ws://` or `wss://` address the client opens; a server-side connection answers the path it arrived on |
 
+## SmtpClient
+
+A mail client over `Socket`: one `Send` speaks SMTP, plain on 25 or implicit TLS on 465.
+
+```js
+const mail = new SmtpClient({ Host: "smtp.example.com", Port: 465,
+                              Tls: "Tls", From: "app@example.com" });
+mail.User     = Settings.Get("smtp.user");
+mail.Password = Keyring.Get("smtp");
+mail.Send({ To: "person@example.com", Subject: "Backup finished",
+            Body: "It finished.", Attachments: ["/tmp/report.pdf"] },
+          () => this.Lbl.Text = "sent", (e) => this.Lbl.Text = e.Message);
+```
+
+| | |
+|---|---|
+| `From` | the envelope sender, used when the message does not name one |
+| `Host` | the SMTP server's name or address |
+| `Password` | the AUTH LOGIN password; keep it out of the `.form` |
+| `Port` | the port; 25 plain, 465 for implicit TLS |
+| `Send(message, onDone, onError)` | send one message. `message` is `{ From, To, Cc, Bcc, Subject, Body, Html, Attachments, Headers }`; `onDone()` or `onError(err)` answers on a later turn. Answers the client |
+| `Stop()` | stop the message in flight, answering `onError` with `"Cancelled"` |
+| `Timeout` | how long one reply may take, in milliseconds; 0 waits for ever |
+| `Tls` | `"None"`, `"Tls"` (implicit), `true`, or a `Socket.Tls` trust object |
+| `User` | the AUTH LOGIN user, or "" for a server that needs none |
+
+`Html` beside `Body` makes `multipart/alternative`; `Attachments` (a path,
+`{ Name, Path }` or `{ Name, Bytes }`) makes `multipart/mixed` with base64
+parts, and a subject that is not printable ASCII is RFC 2047 encoded.
+`"StartTls"` is refused -- `Socket` cannot upgrade mid-stream. As a
+`FormPart`, `Host`, `Port`, `Tls`, `From` and `Timeout` are serialised and
+`User`/`Password` are not.
+
 ## Notification
 
 A desktop notification: for when the window is **not what the user is looking
@@ -1090,8 +1123,9 @@ The fallback matters: `Get("on", true)` tells a missing setting from one that is
 
 ## FormPart
 
-The base of a form's non-visual objects: `Timer`, `Connection`, `Model` and
-`HttpClient`. It has no rectangle and is declared in the form's `components`;
+The base of a form's non-visual objects: `Timer`, `Connection`, `Model`,
+`HttpClient`, `Socket`, `ServerSocket`, `UdpSocket`, `WebSocket` and
+`SmtpClient`. It has no rectangle and is declared in the form's `components`;
 `PropertyNames`, `EventNames`, `On`, `Emit`, `Apply`, `Serialize` and `Delete`
 are what a part answers. `Form.Components` is the live list, and
 `Form.AddPart`/`RemovePart`/`StopParts` move it. A part's event arrives as

@@ -1,7 +1,8 @@
 # FormPart
 
-Something a form owns that is not a control: `Timer`, `Connection`, `Model`
-and `HttpClient`. It has no rectangle, no `Bounds` and no `Children`, so it is
+Something a form owns that is not a control: `Timer`, `Connection`, `Model`,
+`HttpClient`, `Socket`, `ServerSocket`, `UdpSocket`, `WebSocket` and
+`SmtpClient`. It has no rectangle, no `Bounds` and no `Children`, so it is
 declared in the form's `components` list and reached by name like a control.
 
 ```json
@@ -29,7 +30,7 @@ Clock_Tick() { this.LblTime.Text = Time.Now(); }
 | `Apply(properties)` | applies a property dictionary to the part, refusing a name it has not got | [the object](#the-object) |
 | `Serialize()` | this part as a `.form` node | [the object](#the-object) |
 | `Delete()` | removes it from the form it belongs to | [the object](#the-object) |
-| `FormPart.New(type)` | a new part of `type` -- `Timer`, `Connection`, `Model` or `HttpClient`; a name that is not a part is refused by name | [the classes](#the-classes) |
+| `FormPart.New(type)` | a new part of `type` -- `Timer`, `Connection`, `Model`, `HttpClient`, `Socket`, `ServerSocket`, `UdpSocket`, `WebSocket` or `SmtpClient`; a name that is not a part is refused by name | [the classes](#the-classes) |
 | `FormPart.Types()` | the names of the part classes this runtime can make, for a palette or a `.form` loader | [the classes](#the-classes) |
 | `FormPart.TypeName(part)` | the name a part is written under in a `.form` -- the registry's name, which is not always the class's own (`Connection` is a part, the C `Connection` it wraps is a type) | [the classes](#the-classes) |
 | `FormPart.Properties(type)` | the settable properties of a part class, `Name` first -- the list a palette, a property grid or a `.form` dialog asks for with only a type | [the classes](#the-classes) |
@@ -58,13 +59,23 @@ its events reach nobody.
 
 ## The classes
 
-`Timer`, `Connection`, `Model` and `HttpClient` are the built-ins. `Timer`
-declares `Delay` and `Enabled` as properties and `Tick` as its event; see
+`Timer`, `Connection`, `Model`, `HttpClient`, `Socket`, `ServerSocket`,
+`UdpSocket`, `WebSocket` and `SmtpClient` are the built-ins. `Timer` declares
+`Delay` and `Enabled` as properties and `Tick` as its event; see
 [Timer](Timer.md#a-timer-on-a-form). `Connection` declares `Path` and owns one
 `Database.Sqlite` file. `Model` declares `Connection`, `Record` and
 `TableName`; its `Table` is the table for that record, and `Ensure` creates it
 from the shape. Several models share one connection. `HttpClient` declares
 `BaseUrl`, `Timeout`, `Http1` and `FollowRedirects` and owns an `Http.Client`.
+`Socket` declares `Host`, `Port`, `Path`, `Timeout`, `Line`, `EndOfLine` and
+`Tls`, raises `Connected`, `Data`, `Line`, `Closed`, `Error` and `Writable`,
+and its `Socket` property is the C socket beneath. `ServerSocket` declares
+`Host`, `Port`, `Path` and `Tls` and raises `Connection` and `Error`.
+`UdpSocket` declares `Host`, `Port` and `Broadcast` and raises `Data` and
+`Error`. `WebSocket` declares `Url` and raises `Open`, `Message`, `Closed`
+and `Error`. `SmtpClient` declares `Host`, `Port`, `Tls`, `From` and
+`Timeout`; `User` and `Password` are outside `static Properties`, so the
+serialiser never writes them.
 A class becomes a part when it extends `FormPart` and declares `static Events`
 and `static Properties`; `Exec` is a global with statics rather than a class,
 so it needs a wrapper before a `.form` can name it.

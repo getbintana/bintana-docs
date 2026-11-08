@@ -3413,7 +3413,7 @@ drawn at the size it was measured. A new painter per call, and it refuses once
 the caller passed the function and is on the stack. A worker does not install it
 — cairo and pango are drawing, and a worker installs no painter.
 
-## Sockets and WebSocket
+## Sockets, WebSocket and SMTP
 
 The transports beside HTTP, answered on the loop the application already
 runs. A TCP or Unix connection is [`Socket`](reference/globals/Socket.md), a
@@ -3461,6 +3461,27 @@ const srv = Http.Server({ Port: 7000 });
 srv.WebSocket = (ws) => { ws.OnMessage = (b, text) => ws.Send(b, text); };
 srv.Start();
 ```
+
+A mail message goes out over the same transport:
+[`SmtpClient`](reference/globals/SmtpClient.md) is a `Socket` in line mode
+that speaks SMTP -- plain on 25 or implicit TLS on 465.
+
+```js
+const mail = new SmtpClient({ Host: "smtp.example.com", Port: 465,
+                              Tls: "Tls", From: "app@example.com" });
+mail.User     = Settings.Get("smtp.user");
+mail.Password = Keyring.Get("smtp");
+mail.Send({ To: "person@example.com", Subject: "Backup finished",
+            Body: "It finished at 03:12.", Attachments: ["/tmp/report.pdf"] },
+          () => print("sent"), (e) => print(e.Message));
+```
+
+`"StartTls"` is refused: `Socket` is TLS from the first byte or plain. A
+subject that is not printable ASCII is RFC 2047 encoded, a `DATA` line
+starting with a dot is stuffed, and `Attachments` (a path, `{ Name, Path }`
+or `{ Name, Bytes }`) makes `multipart/mixed`. As a `FormPart`, `Host`,
+`Port`, `Tls`, `From` and `Timeout` are serialised and `User`/`Password` are
+not.
 
 ## AudioPlayer
 

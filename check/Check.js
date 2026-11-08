@@ -279,6 +279,7 @@ const GLOBAL_SECTIONS = [
     ["ServerSocket",      "ServerSocket"],
     ["UdpSocket",         "UdpSocket"],
     ["WebSocket",         "WebSocket"],
+    ["SmtpClient",        "SmtpClient"],
     ["AudioPlayer",       "AudioPlayer"],
     ["Profile",           "Profile"],
 ];
