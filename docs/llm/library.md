@@ -601,7 +601,9 @@ Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print
   `Encrypt(path, { Password, OwnerPassword, Permissions })` writes an AES-256
   copy. A signature field is left empty, for `Sign` or the signer's own
   application.
-- **Signing**: `Sign(path, { Certificate, Signer, Field, Reason })` --
+- **Signing with a key**: `Sign(path, { Key, Field, Reason })` -- a
+  [`Key`](#key) from a card, a token or a `.p12` brings its certificate.
+- **Signing with anything else**: `Sign(path, { Certificate, Signer, Field, Reason })` --
   `Certificate` is PEM text or DER `Bytes`, and `Signer(digest, "SHA256")`
   returns the signature as `Bytes` from wherever the key is (a token, a card, a
   service, `Exec.Wait(["openssl", "pkeyutl", "-sign", ...])`). Never ask for a
@@ -619,7 +621,7 @@ Area_DrawPage(p, page, w, h) { doc.Draw(p, page, w, h); }   // a viewer, a print
 |---|---|
 | `AddFields(fields)` | form fields written into this document's file, **in place**, and how many. Each is `{ Page, Name, Type, Rect, Value, Checked, ReadOnly, Required, Multiline, MaxLength, Reason }`; `Type` is `"Text"`, `"Check"` or `"Signature"`, `Page` is 1-based, and `Rect` is `{ X, Y, Width, Height }` in **PDF points with the origin at the bottom-left**. A signature field is left empty, for `Sign` naming it or the signer's own application. Every field is checked first, and a failure leaves the file as it was. Needs PoDoFo (`CanWrite`) |
 | `Encrypt(path, { Password, OwnerPassword, Permissions })` | this document written to `path` **encrypted**, AES-256: `Password` opens it, `OwnerPassword` lifts the restrictions, and `Permissions` lists what is allowed without it -- `Print`, `HighPrint`, `Copy`, `Edit`, `EditNotes`, `FillAndSign`, `Accessible`, `Assemble`; every one when absent. `path` may be this document's own, which is replaced whole and read from then on with the new password. Needs PoDoFo (`CanWrite`) |
-| `Sign(path, { Certificate, Signer, Field, Rect, Reason, Location, Name })` | this document **signed** into `path`, as an incremental update, so an earlier signature stays valid: PAdES-B, SHA-256, an RSA key. **Where the key is is the program's**: `Signer(digest, algorithm)` answers the signature over the digest as `Bytes` -- a token, a smart card, a remote service -- and the runtime never holds it. `Certificate` is the signer's, DER `Bytes` or PEM text. `Field` names an empty signature field (a report's) or a new one, invisible on page 1 unless `Rect` is `{ Page, X, Y, Width, Height }` in PDF points, bottom-left; with none, the first free of `Signature`, `Signature2` ... A field signed already is refused, never signed over. A throw in `Signer` is what `Sign` throws, and the copy it was writing is removed. Needs PoDoFo (`CanWrite`) |
+| `Sign(path, { Certificate, Signer, Field, Rect, Reason, Location, Name })` | this document **signed** into `path`, as an incremental update, so an earlier signature stays valid: PAdES-B, SHA-256, an RSA key. `Key` is a `Key` -- a token's, a card's, a `.p12`'s -- and brings its certificate. Or **where the key is is the program's**: `Signer(digest, algorithm)` answers the signature over the digest as `Bytes` -- a remote service, anything -- and the runtime never holds it. `Certificate` is the signer's, DER `Bytes` or PEM text. `Field` names an empty signature field (a report's) or a new one, invisible on page 1 unless `Rect` is `{ Page, X, Y, Width, Height }` in PDF points, bottom-left; with none, the first free of `Signature`, `Signature2` ... A field signed already is refused, never signed over. A throw in `Signer` is what `Sign` throws, and the copy it was writing is removed. Needs PoDoFo (`CanWrite`) |
 | `Signatures` (ro) | the signatures in it, **verified**: `{ Field, Signer, Issuer, Time, Signature, Certificate }` each -- the signer's and the issuer's common names, and when it was signed. `Signature` is whether the signed bytes are intact -- `Valid`, `Altered` (changed after signing), `Invalid`, `Unreadable`, `Missing` (an empty field, with `Time` null), `NotVerified`, `Error`; `Certificate` is whether this machine trusts the signer -- `Trusted`, `UntrustedIssuer` (self-signed, or a CA the system store lacks), `UnknownIssuer`, `Revoked`, `Expired`, `NotVerified` (an altered signature's is not looked at), `Error`. No OCSP: nothing goes over the network unasked. Needs poppler 23.07 (`CanRead`); an older one says so |
 
 
@@ -1194,6 +1196,40 @@ different questions.
 **It works in a `Task`** — GnuTLS is memory, not a widget — and it is the
 operation a backup, a report leaving the building or a database on a laptop
 wants. `File.LoadBytes`/`SaveBytes` are the file pair around it.
+
+## Key
+
+A private key to sign with, on a smart card, a token or in a file. **Never ask
+the user for a `.p12` path as the only way**: `Key.Tokens()` lists who can sign
+on the cards plugged in, with no PIN.
+
+```js
+const signers = Key.Tokens().flatMap((t) => t.Signers);   // [{ Key, Label, Subject, Issuer, Expires }]
+const key = Key.Load(signers[0].Key, pin);                // or Key.Load("yo.p12", password)
+doc.Sign("firmado.pdf", { Key: key });                    // PdfDocument; the certificate comes with it
+key.Close();                                              // wipes the PIN
+```
+
+| | |
+|---|---|
+| `Key.Load(source, [pin])` | a private key, from a `pkcs11:` URI -- a smart card, a USB token, a software token, as `Tokens()` or `p11tool --list-all` names it -- or from a file: PKCS#12 (`.p12`, `.pfx`), or a PEM or DER key, encrypted PKCS#8 included. `pin` is the token's PIN or the file's password. A URI that names only a token takes its one key, and refuses listing them when there are more. Throws, saying which: no such file, not a key, protected and no password, the wrong one, the PIN wanted or refused |
+| `Key.Tokens()` | the tokens plugged in, as p11-kit's modules see them: `{ Uri, Label, Manufacturer, Model, Serial, Signers }`, and `Signers` who can sign on each -- `{ Key, Label, Subject, Issuer, Expires }`, `Key` the URI to `Load`. No PIN: certificates are public. The system's store of CA certificates is not a signer's and is left out |
+| `Available` | whether this build reads keys and talks to tokens, which is GnuTLS; when false every verb refuses naming the package |
+| `Algorithm` (ro) | `RSA`, `ECDSA`, `Ed25519` or `Ed448` |
+| `Bits` (ro) | the key's size: 2048 for a common RSA key, 256 for a P-256 one |
+| `Certificate` (ro) | the signer's certificate, DER, when the place it came from had one -- a PKCS#12 does, a token usually does (the certificate with the key's id), a PEM with a `CERTIFICATE` block beside the key does; `null` otherwise, and the caller gives it |
+| `Close()` | let it go: the token's session, the key in memory and the PIN, wiped. Closing twice is not an error |
+| `Open` (ro) | whether it still is |
+| `Sign(digest, [algorithm])` | the signature over a **digest** already computed, `Bytes` of the algorithm's length -- `"SHA256"` (the default), `"SHA384"`, `"SHA512"`: PKCS#1 v1.5 for RSA, DER for ECDSA. On a token the token signs, and asks for the PIN again. Exactly what `PdfDocument.Sign`'s `Signer` is asked, so `{ Key: key }` signs a PDF |
+| `Source` (ro) | where it was loaded from: the file's absolute path, or the key's full `pkcs11:` URI on its token |
+| `Subject` (ro) | the common name on its certificate -- who signs; `""` with none |
+
+- `Sign` signs a **digest** (`Bytes` of 32/48/64 for SHA-256/384/512), not a
+  message: `key.Sign(Bytes.FromHex(Hash.Sha256(text)))`.
+- A `pkcs11:` URI naming only the token takes its one key, and refuses listing
+  the URIs when there are more -- show them to the user, do not pick.
+- Not in a `Task`. A `Certificate` of `null` (a bare PEM key) is given beside
+  it: `doc.Sign(out, { Key: key, Certificate: pem })`.
 
 ## Random
 

@@ -145,6 +145,7 @@ members, twice — once in its summary and once where it is explained.
 | [Bytes](globals/Bytes.md) | a file's contents, when they are not text |
 | [Cancellable](globals/Cancellable.md) | a cancellation signal a task and a blocking call can share |
 | [Cipher](globals/Cipher.md) | a key and some bytes: encrypt them, and only the key opens them |
+| [Key](globals/Key.md) | a private key on a card, a token or in a file: load it, sign with it |
 | [Clipboard](globals/Clipboard.md) | copy and paste, which are not symmetrical |
 | [Csv](globals/Csv.md) | rows of text, the way spreadsheets and other programs exchange them |
 | [Database](globals/Database.md) | a [`Record`](globals/Record.md) over a table |

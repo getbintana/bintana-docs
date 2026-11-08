@@ -148,14 +148,14 @@ never kept in a file of the project.
 
 | | |
 |---|---|
-| `Sign(path, { Certificate, Signer, Field, Rect, Reason, Location, Name })` | this document **signed** into `path`, as an incremental update, so an earlier signature stays valid: PAdES-B, SHA-256, an RSA key. **Where the key is is the program's**: `Signer(digest, algorithm)` answers the signature over the digest as `Bytes` -- a token, a smart card, a remote service -- and the runtime never holds it. `Certificate` is the signer's, DER `Bytes` or PEM text. `Field` names an empty signature field (a report's) or a new one, invisible on page 1 unless `Rect` is `{ Page, X, Y, Width, Height }` in PDF points, bottom-left; with none, the first free of `Signature`, `Signature2` ... A field signed already is refused, never signed over. A throw in `Signer` is what `Sign` throws, and the copy it was writing is removed. Needs PoDoFo (`CanWrite`) |
+| `Sign(path, { Certificate, Signer, Field, Rect, Reason, Location, Name })` | this document **signed** into `path`, as an incremental update, so an earlier signature stays valid: PAdES-B, SHA-256, an RSA key. `Key` is a `Key` -- a token's, a card's, a `.p12`'s -- and brings its certificate. Or **where the key is is the program's**: `Signer(digest, algorithm)` answers the signature over the digest as `Bytes` -- a remote service, anything -- and the runtime never holds it. `Certificate` is the signer's, DER `Bytes` or PEM text. `Field` names an empty signature field (a report's) or a new one, invisible on page 1 unless `Rect` is `{ Page, X, Y, Width, Height }` in PDF points, bottom-left; with none, the first free of `Signature`, `Signature2` ... A field signed already is refused, never signed over. A throw in `Signer` is what `Sign` throws, and the copy it was writing is removed. Needs PoDoFo (`CanWrite`) |
 | `Signatures` (ro) | the signatures in it, **verified**: `{ Field, Signer, Issuer, Time, Signature, Certificate }` each -- the signer's and the issuer's common names, and when it was signed. `Signature` is whether the signed bytes are intact -- `Valid`, `Altered` (changed after signing), `Invalid`, `Unreadable`, `Missing` (an empty field, with `Time` null), `NotVerified`, `Error`; `Certificate` is whether this machine trusts the signer -- `Trusted`, `UntrustedIssuer` (self-signed, or a CA the system store lacks), `UnknownIssuer`, `Revoked`, `Expired`, `NotVerified` (an altered signature's is not looked at), `Error`. No OCSP: nothing goes over the network unasked. Needs poppler 23.07 (`CanRead`); an older one says so |
 
 ```js
 const doc = PdfDocument.Load("factura.pdf");
 doc.Sign("factura-firmada.pdf", {
     Certificate: File.Load("yo.pem"),                 // PEM text, or DER Bytes
-    Signer: (digest, algorithm) => token.Sign(digest),// whatever holds the key
+    Signer: (digest, algorithm) => service(digest),   // whatever holds the key
     Field: "firma", Reason: "Conformidad", Location: "Mendoza",
 });
 doc.Close();
@@ -163,6 +163,9 @@ doc.Close();
 for (const s of PdfDocument.Load("factura-firmada.pdf").Signatures)
     print(s.Field, s.Signer, s.Signature, s.Certificate);   // firma Matías Valid Trusted
 ```
+
+With a [`Key`](Key.md) -- a smart card's, a token's, a `.p12`'s -- it is
+`doc.Sign(out, { Key: Key.Load(uri, pin) })`, and its certificate comes with it.
 
 **The key is never the runtime's.** `Sign` computes the digest of what is
 signed and hands it to `Signer(digest, "SHA256")`, which answers the signature

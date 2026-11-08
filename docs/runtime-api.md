@@ -1904,6 +1904,34 @@ last, `this.Cancellable`, stops all four between two 64 KB chunks, and a stopped
 file verb removes its temporary. Only gzip is published; zlib
 framing and raw deflate are other names for one algorithm.
 
+## Key
+
+`Key.Load(source, [pin])` and `Key.Tokens()`, in `bta_key.c`, over GnuTLS
+(`Cipher`'s library) and p11-kit's module list: a private key from a `pkcs11:`
+URI -- a smart card, a USB token, a SoftHSM -- or from a PKCS#12, PEM or DER
+file, and `Sign(digest, [algorithm])` over a digest already computed (PKCS#1
+v1.5 for RSA, DER for ECDSA; the length checked against the algorithm). A
+token's key never leaves it; the PIN is kept for the key's life and wiped by
+`Close()`. `Tokens()` lists the tokens and their signers' certificates with no
+PIN, leaving out the system's CA store. `PdfDocument.Sign(out, { Key })` takes
+its `Sign` and its `Certificate`. **Optional at build time**, the `Cipher`
+mould: without GnuTLS `Available` is `false` and the verbs refuse naming the
+package. Not in a `Task`.
+
+| | |
+|---|---|
+| `Key.Load(source, [pin])` | a private key, from a `pkcs11:` URI -- a smart card, a USB token, a software token, as `Tokens()` or `p11tool --list-all` names it -- or from a file: PKCS#12 (`.p12`, `.pfx`), or a PEM or DER key, encrypted PKCS#8 included. `pin` is the token's PIN or the file's password. A URI that names only a token takes its one key, and refuses listing them when there are more. Throws, saying which: no such file, not a key, protected and no password, the wrong one, the PIN wanted or refused |
+| `Key.Tokens()` | the tokens plugged in, as p11-kit's modules see them: `{ Uri, Label, Manufacturer, Model, Serial, Signers }`, and `Signers` who can sign on each -- `{ Key, Label, Subject, Issuer, Expires }`, `Key` the URI to `Load`. No PIN: certificates are public. The system's store of CA certificates is not a signer's and is left out |
+| `Key.Available` | whether this build reads keys and talks to tokens, which is GnuTLS; when false every verb refuses naming the package |
+| `Algorithm` (ro) | `RSA`, `ECDSA`, `Ed25519` or `Ed448` |
+| `Bits` (ro) | the key's size: 2048 for a common RSA key, 256 for a P-256 one |
+| `Certificate` (ro) | the signer's certificate, DER, when the place it came from had one -- a PKCS#12 does, a token usually does (the certificate with the key's id), a PEM with a `CERTIFICATE` block beside the key does; `null` otherwise, and the caller gives it |
+| `Close()` | let it go: the token's session, the key in memory and the PIN, wiped. Closing twice is not an error |
+| `Open` (ro) | whether it still is |
+| `Sign(digest, [algorithm])` | the signature over a **digest** already computed, `Bytes` of the algorithm's length -- `"SHA256"` (the default), `"SHA384"`, `"SHA512"`: PKCS#1 v1.5 for RSA, DER for ECDSA. On a token the token signs, and asks for the PIN again. Exactly what `PdfDocument.Sign`'s `Signer` is asked, so `{ Key: key }` signs a PDF |
+| `Source` (ro) | where it was loaded from: the file's absolute path, or the key's full `pkcs11:` URI on its token |
+| `Subject` (ro) | the common name on its certificate -- who signs; `""` with none |
+
 ## Keyring
 
 `Keyring.Available`, `Store`, `Lookup` and `Delete`, in `bta_keyring.c`, over
