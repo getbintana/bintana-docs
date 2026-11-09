@@ -52,14 +52,14 @@ pasted from a spreadsheet.
 | `SetCell(row, column, value)` | writes one value, by row and declared column, in whichever half draws it | [the rows](#the-rows) |
 | `RemoveRow(index)` | takes one row out | [the rows](#the-rows) |
 | `Refilter()` | asks `Filter` of every row again, in both halves | [the rows](#the-rows) |
-| `Index` | the selected row, `-1` for none | [the selection](#the-selection) |
+| `Index` | the selected row, or the anchor row of a cell rectangle, `-1` for none | [the selection](#the-selection) |
 | `MultiSelect` | more than one row at a time, in both halves | [the selection](#the-selection) |
-| `Selection` (ro) | every selected row, as an array of indices in order | [the selection](#the-selection) |
+| `Selection` (ro) | every selected row, as an array of indices in order -- or, with a cell rectangle marked, the rows it covers | [the selection](#the-selection) |
 | `Totals()` | the row of totals as it is drawn: one value per declared column, `""` where a column declares none | [totals](#totals) |
 | `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered | [a spreadsheet](#a-spreadsheet) |
 | `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` | [a spreadsheet](#a-spreadsheet) |
 | `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid | [a spreadsheet](#a-spreadsheet) |
-| `ClearRange()` | take the mark off every cell; answers the grid | [a spreadsheet](#a-spreadsheet) |
+| `ClearRange()` | take the mark off every cell, leaving no rows selected; answers the grid | [a spreadsheet](#a-spreadsheet) |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given | [a spreadsheet](#a-spreadsheet) |
 | **event** `Select()` | the selection moved, in either half | [the selection](#the-selection) |
 | **event** `Activate()` | a double click or Enter on a row | [the selection](#the-selection) |
@@ -99,9 +99,9 @@ locale orders it, and fills both halves in that order.
 
 | | |
 |---|---|
-| `Index` | the selected row, `-1` for none. Assigning selects it in both halves |
+| `Index` | the selected row, or the anchor row of a cell rectangle, `-1` for none. Assigning selects a row in both halves and lets the rectangle go |
 | `MultiSelect` | more than one row at a time, in both halves. Default `false` |
-| `Selection` (ro) | every selected row, as an array of indices in order |
+| `Selection` (ro) | every selected row, as an array of indices in order -- or, with a cell rectangle marked, the rows it covers |
 | **event** `Select()` | the selection moved, in either half |
 | **event** `Activate()` | a double click or Enter on a row |
 
@@ -122,17 +122,19 @@ a `Decimal`, a number, or text that reads as one -- so a sum is exact, and
 |---|---|
 | `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered. With a rectangle marked, that rectangle instead |
 | `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` |
-| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. A grouped grid refuses: its rows are keys in a tree, not positions |
-| `ClearRange()` | take the mark off every cell; answers the grid |
+| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid refuses: its rows are keys in a tree, not positions |
+| `ClearRange()` | take the mark off every cell, leaving no rows selected; answers the grid |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given. Each cell is raised as `CellEdit` with `"paste"`, so a handler can refuse it. Rows past the last one are not made. With no `text` the clipboard is read, which answers later |
 
 Ctrl+C and Ctrl+V in the grid do the same. **A press and a drag mark a rectangle
 of cells** in either half; a plain click marks one cell, Shift extends from the
 anchor, and the cells wear `bta-cell-range` (`SetRange` on the two tables).
-`Copy` answers the rectangle when there is one and the selected rows otherwise.
-`Paste` writes from the current cell down and across without making new rows.
-A grouped grid has no rectangle: its rows are keys in a tree, and a position
-moves when a group folds.
+**Ctrl+click is the table's row selection** and lets the rectangle go, so a row
+is still chosen — and `Copy` falls back to it — for a paste that wants whole
+rows. `Copy` answers the rectangle when there is one and the selected rows
+otherwise. `Paste` writes from the current cell down and across without making
+new rows. A grouped grid has no rectangle: its rows are keys in a tree, and a
+position moves when a group folds.
 
 ## Groups
 

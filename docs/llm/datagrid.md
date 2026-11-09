@@ -58,8 +58,8 @@ or not.
 | `ExpandAll()` | opens every group |
 | `CollapseAll()` | closes every group |
 | `Count` (ro) | how many rows the grid holds |
-| `Index` | the selected row, `-1` for none. Assigning selects it in both halves |
-| `Selection` (ro) | every selected row, as an array of indices in order |
+| `Index` | the selected row, or the anchor row of a cell rectangle, `-1` for none. Assigning selects a row in both halves and lets the rectangle go |
+| `Selection` (ro) | every selected row, as an array of indices in order -- or, with a cell rectangle marked, the rows it covers |
 | `Add(row)` | adds a row, the array of its values in declared column order |
 | `AddRows(rows)` | adds many rows in one change to both halves |
 | `Clear()` | takes every row away |
@@ -71,8 +71,8 @@ or not.
 | `Totals()` | the row of totals as it is drawn: one value per declared column, `""` where a column declares none |
 | `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered. With a rectangle marked, that rectangle instead |
 | `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` |
-| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. A grouped grid refuses: its rows are keys in a tree, not positions |
-| `ClearRange()` | take the mark off every cell; answers the grid |
+| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid refuses: its rows are keys in a tree, not positions |
+| `ClearRange()` | take the mark off every cell, leaving no rows selected; answers the grid |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given. Each cell is raised as `CellEdit` with `"paste"`, so a handler can refuse it. Rows past the last one are not made. With no `text` the clipboard is read, which answers later |
 | **event** `Select()` | the selection moved, in either half |
 | **event** `Activate()` | a double click or Enter on a row |
@@ -106,6 +106,8 @@ folding both halves together. Rows are still addressed by index (`Index`,
 **A rectangle of cells** is marked with a press and a drag in either half, or
 from code with `SelectRange`; `Copy` answers that rectangle instead of the rows.
 A plain click marks one cell, Shift extends from the anchor, and the cells wear
-`bta-cell-range`. A grouped grid has no rectangle: its rows are keys in a tree,
-and a position moves when a group folds. `Paste` writes from the current cell
-down and across, and makes no new rows.
+`bta-cell-range`. **Ctrl+click is still the row selection** and lets the
+rectangle go, so whole rows can be chosen for a paste that wants them; `Copy`
+falls back to them when there is no rectangle. A grouped grid has no rectangle:
+its rows are keys in a tree, and a position moves when a group folds. `Paste`
+writes from the current cell down and across, and makes no new rows.
