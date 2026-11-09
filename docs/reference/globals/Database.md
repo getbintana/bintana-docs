@@ -101,6 +101,11 @@ All five of sqlite's storage classes are used. `Field.Record` and `Field.List`
 are **refused**: a detail is its own table, which is a schema decision and not
 something a mapper should make silently.
 
+A column spelled in another case is the same identifier to SQL: a record's
+`Code` against a column `code` needs no `Naming`, and the table reads the row as
+the shape spells it. A spelling that differs by more than case is refused on the
+first statement -- `Naming` or `as` is the answer, never a guess.
+
 ## The connection itself
 
 | | |

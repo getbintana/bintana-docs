@@ -2193,11 +2193,12 @@ clients.Save(c);                                      // UPDATE, by the key
   at 0 once filled, so `Save` would try to update a row that is not there — use
   `Insert` for that one.
 - **The shape is checked against the table** on the first statement: a nested
-  field, a missing column, a table that is not there, and a column spelled with
-  another case — that last because SQL identifiers are case-insensitive, so
-  `Code` against `code` would write perfectly and read *empty*.
-- `Naming` must match the columns. `snake` for `CustomerName` → `customer_name`;
-  `as: "..."` for the one field the rule does not fit.
+  field, a missing column, a table that is not there, and a spelling that
+  differs by more than case. `Code` against `code` is SQL's same identifier:
+  the table reads the row as the shape spells it, so the common `Id`/`id`
+  needs no `Naming`. `Naming` must match the columns otherwise: `snake` for
+  `CustomerName` → `customer_name`; `as: "..."` for the one field the rule
+  does not fit.
 - **Write `balance TEXT` for a decimal column.** Never
   `NUMERIC`/`DECIMAL(12,2)`/`INTEGER`: those are *affinities* and sqlite turns
   `'19.90'` into the double `19.9`, losing the scale and the exactness. `Table`

@@ -3020,15 +3020,19 @@ A record with no key can be **read** and not written — an `UPDATE` with no
 
 ### The shape is checked against the table
 
-On the first statement, once. Four ways a shape can fail to fit, and the third is
-why the check exists:
+On the first statement, once. Three ways a shape can fail to fit:
 
 | | |
 |---|---|
 | a field that is a record or a list | a detail is a table of its own, and saving one with its master is not built (see [plans/data-plan.md](https://github.com/getbintana/bintana/blob/main/docs/plans/data-plan.md)) |
 | a field with no column | named, with the columns the table does have |
-| **a column spelled with another case** | SQL identifiers are case-insensitive, so `Code` against a column `code` *writes perfectly and reads empty*: the values land in the bag of keys the shape does not describe, nothing throws, and the first thing anybody notices is a form full of blanks |
 | no such table | said here, rather than arriving from the middle of a generated statement |
+
+A difference of case alone is SQL's same identifier: `Code` against a column
+`code` reads and writes, and the row is spelled the shape's way on the way in --
+so `Id`/`id` needs no `Naming`. A spelling that differs by more than case is
+refused, because guessing it is what would bring back the empty read; the
+`Naming` rule or `as: "..."` is the answer.
 
 ### What it refuses, and what is not built
 
