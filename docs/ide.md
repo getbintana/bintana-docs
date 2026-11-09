@@ -1323,9 +1323,9 @@ what it always did.
 ### Strict checks, which are a property of the run
 
 *Project → Strict checks while running* is a tick, and what it does is add one
-argument: `bintana --strict`. Under it a control **refuses a property its class
-does not have**, so `this.Lbl.Txt = "x"` throws where it is written instead of
-doing nothing forever -- which is the half of that question
+argument: `bintana --strict`. Under it a control or a `Record` **refuses a
+property its class or shape does not have**, so `this.Lbl.Txt = "x"` or
+`row.Nmae = "x"` throws where it is written instead of doing nothing forever -- which is the half of that question
 [`Live` and `Check`](#the-names-a-file-uses-checked-while-it-is-written)
 cannot answer, because it needs the program to be running. The other half is
 theirs and stays theirs: a handler nobody calls is a mistake no execution

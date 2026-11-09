@@ -431,7 +431,7 @@ project's, as `Arguments`. `bintana --help` lists them all.
 
 | Option | |
 |---|---|
-| `--strict` | a control refuses a property its class does not have |
+| `--strict` | a control or a `Record` refuses a property its class or shape does not have |
 | `--debug` | stop before the project runs and wait for the IDE's debugger |
 | `--profile <file>` | write a Sysprof capture of the runtime's own marks |
 | `--form <Class>` | open that form instead of `startup`, as an instance of its own even in a single-instance project. A project that declares `main` is refused |

@@ -6,6 +6,10 @@ What a control's properties are to a control. Use one instead of a bag of keys
 nobody checks: the fields are named, the values are checked where they are set,
 and the whole thing survives JSON, a form and a database as itself.
 
+Under `--strict`, a record refuses a name its shape does not have: the instance
+is sealed once its fields exist, so `row.Nmae = "x"` throws where it is written
+while `row.Name = "x"` still goes through its setter.
+
 ```js
 class Customer extends Record {
     static Naming = "same";                     // same | lower | snake

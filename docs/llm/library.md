@@ -880,10 +880,11 @@ one too, and stop between two blocks or two entries.
 
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
-(same class, same file, so `(10/3)*3` is `10` on both sides), and `Bytes`,
-which cross as base64 and arrive as a real `Bytes`. Functions, class instances,
-cycles and `undefined` are refused out loud rather than silently subsetted; a
-`Record` crosses as what `Serialize` writes and comes back through `Load`.
+(same class, same file, so `(10/3)*3` is `10` on both sides), `Bytes`, which
+cross as base64 and arrive as a real `Bytes`, and `Date`, which crosses as its
+instant and arrives a real one. Functions, class instances, cycles and
+`undefined` are refused out loud rather than silently subsetted; a `Record`
+crosses as what `Serialize` writes and comes back through `Load`.
 
 **A worker is this language, not a subset of it.** Its context is built the
 way the main one is — the same `init` functions, then the same `rad.js` — so

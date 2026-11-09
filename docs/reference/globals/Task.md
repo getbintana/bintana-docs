@@ -188,11 +188,13 @@ same file. `(10/3)*3` is `10` in a worker exactly as it is outside one, and
 `Round`, `Trim`, `Abs` and `Split` are all there.
 
 `Bytes` cross too, as base64 under their own tag, and arrive as a real `Bytes`
-with the same class on both sides. Refused out loud, because `JSON.stringify`
-would silently drop or null them: functions, class instances, cycles,
-`undefined` and non-finite numbers. A `Record` crosses as what `Serialize`
-writes and comes back through `Load`. Integers past 2⁵³ lose precision in
-transit — cross those as text or as `Decimal`.
+with the same class on both sides. `Date` crosses as its epoch milliseconds and
+arrives a real `Date`; an invalid one has no instant to carry and is refused.
+Refused out loud, because `JSON.stringify` would silently drop or null them:
+functions, class instances, cycles, `undefined` and non-finite numbers. A
+`Record` crosses as what `Serialize` writes and comes back through `Load`.
+Integers past 2⁵³ lose precision in transit — cross those as text or as
+`Decimal`.
 
 The one `undefined` that is not a message is a `Run` that returns nothing: the
 answer is `null` (see [Answering](#answering)), not a value with a hole in it.
