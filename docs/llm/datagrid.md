@@ -71,7 +71,7 @@ or not.
 | `Totals()` | the row of totals as it is drawn: one value per declared column, `""` where a column declares none |
 | `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered. With a rectangle marked, that rectangle instead |
 | `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` |
-| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid refuses: its rows are keys in a tree, not positions |
+| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid speaks of data rows; its group rows are not cells |
 | `ClearRange()` | take the mark off every cell, leaving no rows selected; answers the grid |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given. Each cell is raised as `CellEdit` with `"paste"`, so a handler can refuse it. Rows past the last one are not made. With no `text` the clipboard is read, which answers later |
 | **event** `Select()` | the selection moved, in either half |
@@ -111,6 +111,6 @@ rectangle go, so whole rows can be chosen for a paste that wants them; `Copy`
 falls back to them when there is no rectangle. **The arrow keys move the cell**:
 a plain arrow moves the anchor and collapses the rectangle, Shift extends it,
 and the current-cell frame crosses the frozen split with the column. A grouped
-grid has no rectangle: its rows are keys in a tree, and a position moves when a
-group folds. `Paste` writes from the current cell down and across, and makes no
-new rows.
+grid has a rectangle too: its group headings sit between the data rows and are
+not cells, and the rectangle speaks of data rows. `Paste` writes from the
+current cell down and across, and makes no new rows.

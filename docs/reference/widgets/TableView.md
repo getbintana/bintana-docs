@@ -647,7 +647,7 @@ the same bargain `bta-cell-current` makes.
 
 | | |
 |---|---|
-| `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order. Flat and on-demand tables; **a tree is refused** because a node is addressed by key and its position moves when a parent folds |
+| `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order. A tree counts its rows as shown, so a fold moves them |
 | `ClearRange()` | take the mark off every cell; `SetRange` puts one back |
 
 ```js
@@ -657,10 +657,9 @@ Plan.ClearRange();
 
 The rectangle is a mark and not a selection: the row selection, the current
 cell and `Copy` on a table are unchanged. **`lib/datagrid` is what turns a
-press and a drag into one**, and what makes `Copy` answer it. A tree refuses
-`SetRange`: a node is addressed by key, and its position moves when a parent
-folds. An on-demand table takes it, because a position is what `Data` is
-already asked by.
+press and a drag into one**, and what makes `Copy` answer it. A tree takes the
+same positions: its rows as shown, so a fold moves them. An on-demand table
+takes it too, because a position is what `Data` is already asked by.
 
 ## A tree
 

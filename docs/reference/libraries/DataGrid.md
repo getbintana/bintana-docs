@@ -122,7 +122,7 @@ a `Decimal`, a number, or text that reads as one -- so a sum is exact, and
 |---|---|
 | `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered. With a rectangle marked, that rectangle instead |
 | `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` |
-| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid refuses: its rows are keys in a tree, not positions |
+| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. The row selection lets go, as a press does. A grouped grid speaks of data rows; its group rows are not cells |
 | `ClearRange()` | take the mark off every cell, leaving no rows selected; answers the grid |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given. Each cell is raised as `CellEdit` with `"paste"`, so a handler can refuse it. Rows past the last one are not made. With no `text` the clipboard is read, which answers later |
 
@@ -136,8 +136,9 @@ moves the anchor and collapses the rectangle, Shift extends it, and the focus
 and the current-cell frame cross from the frozen half to the scrolling one
 with the column. `Copy` answers the rectangle when there is one and the
 selected rows otherwise. `Paste` writes from the current cell down and across
-without making new rows. A grouped grid has no rectangle: its rows are keys in
-a tree, and a position moves when a group folds.
+without making new rows. A grouped grid has a rectangle too: its group headings
+sit between the data rows and are not cells, and the rectangle speaks of data
+rows.
 
 ## Groups
 
