@@ -108,6 +108,9 @@ from code with `SelectRange`; `Copy` answers that rectangle instead of the rows.
 A plain click marks one cell, Shift extends from the anchor, and the cells wear
 `bta-cell-range`. **Ctrl+click is still the row selection** and lets the
 rectangle go, so whole rows can be chosen for a paste that wants them; `Copy`
-falls back to them when there is no rectangle. A grouped grid has no rectangle:
-its rows are keys in a tree, and a position moves when a group folds. `Paste`
-writes from the current cell down and across, and makes no new rows.
+falls back to them when there is no rectangle. **The arrow keys move the cell**:
+a plain arrow moves the anchor and collapses the rectangle, Shift extends it,
+and the current-cell frame crosses the frozen split with the column. A grouped
+grid has no rectangle: its rows are keys in a tree, and a position moves when a
+group folds. `Paste` writes from the current cell down and across, and makes no
+new rows.

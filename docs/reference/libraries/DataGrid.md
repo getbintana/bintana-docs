@@ -131,10 +131,13 @@ of cells** in either half; a plain click marks one cell, Shift extends from the
 anchor, and the cells wear `bta-cell-range` (`SetRange` on the two tables).
 **Ctrl+click is the table's row selection** and lets the rectangle go, so a row
 is still chosen — and `Copy` falls back to it — for a paste that wants whole
-rows. `Copy` answers the rectangle when there is one and the selected rows
-otherwise. `Paste` writes from the current cell down and across without making
-new rows. A grouped grid has no rectangle: its rows are keys in a tree, and a
-position moves when a group folds.
+rows. **The arrow keys move the cell**, as a spreadsheet's do: a plain arrow
+moves the anchor and collapses the rectangle, Shift extends it, and the focus
+and the current-cell frame cross from the frozen half to the scrolling one
+with the column. `Copy` answers the rectangle when there is one and the
+selected rows otherwise. `Paste` writes from the current cell down and across
+without making new rows. A grouped grid has no rectangle: its rows are keys in
+a tree, and a position moves when a group folds.
 
 ## Groups
 
