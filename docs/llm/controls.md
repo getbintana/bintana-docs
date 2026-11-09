@@ -886,6 +886,8 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
 | `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }` |
+| `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order. Flat and on-demand tables; **a tree is refused** because a node is addressed by key and its position moves when a parent folds |
+| `ClearRange()` | take the mark off every cell; `SetRange` puts one back |
 | `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
 | `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }` |
 | `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor`. Answers whether it did -- `false` for a cell that is not on screen (`Reveal` first), not editable, or refused by `CellEditor` |

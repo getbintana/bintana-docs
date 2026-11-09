@@ -80,6 +80,8 @@ not repeated here.
 | `SetCell(row, column, value)` | one cell, in place | [the rows](#the-rows-it-holds) |
 | `SetIcon(row, column, name)` | an icon from the theme beside a cell's text | [the rows](#the-rows-it-holds) |
 | `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour | [the rows](#the-rows-it-holds) |
+| `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order | [a rectangle of cells](#a-rectangle-of-cells) |
+| `ClearRange()` | take the mark off every cell | [a rectangle of cells](#a-rectangle-of-cells) |
 | `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text | [the rows](#the-rows-it-holds) |
 | `SortBy(column, [ascending], [compare])` | actually reorders the rows it holds, **by the text the cells show**: natural order by default (`9` before `10`, the locale's collation otherwise), or `compare(a, b)` — the two cells' text, answering a number as `Array.sort`'s does — for what natural order reads wrongly: a minus sign, grouped thousands, a `d/m/Y` date | [sorting](#sorting) |
 | `SortColumn(column, [ascending])` | the same as clicking that heading from code: the arrow moves and `Sort` is raised | [sorting](#sorting) |
@@ -634,6 +636,31 @@ Board_SetStyle = (key, column) => key.startsWith("g/") && column === 1 ? "headin
 for another row — which is what makes a list that reuses its widgets say the
 right thing. The one class the runtime adds on its own is `dim-label`, on a cell
 `SetEditable` locked; a cell can wear both.
+
+## A rectangle of cells
+
+`SetRange(fromRow, fromColumn, toRow, toColumn)` marks a rectangle: two
+**visible positions** and two columns, inclusive, in either order. `ClearRange`
+takes it off. The cells wear `bta-cell-range`, which the runtime's sheet paints
+with the selection colour; an application's `app.css` may paint it its own way,
+the same bargain `bta-cell-current` makes.
+
+| | |
+|---|---|
+| `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order. Flat and on-demand tables; **a tree is refused** because a node is addressed by key and its position moves when a parent folds |
+| `ClearRange()` | take the mark off every cell; `SetRange` puts one back |
+
+```js
+Plan.SetRange(2, 0, 5, 2);      // rows 2..5, the first three columns
+Plan.ClearRange();
+```
+
+The rectangle is a mark and not a selection: the row selection, the current
+cell and `Copy` on a table are unchanged. **`lib/datagrid` is what turns a
+press and a drag into one**, and what makes `Copy` answer it. A tree refuses
+`SetRange`: a node is addressed by key, and its position moves when a parent
+folds. An on-demand table takes it, because a position is what `Data` is
+already asked by.
 
 ## A tree
 

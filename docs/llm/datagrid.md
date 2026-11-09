@@ -69,7 +69,10 @@ or not.
 | `RemoveRow(index)` | takes one row out |
 | `Refilter()` | asks `Filter` of every row again, in both halves |
 | `Totals()` | the row of totals as it is drawn: one value per declared column, `""` where a column declares none |
-| `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered |
+| `Copy()` | the selected rows as tab-separated text, every column in declared order -- what a spreadsheet pastes -- put on the clipboard and answered. With a rectangle marked, that rectangle instead |
+| `Range` (ro) | the rectangle of cells marked on screen, `{ Row, Column, ToRow, ToColumn }` with rows as data indices, or `null` |
+| `SelectRange(row, column, toRow, toColumn)` | mark a rectangle of cells, in any order, and answer the grid. A grouped grid refuses: its rows are keys in a tree, not positions |
+| `ClearRange()` | take the mark off every cell; answers the grid |
 | `Paste(text)` | writes tab-separated text from the current cell down and across: a spreadsheet's copied rows, or `text` when given. Each cell is raised as `CellEdit` with `"paste"`, so a handler can refuse it. Rows past the last one are not made. With no `text` the clipboard is read, which answers later |
 | **event** `Select()` | the selection moved, in either half |
 | **event** `Activate()` | a double click or Enter on a row |
@@ -100,7 +103,9 @@ folding both halves together. Rows are still addressed by index (`Index`,
 `Cell`, `CellEdit`); a group's row is `-1`, opens no editor and is left out of
 `Copy`. Sorting sorts within groups, and by the grouping column orders them.
 
-**What it does not do yet**: a rectangle of cells marked on screen, since a
-table selects rows. `Copy` takes the selected rows, every
-column; `Paste` writes from the current cell down and across, and makes no new
-rows.
+**A rectangle of cells** is marked with a press and a drag in either half, or
+from code with `SelectRange`; `Copy` answers that rectangle instead of the rows.
+A plain click marks one cell, Shift extends from the anchor, and the cells wear
+`bta-cell-range`. A grouped grid has no rectangle: its rows are keys in a tree,
+and a position moves when a group folds. `Paste` writes from the current cell
+down and across, and makes no new rows.
