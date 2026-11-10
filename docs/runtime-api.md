@@ -3387,6 +3387,11 @@ Printer.ToFile(this.Sheet, path, { Pages: 12 })  // a PDF, and no dialog
 | `Default` | the one it would use. `""` for none, `null` if it cannot ask |
 | `Papers` | `{ A4: { Width, Height }, … }` in points, read off GTK |
 
+On Linux `Names`/`Default` are `gtk_enumerate_printers`; on Windows they ask
+`EnumPrintersW`/`GetDefaultPrinterW`, because GTK's Win32 backend opens the
+native dialog and publishes no `GtkPrinter` list. `null` stays for a session
+that cannot ask at all.
+
 `area` is a control that draws. Its handler runs once per sheet against the
 print context, and the sheet arrives as an argument:
 `DrawPage(painter, page, width, height)`, falling back to `Draw` for a form that

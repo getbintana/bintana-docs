@@ -222,6 +222,11 @@ is the more specific answer.
 | `Names` | the printers this session can reach. `[]` for a machine with none, **`null`** for a session that cannot ask |
 | `Default` | the one it would use. `""` when none is marked, **`null`** when it cannot ask |
 
+On Linux they are `gtk_enumerate_printers`; on Windows they ask
+`EnumPrintersW`/`GetDefaultPrinterW`, because GTK's Win32 backend opens the
+native dialog and publishes no `GtkPrinter` list. A session that cannot ask —
+macOS today — answers `null`.
+
 **Three answers, because there are three states.** `[]` and `null` are not the
 same thing, and that difference is the whole reason `null` is here rather than a
 throw: an empty list cannot be told apart from a machine with no printer, which

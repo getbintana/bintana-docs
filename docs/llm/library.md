@@ -1079,8 +1079,10 @@ takes.
   runtime's, drawn by the control's own `DrawPage`, with *Print…*; → the
   window. **Offer this for a preview**: when GTK draws the print dialog through
   the desktop portal, as it does on GNOME, that dialog has no *Preview* at all
-- `Printer.Names` — the printers this machine has, or `null` if it cannot say
+- `Printer.Names` — the printers this machine has (`gtk_enumerate_printers` on
+  Linux, `EnumPrintersW` on Windows), or `null` if it cannot say
 - `Printer.Default` — the one it would use, `""` for none, `null` if it cannot say
+  (`GetDefaultPrinterW` on Windows)
 - `Printer.Papers` — the paper sizes, in points
 
 `area` is a control that draws — a `DrawingArea`, or the `Canvas` of a `Report`
