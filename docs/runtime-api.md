@@ -832,6 +832,18 @@ The click is not a callback held by the notification -- that would outlive the
 window that sent it. `OnActivate` is a property of the `Notification` global,
 looked up when the action arrives; the desktop keeps only the action target.
 
+## Tray
+
+`Tray` is the application's status icon, with a native menu. It is one per
+application and is independent of `Notification`; `Show` adds it, `Hide`
+removes it, and `OnClick`/`OnMenu` receive the primary click and a menu action.
+`Tray.Available` is `false` on a desktop with no `StatusNotifierWatcher` (GNOME
+without the AppIndicator extension) and on the Windows/macOS stubs in this
+version; `Tray.CanMenu` says whether the menu can be drawn. The Linux backend
+exports `org.kde.StatusNotifierItem` and `com.canonical.dbusmenu` over GDBus;
+the menu is data (`{ Text, Action, Enabled, Checked, Separator, Items }`), never
+callbacks. See [`Tray`](reference/globals/Tray.md).
+
 ## File
 
 | | |

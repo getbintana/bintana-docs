@@ -337,6 +337,49 @@ them in `Locale.Text` at the call site, which is where the extractor looks and
 where `{0}` interpolates. [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) sends one when its window is
 not the one the user is in.
 
+## Tray
+
+A status icon: one per application, with a native menu. On Linux it is a
+`StatusNotifierItem` with `dbusmenu`; the menu is drawn by the desktop, not by a
+window of ours. **GNOME needs the AppIndicator extension**: without a
+`StatusNotifierWatcher`, `Tray.Available` is `false` and `Show` says so.
+
+```js
+const tray = new Tray({ Icon: "org.example.Monitor-symbolic",
+                        Tooltip: Locale.Text("Monitor PZEM") });
+tray.Menu = [
+    { Text: Locale.Text("Abrir"), Action: "show" },
+    { Separator: true },
+    { Text: Locale.Text("Salir"), Action: "quit" },
+];
+tray.OnClick = () => this.Show();
+tray.OnMenu = (action) => { if (action === "quit") Application.Quit(); };
+tray.Show();
+```
+
+| | |
+|---|---|
+| `Tray.Available` (static, ro) | whether this platform can show a tray icon now: Linux needs a StatusNotifierWatcher; Windows and macOS answer true when built |
+| `Tray.CanMenu` (static, ro) | whether the platform can show the menu; false is a documented limit |
+| `Icon` | a theme name, or a file path for the platforms that need one; set before or after `Show` |
+| `Menu` | an array of `{ Text, Action, Enabled, Checked, Separator, Items }`; assigning it validates the whole tree and rebuilds the native menu. `Text` and button labels are prose -- wrap them in `Locale.Text` |
+| `OnClick` | assign `() => …`: the primary click. On macOS with a `Menu`, the click opens the menu and this is not called |
+| `OnMenu` | assign `(action) => …`: a menu item was chosen; `action` is its `Action`. The menu is data and actions, never callbacks |
+| `Show()` / `Hide()` | add the icon and its menu; answers the tray. Refused with no application, or with no status-notifier host on the desktop |
+| `Tooltip` | the text the platform shows on hover |
+| `Visible` (ro) | whether the icon is shown now |
+
+**The menu is data and actions, never callbacks.** The desktop can keep it for
+the life of the icon; `OnMenu` is looked up when an action arrives. `Text` and
+the labels are prose -- wrap them in `Locale.Text`; `Action` is a short key and
+is not translated. A second `new Tray()` is refused: an application has one
+status icon. A tray with no watcher is a sentence from `Show`, not a silent
+nothing.
+
+**The Linux backend is built; Windows and macOS are stubs** in this version:
+`Tray.Available` is `false` there and `Show` names the missing backend. The
+full plan is `docs/plans/tray-plan.md` in the runtime.
+
 ## Locale
 
 | | |
