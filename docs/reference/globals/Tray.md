@@ -37,7 +37,7 @@ the window does not end the program.
 | `Available` (static, ro) | whether this platform can show a tray icon now | [the platforms](#the-platforms) |
 | `CanMenu` (static, ro) | whether the platform can show the menu; false is a documented limit | [the platforms](#the-platforms) |
 | `Hide()` | remove the icon but keep the object, so `Show` is cheap | [showing](#showing) |
-| `Icon` | a theme name, or a file path for the platforms that need one; set before or after `Show` | [the icon](#the-icon) |
+| `Icon` | a theme name, or a `.ico`/image path | [the icon](#the-icon) |
 | `Menu` | an array of `{ Text, Action, Enabled, Checked, Separator, Items }`; assigning it validates the whole tree and rebuilds the native menu | [the menu](#the-menu) |
 | `OnClick` | assign `() => …`: the primary click | [clicking](#clicking) |
 | `OnMenu` | assign `(action) => …`: a menu item was chosen | [clicking](#clicking) |
@@ -62,7 +62,7 @@ backend is built; until then `Show` names the missing backend.
 
 | | |
 |---|---|
-| `Icon` | a theme name, or a file path for the platforms that need one; set before or after `Show` |
+| `Icon` | a theme name, or a `.ico`/image path. On Windows the theme name is resolved through the icon theme and a `.ico`/PNG/SVG path is loaded directly; an empty value falls back to the executable's icon. Set before or after `Show` |
 | `Tooltip` | the text the platform shows on hover |
 
 A theme name is the portable spelling: `"org.example.Monitor-symbolic"`. A path

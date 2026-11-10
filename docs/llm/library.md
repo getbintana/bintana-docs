@@ -305,11 +305,11 @@ Notification.Withdraw(id)
 
 | | |
 |---|---|
-| `CanActivate` (ro) | whether this platform delivers a click: `true` on Linux (the daemon or the portal) and macOS, `false` on Windows |
-| `MaxButtons` (ro) | how many `Buttons` the platform shows: 3 on Linux, 1 on macOS and 0 on Windows. Extra buttons are ignored; the notification still arrives |
-| `OnActivate` | assign `(id, action) => …`: a notification was clicked. `id` is the one `Send` answered; `action` is `null` for the notification itself or the `Action` of the button. `null` takes it off. The handler is looked up when the click arrives, and not called on Windows, where the backend has no actions |
-| `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon, Buttons }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name; `Buttons` is `[{ Label, Action }]`, where `Label` is prose and `Action` is the key `OnActivate` is handed. Sending again with the same `Id` **replaces** what is showing. The title, body and labels are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from |
-| `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error. On Windows this is a no-op: the GLib backend has no withdraw |
+| `CanActivate` (ro) | whether this platform delivers a click: `true` on Linux (the daemon or the portal), macOS, and Windows 10+ where the first `Send` can register the toast's shortcut |
+| `MaxButtons` (ro) | how many `Buttons` the platform shows: 3 on Linux and Windows, 1 on macOS. Extra buttons are ignored; the notification still arrives |
+| `OnActivate` | assign `(id, action) => …`: a notification was clicked. `id` is the one `Send` answered; `action` is `null` for the notification itself or the `Action` of the button. `null` takes it off. The handler is looked up when the click arrives. On Windows it is called while the program runs; a click that launches a closed program carries no action yet |
+| `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon, Buttons }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name (the Windows toast uses the shortcut's icon and ignores it); `Buttons` is `[{ Label, Action }]`, where `Label` is prose and `Action` is the key `OnActivate` is handed. Sending again with the same `Id` **replaces** what is showing. The title, body and labels are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from. On Windows the first send also writes a Start Menu shortcut with the project's `id`, which is what registers the toast's AppUserModelID |
+| `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error. On Windows this hides the WinRT toast |
 
 **The project has to declare an `id`** in `project.btp`: a notification is sent in
 the name of an application, and without one GLib fails an assertion and sends
@@ -326,11 +326,12 @@ critical, and only `"Urgent"` is critical.
 
 **A click is `Notification.OnActivate = (id, action) => …`**, looked up when the
 click arrives: `action` is `null` for the notification or the button's `Action`.
-`Notification.CanActivate` says whether the platform delivers one and `MaxButtons` how
-many buttons it draws — 3 on Linux, 1 on macOS, 0 on Windows. **Windows shows the
-text but has no actions**: no click, no buttons, no `Withdraw`, and `Urgency`/`Icon`
-are ignored. macOS draws only the first button. A click with the application
-closed is not a supported path.
+`Notification.CanActivate` says whether the platform delivers one and `MaxButtons`
+how many buttons it draws — 3 on Linux and Windows, 1 on macOS. **Windows does
+this through a WinRT toast**: the first `Send` writes a Start Menu shortcut with
+the project's `id` (an unpackaged toast needs an AppUserModelID), buttons and
+`Withdraw` work, and `OnActivate` is called while the program runs. A click with
+the application closed is not a supported path.
 
 **The title, body and button labels are not looked up in a catalogue here.** Wrap
 them in `Locale.Text` at the call site, which is where the extractor looks and
@@ -361,7 +362,7 @@ tray.Show();
 |---|---|
 | `Tray.Available` (static, ro) | whether this platform can show a tray icon now: Linux needs a StatusNotifierWatcher; Windows and macOS answer true when built |
 | `Tray.CanMenu` (static, ro) | whether the platform can show the menu; false is a documented limit |
-| `Icon` | a theme name, or a file path for the platforms that need one; set before or after `Show` |
+| `Icon` | a theme name, or a `.ico`/image path. On Windows the theme name is resolved through the icon theme and a `.ico`/PNG/SVG path is loaded directly; an empty value falls back to the executable's icon. Set before or after `Show` |
 | `Menu` | an array of `{ Text, Action, Enabled, Checked, Separator, Items }`; assigning it validates the whole tree and rebuilds the native menu. `Text` and button labels are prose -- wrap them in `Locale.Text` |
 | `OnClick` | assign `() => …`: the primary click. On macOS with a `Menu`, the click opens the menu and this is not called |
 | `OnMenu` | assign `(action) => …`: a menu item was chosen; `action` is its `Action`. The menu is data and actions, never callbacks |
@@ -376,9 +377,10 @@ is not translated. A second `new Tray()` is refused: an application has one
 status icon. A tray with no watcher is a sentence from `Show`, not a silent
 nothing.
 
-**The Linux backend is built; Windows and macOS are stubs** in this version:
-`Tray.Available` is `false` there and `Show` names the missing backend. The
-full plan is `docs/plans/tray-plan.md` in the runtime.
+**The Linux and Windows backends are built; macOS is a stub** in this version:
+on Windows the icon is `Shell_NotifyIcon` and a theme name (or a `.ico`) becomes
+an `HICON`; on macOS `Tray.Available` is `false` and `Show` names the missing
+backend. The full plan is `docs/plans/tray-plan.md` in the runtime.
 
 ## Locale
 
