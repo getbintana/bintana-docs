@@ -642,8 +642,9 @@ right thing. The one class the runtime adds on its own is `dim-label`, on a cell
 `SetRange(fromRow, fromColumn, toRow, toColumn)` marks a rectangle: two
 **visible positions** and two columns, inclusive, in either order. `ClearRange`
 takes it off. The cells wear `bta-cell-range`, which the runtime's sheet paints
-with the selection colour; an application's `app.css` may paint it its own way,
-the same bargain `bta-cell-current` makes.
+with the selection colour **over the whole cell, padding included**; an
+application's `app.css` may paint it its own way, the same bargain
+`bta-cell-current` makes.
 
 | | |
 |---|---|
