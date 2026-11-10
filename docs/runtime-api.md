@@ -1958,34 +1958,40 @@ package. Not in a `Task`.
 
 ## Keyring
 
-`Keyring.Available`, `Store`, `Lookup` and `Delete`, in `bta_keyring.c`, over
-libsecret — the freedesktop Secret Service, which is the desktop's own vault and
-not a file this runtime invents. **Optional at build time**, the sqlite and
-libxml2 mould: without libsecret the global exists, `Available` is `false` and
-the verbs refuse with a sentence naming the package. libsecret has no Windows
-port, so that is the half the Windows build compiles.
+`Keyring.Provider`, `Store`, `Lookup` and `Delete`, in `bta_keyring.c`: the
+same three asynchronous verbs over **one provider per build**, named by
+`Provider`.
 
-**Everything is asynchronous, and it has to be.** The vault is a service on the
-session bus and it may be locked; a synchronous call would freeze the window and
-every timer until the user answered a prompt or a bus that is not there timed
-out. Each verb takes a callback and returns at once. A callback takes **one
-value** — `Store`/`Delete` answer whether it worked, `Lookup` the secret or
-`null` — so an error is folded into that value and not a second argument to
-document.
+| platform | `Provider` | where the secret goes |
+|---|---|---|
+| Linux with libsecret | `"SecretService"` | the freedesktop Secret Service |
+| Linux without it | `"File"` | `Application.ConfigDirectory/secrets/<service>/<key>`, `0600` under `0700` |
+| Windows | `"CredentialManager"` | one generic credential per name |
+| macOS | `"Keychain"` | one generic password per name |
+
+**There is no runtime fallback**: a secret is seen only by the provider that
+stored it. `File` is the floor of a Linux build without libsecret and not a
+choice; Windows and macOS have a vault that is always there. The names are
+percent-encoded in every provider and refused past 255 bytes encoded; a value is
+refused past 2560 bytes, Windows' own Credential Manager limit, so one program
+stores the same secrets everywhere.
+
+**Everything is asynchronous, and it has to be.** A vault may be locked; a
+synchronous call would freeze the window and every timer until the user answered
+a prompt or a service that is not there timed out. Each verb takes a callback
+and returns at once. A callback takes **one value** — `Store`/`Delete` answer
+whether it worked, `Lookup` the secret or `null` — so an error is folded into
+that value and not a second argument to document.
 
 `service` names the program and `key` the thing within it, so one application
 holds one secret per server: a token is `Store(Application.Id, url, token, cb)`.
 The label a keyring browser shows is made of the two, and it is data and not
 prose — nothing here goes through a catalogue.
 
-**`Available` is the build and not the machine.** A runtime linked against
-libsecret on a headless server has no service to talk to, and `Available` cannot
-see that, so nothing stored and no vault to ask are one answer: `null`. A caller
-that keeps a fallback — an environment variable, a settings file — does not have
-to tell them apart, which is the shape `bintana-project` and Zabbix Reports use
-for a token.
-
-A `main` project can use it: the console loop counts a vault call as an answer
+**`Provider` is the build and the platform**, not a runtime probe: a Secret
+Service that is not running fails the call, and a caller that keeps a fallback —
+an environment variable, a settings file — treats that like an empty vault. A
+`main` project can use it: the console loop counts a vault call as an answer
 owed and waits for the callback. A `Task` cannot — the callback belongs to the
 main loop — and the call refuses there.
 

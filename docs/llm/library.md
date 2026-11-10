@@ -1496,11 +1496,12 @@ raw deflate or zip here; the name goes out when something needs it.
 
 ## Keyring
 
-The system's secret store, through the freedesktop Secret Service: a token, a
-password or a key kept where the desktop keeps them, instead of in a file.
+The system's secret store: a token, a password or a key kept where the platform
+keeps them, instead of in a file. **One API, one provider per build**;
+`Keyring.Provider` says which one.
 
 ```js
-Keyring.Available
+Keyring.Provider
 Keyring.Store(Application.Id, "https://zbx.lan/zabbix", token, (ok) => { … })
 Keyring.Lookup(Application.Id, "https://zbx.lan/zabbix", (value) => { … })
 Keyring.Delete(Application.Id, "https://zbx.lan/zabbix", (ok) => { … })
@@ -1508,29 +1509,28 @@ Keyring.Delete(Application.Id, "https://zbx.lan/zabbix", (ok) => { … })
 
 | | |
 |---|---|
-| `Available` | whether this build has libsecret. It says nothing about whether the machine is running a secret service -- a headless session has none -- so a caller treats a failed `Lookup` like an empty vault |
-| `Store(service, key, value, cb)` | puts `value` in the system's keyring under `service` and `key`, and calls `cb(ok)` when the vault answers -- `false` when it could not store it, which is what a machine with no secret service says. The label a keyring browser shows is made of the two names |
-| `Lookup(service, key, cb)` | reads what `Store` saved, and calls `cb(value)` -- the text, or `null` when nothing is stored **or** the vault cannot be asked |
-| `Delete(service, key, cb)` | forgets it, and calls `cb(ok)`: `false` when there was nothing under those names or the vault could not be asked. Deleting what is not there is not an error |
+| `Provider` | which store this build uses: `"SecretService"` on a Linux build with libsecret, `"File"` on a Linux build without it, `"CredentialManager"` on Windows and `"Keychain"` on macOS. A secret is seen only by the provider that stored it, so a caller never mixes two stores in one program |
+| `Store(service, key, value, cb)` | puts `value` in the provider's vault under `service` and `key`, and calls `cb(ok)` when it answers -- `false` when it could not store it. The names are percent-encoded for the provider's own key; each is refused past 255 bytes encoded, and `value` past 2560 bytes |
+| `Lookup(service, key, cb)` | reads what `Store` saved, and calls `cb(value)` -- the text, or `null` when nothing is stored **or** the provider cannot be asked |
+| `Delete(service, key, cb)` | forgets it, and calls `cb(ok)`: `false` when there was nothing under those names or the provider could not be asked. Deleting what is not there is not an error |
 
-**The calls are asynchronous, and they have to be.** The vault is a service on
-the session bus, and it may be locked: a synchronous lookup would freeze every
-window and every timer until the user answered a prompt. So each verb takes a
-callback and returns at once, and the answer arrives on the loop. A callback
-takes **one value** — whether it worked, or the secret — so an error is folded
-into that value.
+**The calls are asynchronous, and they have to be.** A vault may be locked: a
+synchronous lookup would freeze every window and every timer until the user
+answered a prompt. So each verb takes a callback and returns at once, and the
+answer arrives on the loop. A callback takes **one value** — whether it worked,
+or the secret — so an error is folded into that value.
 
 **`service` names the program and `key` the thing within it**, so one
 application holds one secret per server: a Zabbix token is
 `Keyring.Store(Application.Id, url, token, cb)`. The label is data and not
 prose: nothing here goes through a catalogue.
 
-**Optional at build time**: without libsecret `Keyring` exists, `Available` is
-`false` and every verb refuses naming the package. A desktop with no service
-running is the same answer at run time, which `Available` cannot see — a caller
-treats a failed `Lookup` like an empty vault and keeps its own fallback. A
-`main` project can use it and the console loop waits for the answer; a `Task`
-cannot, because the callback belongs to the main loop.
+**One provider per build, and no runtime fallback**: a secret is seen only by
+the provider that stored it. `File` is the Linux-without-libsecret floor
+(`Application.ConfigDirectory/secrets/`, `0600` under `0700`, unencrypted);
+Windows has the Credential Manager, macOS the Keychain. A `main` project can use
+it and the console loop waits for the answer; a `Task` cannot, because the
+callback belongs to the main loop.
 
 ## Zip
 
