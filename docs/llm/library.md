@@ -178,6 +178,34 @@ A TCP or Unix connection; `OnData` is bytes, `Line: true` is lines, `Tls` is the
 | `Tls` | `true` trusts the system's store; `{ Ca, Cert }` names a CA file and/or a certificate to pin; `null` (the default) is a plain socket. Read back as what was set |
 | `Write(data)` | queue text (UTF-8) or `Bytes`; answers the socket. It throws when the socket is not connected, which is a mistake and not a late answer |
 
+## SerialPort
+
+A tty -- an RS-232 port or a USB adapter -- read and written on the main loop.
+
+| | |
+|---|---|
+| `Clear()` | discard what has arrived but not been delivered, and anything queued to write. Answers the port |
+| `Close()` | close it; the next `Open` starts again. `Write` on a closed port throws |
+| `DataBits` | `5` to `8`, default `8` |
+| `EndOfLine` | the line separator `Line` uses, `"\n"` by default: `"\r\n"` for many devices |
+| `FlowControl` | `"None"` (the default), `"Hardware"` or `"Software"` |
+| `IsOpen` (ro) | whether the port is open now |
+| `Line` | `true`: buffer and raise `OnLine` for each complete `EndOfLine`; `false` (the default): `OnData` with the bytes one read returned. **A serial port is a byte stream**, so a chunk is not a frame |
+| `OnData` | assign `(bytes) => …`: bytes arrived, **not** a message. `Line: true` uses `OnLine` instead |
+| `OnError` | assign `(err) => …` with `{ Message, Kind }`; `Kind` is `"Error"` or `"Closed"`. The port is closed when it arrives |
+| `OnLine` | assign `(line) => …`: one complete line, without the separator, in `Line: true` mode |
+| `Open()` | open and configure the port. Answers the port; a second `Open` on an open port does nothing |
+| `Parity` | `"None"` (the default), `"Even"`, `"Odd"`, `"Mark"` or `"Space"`; the last two need the platform's `CMSPAR` |
+| `PortName` | the device path, `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux (and `COM3` on the Windows half when it arrives). Set before `Open` |
+| `Speed` | the baud rate, 1 to 4000000. A value the system has no `speed_t` for is refused by `Open`, which names it |
+| `StopBits` | `1` (the default) or `2` |
+| `Write(data)` | queue text (UTF-8) or `Bytes`; answers the port. It throws when the port is not open, which is a mistake and not a late answer |
+| `WriteLine(data)` | `Write` followed by `EndOfLine` |
+
+The C class is also a `FormPart`: `PortName`, `Speed`, `DataBits`, `Parity`,
+`StopBits`, `FlowControl`, `Line` and `EndOfLine` are serialised, and the
+form's close closes the port.
+
 ## ServerSocket
 
 A listener; `OnConnection` hands a connected `Socket`, and `Stop` closes what it holds.
@@ -966,6 +994,7 @@ as everywhere.
 - `Dialog.SaveFile(title, [options], cb)`
 - `Dialog.SelectFolder(title, [options], cb)`
 - `Dialog.Color(title, current, cb)`
+- `Dialog.Font(title, [current], cb)`
 
 **The callback is required** — passing none throws — and it is **not called when
 the user cancels**, so no caller has to tell *cancelled* from *chose nothing*.

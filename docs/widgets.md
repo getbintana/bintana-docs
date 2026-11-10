@@ -1671,7 +1671,8 @@ to ask for a colour from a menu item still would.
 
 The same shape as `ColorButton`, for the other thing a person picks rather than
 spells: a `GtkFontDialogButton` that shows the font in itself and opens the
-desktop's chooser. One widget, and `Value = ""` is the way back to the theme's;
+desktop's chooser. `Dialog.Font()` is the same chooser with no button attached.
+One widget, and `Value = ""` is the way back to the theme's;
 the clear button beside it in the property grid is that panel's, for the reason
 above. `Value` is a Pango description — exactly what `Widget.Font` takes, so it
 edits one with nothing in between.

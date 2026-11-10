@@ -1,13 +1,14 @@
 # Dialog
 
-Asking the user for a file, a folder or a colour — with the desktop's own
-choosers.
+Asking the user for a file, a folder, a colour or a font — with the desktop's
+own choosers.
 
 ## Every member
 
 | | | |
 |---|---|---|
 | `Color(title, current, cb)` | the desktop's colour chooser, opening on `current` | [a colour](#a-colour) |
+| `Font(title, [current], cb)` | the desktop's font chooser, opening on `current` (a Pango description) | [a font](#a-font) |
 | `OpenFile(title, [options], cb)` | the file chooser, for something that exists | [a file or a folder](#a-file-or-a-folder) |
 | `OpenFiles(title, [options], cb)` | the file chooser letting several be picked at once: the callback is handed **an array of paths**, and is not called when the person cancels | [a file or a folder](#a-file-or-a-folder) |
 | `SaveFile(title, [options], cb)` | the same, for somewhere to write | [a file or a folder](#a-file-or-a-folder) |
@@ -55,6 +56,16 @@ forget. A filter's label is prose you own: wrap it in
 For a colour the user picks *often*, the control is
 [`ColorButton`](../widgets/ColorButton.md), which is this chooser with a swatch
 in front of it.
+
+## A font
+
+| | |
+|---|---|
+| `Font(title, [current], cb)` | the desktop's font chooser, opening on `current` (a Pango description). Answers a Pango description — **exactly what [`Font`](../widgets/Widget.md#how-it-looks) takes** — or nothing when the person cancels |
+
+For a font the user picks *often*, the control is
+[`FontButton`](../widgets/FontButton.md), which is this chooser with the font in
+front of it.
 
 ## What goes wrong
 

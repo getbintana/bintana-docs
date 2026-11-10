@@ -1485,6 +1485,7 @@ as everywhere.
 - `Dialog.OpenFiles(title, [options], cb)` — several at once; the callback is handed an array of paths
 - `Dialog.SaveFile(title, [options], cb)`
 - `Dialog.Color(title, current, cb)`
+- `Dialog.Font(title, [current], cb)`
 
 GTK4 dialogs are asynchronous, so a callback is required — passing none throws
 rather than silently doing nothing. The callback is not called if the user
@@ -3417,12 +3418,13 @@ drawn at the size it was measured. A new painter per call, and it refuses once
 the caller passed the function and is on the stack. A worker does not install it
 — cairo and pango are drawing, and a worker installs no painter.
 
-## Sockets, WebSocket and SMTP
+## Sockets, serial, WebSocket and SMTP
 
 The transports beside HTTP, answered on the loop the application already
 runs. A TCP or Unix connection is [`Socket`](reference/globals/Socket.md), a
 listener [`ServerSocket`](reference/globals/ServerSocket.md), a datagram port
-[`UdpSocket`](reference/globals/UdpSocket.md), and a WebSocket
+[`UdpSocket`](reference/globals/UdpSocket.md), a serial device
+[`SerialPort`](reference/globals/SerialPort.md), and a WebSocket
 [`WebSocket`](reference/globals/WebSocket.md).
 
 ```js
@@ -3438,7 +3440,20 @@ door.Listen();
 const udp = new UdpSocket({ Port: 9000 });
 udp.OnData = (bytes, from) => udp.Send(bytes, from);
 udp.Bind();
+
+const scale = new SerialPort({ PortName: "/dev/ttyUSB0", Speed: 9600,
+                               Line: true });
+scale.OnLine = (line) => this.Lbl.Text = line;
+scale.Open();
+scale.Write("W\n");
 ```
+
+**A serial chunk is not a message either.** `SerialPort` is the tty's byte
+stream, with `Line: true` the same one framing; `Open` is where a speed,
+parity or flow control the system cannot express is refused with a sentence.
+The port is closed by `Close` or by the form that owns it. The Windows half is
+not written yet: the class exists there, its properties answer, and `Open`
+says so.
 
 **A TCP chunk is not a message.** `OnData` hands the bytes one read returned;
 `Line: true` is the only framing the runtime does, and it raises `OnLine` per

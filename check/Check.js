@@ -277,6 +277,7 @@ const GLOBAL_SECTIONS = [
     ["Http Server",       "HttpServer", "HttpRequest"],
     ["Socket",            "Socket"],
     ["ServerSocket",      "ServerSocket"],
+    ["SerialPort",        "SerialPort"],
     ["UdpSocket",         "UdpSocket"],
     ["WebSocket",         "WebSocket"],
     ["SmtpClient",        "SmtpClient"],
