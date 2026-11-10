@@ -305,8 +305,11 @@ Notification.Withdraw(id)
 
 | | |
 |---|---|
-| `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name; sending again with the same `Id` **replaces** what is showing. The title and body are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from |
-| `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error |
+| `CanActivate` (ro) | whether this platform delivers a click: `true` on Linux (the daemon or the portal) and macOS, `false` on Windows |
+| `MaxButtons` (ro) | how many `Buttons` the platform shows: 3 on Linux, 1 on macOS and 0 on Windows. Extra buttons are ignored; the notification still arrives |
+| `OnActivate` | assign `(id, action) => …`: a notification was clicked. `id` is the one `Send` answered; `action` is `null` for the notification itself or the `Action` of the button. `null` takes it off. The handler is looked up when the click arrives, and not called on Windows, where the backend has no actions |
+| `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon, Buttons }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name; `Buttons` is `[{ Label, Action }]`, where `Label` is prose and `Action` is the key `OnActivate` is handed. Sending again with the same `Id` **replaces** what is showing. The title, body and labels are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from |
+| `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error. On Windows this is a no-op: the GLib backend has no withdraw |
 
 **The project has to declare an `id`** in `project.btp`: a notification is sent in
 the name of an application, and without one GLib fails an assertion and sends
@@ -314,17 +317,24 @@ nothing — so this refuses, saying what to declare. **A project with a `main` h
 application at all** and refuses too; a tool says it is done on stdout.
 
 The options are `Id` (sending again with the same one **replaces** what is
-showing), `Urgency` — `"Low"`, `"Normal"` (the default), `"High"`, `"Urgent"` — and
-`Icon`, a theme icon name. With no body the second argument may be the options. An
-option that is not one of these is refused, so `{ Urgancy: "High" }` is an error
-and not a quiet normal one. **On a freedesktop desktop `High` and `Normal` look the
-same**: the daemon knows low, normal and critical, and only `"Urgent"` is critical.
+showing), `Urgency` — `"Low"`, `"Normal"` (the default), `"High"`, `"Urgent"` —,
+`Icon`, a theme icon name, and `Buttons`, `[{ Label, Action }]`. With no body the
+second argument may be the options. An option that is not one of these is refused,
+so `{ Urgancy: "High" }` is an error and not a quiet normal one. **On a freedesktop
+desktop `High` and `Normal` look the same**: the daemon knows low, normal and
+critical, and only `"Urgent"` is critical.
 
-**The title and body are not looked up in a catalogue here.** Wrap them in
-`Locale.Text` at the call site, which is where the extractor looks and where `{0}`
-interpolates. **There is no click that calls back**, no buttons, sound or image: a
-callback held by a notification the desktop owns outlives the window that sent it,
-and nothing needs one yet. [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) sends one when its window is
+**A click is `Notification.OnActivate = (id, action) => …`**, looked up when the
+click arrives: `action` is `null` for the notification or the button's `Action`.
+`Notification.CanActivate` says whether the platform delivers one and `MaxButtons` how
+many buttons it draws — 3 on Linux, 1 on macOS, 0 on Windows. **Windows shows the
+text but has no actions**: no click, no buttons, no `Withdraw`, and `Urgency`/`Icon`
+are ignored. macOS draws only the first button. A click with the application
+closed is not a supported path.
+
+**The title, body and button labels are not looked up in a catalogue here.** Wrap
+them in `Locale.Text` at the call site, which is where the extractor looks and
+where `{0}` interpolates. [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) sends one when its window is
 not the one the user is in.
 
 ## Locale

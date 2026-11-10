@@ -803,10 +803,19 @@ Flatpak, until the portal's first answer; `OnChange` says when it is known.
 
 ## Notification
 
-`Notification.Send(title, [body], [options])` and `Withdraw(id)`, in
+`Notification.Send(title, [body], [options])`, `Withdraw(id)`,
+`Notification.OnActivate`, `CanActivate` and `MaxButtons`, in
 `bta_notification.c`, through `g_application_send_notification` so that a packaged
-program reaches the desktop by its portal and not by a hole in the sandbox. Three
-things were measured on a private bus watched with `dbus-monitor`:
+program reaches the desktop by its portal and not by a hole in the sandbox.
+
+A click is an application action: `Send` installs `app.notification` with the
+notification id as its target, and a body click or a button carries the button's
+`Action` back to `OnActivate(id, action)`. **Windows has no notification actions**
+-- GLib's `Shell_NotifyIcon` backend says so and ignores buttons -- so
+`CanActivate` is `false`, `MaxButtons` is `0`, `Withdraw` is a no-op and
+`Urgency`/`Icon` are ignored there. macOS supports a body click and the first
+button only. Three things were measured on a private bus watched with
+`dbus-monitor`:
 
 - **Without an application `id` it sends nothing and tells nobody.** GLib's
   answer is a `CRITICAL` assertion; five calls produced zero `Notify` on the bus.
@@ -819,8 +828,9 @@ things were measured on a private bus watched with `dbus-monitor`:
   service directories. A configuration naming none is what makes the private bus
   empty; `dbus-monitor` still sees the call whether or not anyone answers it.
 
-There is no click that calls back, deliberately: it would be a tenth hand-rolled
-async job shape, held by something the desktop owns past the window that sent it.
+The click is not a callback held by the notification -- that would outlive the
+window that sent it. `OnActivate` is a property of the `Notification` global,
+looked up when the action arrives; the desktop keeps only the action target.
 
 ## File
 
