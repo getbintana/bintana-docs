@@ -285,7 +285,7 @@ Five things could not, and stayed containers:
   how big its page will be, so a control put in one would keep its natural size.
   A box has no such question.
 - **`ConsoleBox`.** Three declared pages and a fourth built in code, and only on
-  a build that has VTE — so how many there are is not something written down, and
+  a build that has a terminal backend — so how many there are is not something written down, and
   a notebook's pages are its own business exactly as a `Split`'s two halves are.
   `Problems` asks the notebook which page it is rather than counting, so a page
   added in front of it needs nothing told to it.
@@ -2395,7 +2395,7 @@ Three decisions, and each of them is a line of code:
 
 - **It exists only where a child can be run in it.** `buildTerminal` asks
   `Widget.Available("Terminal")` and returns if the answer is no, so a runtime
-  built without VTE has a bottom panel of one page and no tab promising something
+  built without a terminal backend has a bottom panel of one page and no tab promising something
   that would refuse. Asked of the *class* rather than of a control, because
   building one to ask would be building the thing the answer says not to build.
 - **The shell starts when the page is first looked at**, not when the IDE opens:

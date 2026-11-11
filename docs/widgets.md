@@ -768,7 +768,7 @@ did nothing:
 | `TreeView` | `scrolledwindow` | `> listview` |
 | `TableView` | `scrolledwindow` | `> columnview > row` |
 | `TextEditor`, `SourceEditor` | `scrolledwindow` | `> textview` |
-| `Terminal` | `scrolledwindow` | `> vte-terminal`, or `> textview` on a build with no VTE (see [*a build without VTE*](#a-build-without-vte)) |
+| `Terminal` | `scrolledwindow` | `> vte-terminal`, the Windows drawing area, or `> textview` on a build with no backend (see [*a build without a terminal backend*](#a-build-without-a-terminal-backend)) |
 | `Video` | `picture` | the paintable GStreamer draws into |
 | `DrawingArea` | `widget` | nothing: what is inside it is ink, not widgets |
 | `Flow` | `scrolledwindow` | `> viewport > flowbox > flowboxchild` |
@@ -2554,15 +2554,20 @@ off again: a gutter that comes and goes moves the text sideways under the cursor
 
 ### Terminal
 
-VTE with a real pty. `Run(argv, cwd?)` spawns; `Feed(text)`
-writes to the display without a child; `Clear()` resets. `Stop()` asks the child
-to end (SIGTERM) and `Kill()` makes it (SIGKILL) — the same two verbs, meaning the
-same two things, that an `Exec` handle takes; both answer whether there was a
-child at all, so a Stop button pressed twice is an ordinary thing to do.
+A real pty: VTE on Linux, ConPTY with libvterm drawing the screen on Windows.
+`Run(argv, cwd?)` spawns; `Feed(text)` writes to the display without a child;
+`Clear()` resets. `Stop()` asks the child to end — SIGTERM to its process group
+on Linux, the console interrupt on Windows — and `Kill()` makes it — SIGKILL, or
+terminating the process and its job on Windows. They are the same two verbs,
+meaning the same two things, that an `Exec` handle takes; both answer whether
+there was a child at all, so a Stop button pressed twice is an ordinary thing to
+do.
 
-**The pty is optional at build time**, and it is worth knowing that before the
-rest of this section: everything below describes a build that has VTE, and
-[*a build without VTE*](#a-build-without-vte) says what the other one does.
+**The backend is optional at build time**, and it is worth knowing that before
+the rest of this section: everything below describes a build that has one (VTE
+or libvterm), and
+[*a build without a terminal backend*](#a-build-without-a-terminal-backend) says
+what the other one does.
 
 `Exit(code)` fires when the child ends, `Running` says whether one is alive, `Text` is everything it has shown
 — scrollback included, not just the rows that fit — which is how a test can assert
@@ -2581,12 +2586,13 @@ it was in.
 
 **`LinkPattern` makes text in the output clickable.** Some of what a program prints
 is a *place*: a file and a line in a compiler's complaint, a URL, a ticket number.
-VTE can recognise a pattern in what it has drawn and say what was under the pointer,
-which is all it takes -- so the runtime offers the pattern and the `Link(text)`
-event, and what the text *means* is the application's business. One pattern per
-terminal, replaced on assignment; a broken one is refused; `""` takes it off. The
-pointer becomes a hand over a match, which is what says it can be clicked before
-anyone clicks it.
+The terminal can recognise a pattern in what it has drawn and say what was under
+the pointer, which is all it takes -- so the runtime offers the pattern and the
+`Link(text)` event, and what the text *means* is the application's business. One
+pattern per terminal, replaced on assignment; a broken one is refused; `""`
+takes it off. The pointer becomes a hand over a match, which is what says it can
+be clicked before anyone clicks it. VTE matches it in its own buffer; the
+Windows half matches the row's cells with `GRegex`.
 
 Two things about how the click is read, both of which cost time:
 
@@ -2594,23 +2600,26 @@ Two things about how the click is read, both of which cost time:
   match.** Otherwise dragging across a match to select it would activate it, and a
   terminal one cannot select text in is worse than one whose errors are not
   clickable.
-- **It is a raw event controller in the capture phase, not a `GtkGestureClick`.**
-  VTE has a gesture of its own for selecting text and it *claims* the press --
-  and claiming a sequence cancels every other gesture on it, so the click gesture
-  saw the press and then never saw the release, in either phase. A legacy
-  controller has no sequence to lose. It returns `FALSE` always: it only reads what
-  is under the pointer, so selecting, scrolling and VTE's own menu go on working.
+- **On Linux it is a raw event controller in the capture phase, not a
+  `GtkGestureClick`.** VTE has a gesture of its own for selecting text and it
+  *claims* the press -- and claiming a sequence cancels every other gesture on
+  it, so the click gesture saw the press and then never saw the release, in
+  either phase. A legacy controller has no sequence to lose. It returns `FALSE`
+  always: it only reads what is under the pointer, so selecting, scrolling and
+  VTE's own menu go on working.
 
 A button event's position is in the surface's coordinates and what VTE checks a
 match at are the terminal's, so the point is translated through
-`gtk_widget_compute_point`.
+`gtk_widget_compute_point`. The Windows drawing area owns its own coordinates
+and its own selection, so it needs neither.
 
-#### A build without VTE
+#### A build without a terminal backend
 
-`BTA_HAVE_VTE`, and the bargain is sqlite's, libsoup's and GStreamer's: CMake
-looks for `vte-2.91-gtk4`, says what it found either way, and the runtime builds
-without it. What makes this one different from those three is *why* it is
-optional — VTE is the only dependency with no Windows port, and it stopped being
+`BTA_HAVE_VTE` on Linux and `BTA_HAVE_LIBVTERM` on Windows, and the bargain is
+sqlite's, libsoup's and GStreamer's: CMake looks for `vte-2.91-gtk4` or `vterm`,
+says what it found either way, and the runtime builds without it. What makes
+this one different from those three is *why* it is optional — VTE has no Windows
+port (ConPTY and libvterm are that platform's answer), and it stopped being
 required the day the IDE's own output pane stopped being a terminal.
 
 What a build without it has is the whole class minus the child:
@@ -2618,9 +2627,9 @@ What a build without it has is the whole class minus the child:
 | | |
 |---|---|
 | the class | registered, constructs, is in `Widget.Types()` |
-| the GTK shape | the same `GtkScrolledWindow`, with a `GtkTextView` inside it instead of a `vte-terminal` — so the designer places one, the serialiser saves it, and `CssNode()` still answers `scrolledwindow` |
+| the GTK shape | the same `GtkScrolledWindow`, with a `GtkTextView` inside it instead of a `vte-terminal` or the Windows drawing area — so the designer places one, the serialiser saves it, and `CssNode()` still answers `scrolledwindow` |
 | `Feed`, `Text`, `Clear` | work, on the buffer. `\r` is dropped rather than drawn as a box: a carriage return is a terminal's and means nothing to a text buffer |
-| `LinkPattern`, `ScrollbackLines`, `FontScale` | kept and read back. They are **state a `.form` declares**, and a getter or setter that refused would make a build with no VTE one that cannot *open* a form with a Terminal in it |
+| `LinkPattern`, `ScrollbackLines`, `FontScale` | kept and read back. They are **state a `.form` declares**, and a getter or setter that refused would make a build with no backend one that cannot *open* a form with a Terminal in it |
 | `Run`, `Stop`, `Kill` | refuse, naming the package |
 | `Link`, `Exit` | never fire: there is no child and nothing highlighting anything |
 

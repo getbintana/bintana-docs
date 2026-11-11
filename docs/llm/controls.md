@@ -75,8 +75,8 @@ being nothing to place.
 `Types` and `Available` are not the same list, and the difference is the point:
 [`Terminal`](#terminal) is always in `Types()` because the class is always there
 — it constructs, it draws, a `.form` with one in it loads — and
-`Available("Terminal")` is false on a runtime built without VTE, where starting
-a child refuses. **Offer from `Available`, load from `Types`**: a palette
+`Available("Terminal")` is false on a runtime built without a terminal backend,
+where starting a child refuses. **Offer from `Available`, load from `Types`**: a palette
 button for a control the user cannot finish is worse than a missing button, and
 a `.form` that already holds one still has to open.
 
@@ -1199,13 +1199,13 @@ person writes a form: `p.Rotate(-90)` for an axis label is obviously right where
 
 ## Terminal
 
-VTE with a real pty, so colours, prompts and interactive input all work. Use it for anything interactive; for a command you capture, use [`Exec`](library.md#exec) — and for showing what it printed, a read-only [`TextEditor`](#texteditor), whose `Append` is what a log pane wants.
+A real pty, so colours, prompts and interactive input all work: VTE on Linux, ConPTY plus libvterm on Windows. Use it for anything interactive; for a command you capture, use [`Exec`](library.md#exec) — and for showing what it printed, a read-only [`TextEditor`](#texteditor), whose `Append` is what a log pane wants.
 
-**VTE is optional at build time**, so this is the one control that may not be able to do its job. `Available` says whether it can; `Widget.Available("Terminal")` is [the same question asked of the class](#what-there-is-and-what-this-build-can-run), which is what a palette wants. Where it is false the class is still all here — one constructs, a `.form` naming one loads, every property answers and `Feed`, `Text` and `Clear` work — and `Run`, `Stop` and `Kill` refuse, naming the package that is missing. `Link` never fires there, since there is nothing highlighting anything.
+**The backend is optional at build time**, so this is the one control that may not be able to do its job. `Available` says whether it can; `Widget.Available("Terminal")` is [the same question asked of the class](#what-there-is-and-what-this-build-can-run), which is what a palette wants. Where it is false the class is still all here — one constructs, a `.form` naming one loads, every property answers and `Feed`, `Text` and `Clear` work — and `Run`, `Stop` and `Kill` refuse, naming the package that is missing. `Link` never fires there, since there is nothing highlighting anything.
 
 | Member | |
 |---|---|
-| `Available` (ro) | whether this build can run a child. `Widget.Available("Terminal")` is [the same question asked of the class](#what-there-is-and-what-this-build-can-run), which is what a palette wants. `false` on a runtime built without VTE, where the three verbs refuse |
+| `Available` (ro) | whether this build can run a child. `Widget.Available("Terminal")` is [the same question asked of the class](#what-there-is-and-what-this-build-can-run), which is what a palette wants. `false` on a runtime built without a terminal backend, where the three verbs refuse |
 | `FontScale` | a multiplier on the terminal's own font. Default `1` — the Ctrl+`+` of a terminal, which is a property here rather than a gesture |
 | `LinkPattern` | a regex; clicking text that matches raises `Link(text)`. What the text *means* is yours |
 | `ScrollbackLines` | how much history it keeps. Default `10000` |
@@ -1213,9 +1213,9 @@ VTE with a real pty, so colours, prompts and interactive input all work. Use it 
 | `Running` (ro) | whether a child is alive |
 | `Clear()` | resets it |
 | `Feed(text)` | writes to the display **without a child**: a banner, a note about what is about to run, the reason something was refused |
-| `Kill()` | SIGKILL, for the one that did not answer |
+| `Kill()` | makes it end, for the one that did not answer: SIGKILL on Linux, the process and its children terminated on Windows |
 | `Run(argv, [workdir])` | starts a child on a real pty, so colours, prompts and input all work. `argv` is the program and its arguments as an array — no shell, so nothing is word-split or globbed behind your back |
-| `Stop()` | SIGTERM to the child's **process group**, which is what reaches a shell's own children |
+| `Stop()` | asks the child to end: SIGTERM to its **process group** on Linux, Ctrl+C on the console on Windows |
 | **event** `Exit(code)` | the child ended, with the status a shell would report |
 | **event** `Link(text)` | that text was clicked. **What it means is yours** |
 

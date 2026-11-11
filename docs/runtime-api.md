@@ -1290,9 +1290,10 @@ stops a signal travelling the other way: a child does not get the Ctrl-C meant f
 the program that started it. The cost is a child with no controlling terminal, which
 matters only to something interactive — and interactive is `Terminal`.
 
-For anything interactive use a `Terminal` instead: it has a real pty, so colours,
-prompts and input work, and nothing has to be captured or forwarded. Note that
-**VTE is optional at build time**, so a program that needs one should ask
+For anything interactive use a `Terminal` instead: it has a real pty (VTE on
+Linux, ConPTY and libvterm on Windows), so colours, prompts and input work, and
+nothing has to be captured or forwarded. Note that **the terminal backend is
+optional at build time**, so a program that needs one should ask
 [`Widget.Available("Terminal")`](llm/controls.md#what-there-is-and-what-this-build-can-run)
 first; showing what a child printed needs no pty and is `Exec` plus a read-only
 `TextEditor`, whose `Append` is what a log pane wants.

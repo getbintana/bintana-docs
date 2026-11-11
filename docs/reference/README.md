@@ -127,7 +127,7 @@ members, twice — once in its summary and once where it is explained.
 | [Switch](widgets/Switch.md) | a setting that takes effect at once |
 | [Switcher](widgets/Switcher.md) | pages picked from a strip of linked buttons |
 | [TableView](widgets/TableView.md) | a list with columns, and its rows may nest |
-| [Terminal](widgets/Terminal.md) | vTE with a real pty: colours, prompts and interactive input all work |
+| [Terminal](widgets/Terminal.md) | a real pty -- VTE on Linux, ConPTY and libvterm on Windows: colours, prompts and interactive input all work |
 | [TextBox](widgets/TextBox.md) | one line of editable text |
 | [TextEditor](widgets/TextEditor.md) | the plain multi-line field |
 | [ToggleButton](widgets/ToggleButton.md) | a button that stays in |
