@@ -861,6 +861,7 @@ callbacks. See [`Tray`](reference/globals/Tray.md).
 | `Open(path)` | hands it to whatever the desktop opens that kind of file with |
 | `Join(a, b, ...)` | builds a path with the platform separator |
 | `Absolute(path)` | resolves against the current directory |
+| `IsAbsolute(path)` | whether the path stands on its own, by the platform's rule (`/x`, `C:\x`, `C:/x`, a UNC share) rather than a leading slash; `C:` and `C:x` are drive-relative |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole components |
 | `Relative(path, root)` | `path` with `root` taken off, or the path unchanged when there is no relative spelling |
 | `Name(path)` | the basename: `/a/b/c.js` → `c.js` |
@@ -873,7 +874,10 @@ callbacks. See [`Tray`](reference/globals/Tray.md).
 obvious are the ones worth having. `Type` is the content type — `"image/png"`,
 `"text/javascript"` — a *value* one can test against, and not GIO's
 human-readable description, which GIO translates into the desktop's language and
-no catalogue of ours could reach. `Icon` is the name the desktop draws for that
+no catalogue of ours could reach. Where the platform has no shared MIME database
+(Windows in this tree) a platform answer that is only a dot-suffix is replaced
+from the extension for the common media types — `application/pdf`,
+`image/png` — and a real content type is never overruled. `Icon` is the name the desktop draws for that
 kind of file, resolved to the first one this theme really has: it is what a file
 tree wants, and what one otherwise writes a table of guesses for. Resolving it
 means asking the icon theme, so it is the one field of the five that needs a

@@ -496,11 +496,12 @@ made a folder called `undefined`. The one exception is the question:
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 | `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
-| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. Where the platform has no shared MIME database, the common media types are answered from the extension instead of a bare `.pdf`. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
 | `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
 | `Open(path)` | hands the file to whatever the desktop opens that kind with. **It answers before the file is open**: launching is asynchronous and the program that opens it is somebody else's, so what this promises is that the request was made. A file that is not there is refused *here*, which is the failure a caller can do something about |
-| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. It **concatenates**: a piece that is itself absolute does not replace the ones before it, so ask `IsAbsolute(path)` when a path may already stand on its own. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
 | `Absolute(path)` | the path resolved against the working directory |
+| `IsAbsolute(path)` | whether the path stands on its own, by the **platform's** rule and not by a leading slash: `/x` on POSIX; `C:\x`, `C:/x` and a UNC share on Windows, where `C:` and `C:x` are drive-relative. Purely lexical, so a path that does not exist yet answers like any other |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
 | `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
@@ -866,7 +867,10 @@ and it answers whether there was still a child to write to), `CloseInput()` (the
 end of its stdin, after what `Write` queued -- what tells `sort`, `wc` or `jq`
 that the input is over). `Write` is queued and never blocks, so a child that
 echoes what it reads cannot hang the program; and `Stop`/`Kill`/`Timeout` still
-reach a grandchild that holds the output after the leader has exited.
+reach a grandchild that holds the output after the leader has exited. On Windows
+there is no process group, so a leader that has exited while a grandchild holds
+a pipe is drained for a moment and then reported; a `Wait` that times out there
+answers `TimedOut` instead of waiting forever.
 
 A child that speaks a protocol as well as printing gets a stream of its own:
 `Control` in the options is a callback for the child's **third stream**, one
