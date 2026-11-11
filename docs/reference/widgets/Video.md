@@ -42,6 +42,7 @@ It is a `Widget` and a control like any other, so everything on
 
 | | | |
 |---|---|---|
+| `Attach(sink)` | shows the frames of a pipeline the program built, instead of its own `Uri` | [a camera](#a-camera) |
 | `Pause()` | holds the frame and the position | [playing](#playing) |
 | `Play()` | plays, and replays from the top after `Ended` | [playing](#playing) |
 | `Save(path)` | the frame on screen as a PNG — [`DrawingArea.Save`](DrawingArea.md)'s spelling | [what it looks like](#what-it-looks-like) |
@@ -96,6 +97,41 @@ A caption or a control **over** the picture wants an
 [`AspectFrame`](AspectFrame.md) around the video and an
 [`Overlay`](Overlay.md) over that: letterboxing happens inside this control, so
 without the frame a corner is a corner of the black.
+
+## A camera
+
+| | |
+|---|---|
+| `Attach(sink)` | shows the frames of a pipeline the program built, instead of its own `Uri`: `sink` is a `gtk4paintablesink` from `Media.Element`. The Video's own playback stops, `SourceWidth`, `SourceHeight` and `Save` answer for the attached frames, and the next `Play` goes back to `Uri`. `Attach(null)` lets go and leaves the control empty. It follows the pipeline and does not drive it: starting, stopping and errors are the pipeline's `State` and `Bus`, and dropping the pipeline leaves its last frame up. It is how a form shows a camera while the same pipeline records it: the device's `Element()` (see `Media.Devices`), a `tee`, and a `queue` before each branch |
+
+On Linux a camera is a URI too (`v4l2:///dev/video0`), and `Uri` plays
+it. Everywhere else a camera is a *device*, and a form that records what it
+shows needs the graph in its own hands — so the camera is found with
+`Media.Devices`, its `Element()` goes into a pipeline the program builds, and
+the Video shows that pipeline's `gtk4paintablesink`:
+
+```js
+const cam  = Media.Devices("Video/Source")[0];     // Name, Modes, Element()
+const pipe = Media.Element("pipeline");
+const src  = pipe.Add(cam.Element());
+const dec  = pipe.Add(Media.Element("decodebin"));
+const conv = pipe.Add(Media.Element("videoconvert"));
+const sink = pipe.Add(Media.Element("gtk4paintablesink"));
+
+src.Link(dec);
+dec.On("pad-added", (pad) => pad.Link(conv));
+conv.Link(sink);
+this.Preview.Attach(sink);
+pipe.State = "Playing";
+```
+
+A camera often offers its larger sizes only as JPEG (`Modes` says which), so
+`decodebin` and not a bare `videoconvert`. Recording at the same time is a
+`tee` after the decoder with a `queue` before each branch, and `Eos()` before
+the pipeline is let go, so the file is closed properly. `Save(path)` on an
+(https://github.com/getbintana/bintana/tree/main/examples/camera)
+is the whole form: the list, a size chosen from `Modes`, the preview, a
+photograph and a recording with sound.
 
 ## Streams
 

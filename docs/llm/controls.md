@@ -1248,6 +1248,7 @@ paintable sink in a `GtkPicture` — which is why it styles as one (see
 | `Stop()` | parks it: back to no state, the position forgotten |
 | `Seek(seconds)` | jumps there. **Refused on a stream that cannot seek**, naming it |
 | `Save(path)` | the frame on screen as a PNG — [`DrawingArea.Save`](../reference/widgets/DrawingArea.md)'s spelling. **Refused before anything has been decoded** |
+| `Attach(sink)` | shows the frames of a pipeline the program built, instead of its own `Uri`: `sink` is a `gtk4paintablesink` from `Media.Element`. The Video's own playback stops, `SourceWidth`, `SourceHeight` and `Save` answer for the attached frames, and the next `Play` goes back to `Uri`. `Attach(null)` lets go and leaves the control empty. It follows the pipeline and does not drive it: starting, stopping and errors are the pipeline's `State` and `Bus`, and dropping the pipeline leaves its last frame up. It is how a form shows a camera while the same pipeline records it: the device's `Element()` (see `Media.Devices`), a `tee`, and a `queue` before each branch |
 | **event** `Ended()` | the clip ran out. It leaves the **last frame up** (a pause, not a black stop) |
 | **event** `Error(message, kind)` | it failed. `message` names the control and the clip and says why; `kind` is one of `NotFound`, `NotAuthorized`, `Unreachable`, `Decode`, `Error` — a password to ask for and a camera to retry are not the same answer |
 
