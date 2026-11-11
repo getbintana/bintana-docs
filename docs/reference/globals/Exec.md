@@ -41,7 +41,7 @@ and `CloseInput()`.
 | `Timeout` | milliseconds before the child is ended; absent waits forever |
 | `KillAfter` | milliseconds between SIGTERM and SIGKILL, `5000` by default |
 | `Input` | **`Exec.Wait` only**: the text or `Bytes` the child reads, written before its stdin is closed — what makes `Exec.Wait(["sort"], { Input: text })` a filter |
-| `Control` | a callback for a **third stream** — descriptor 3 in the child, one line at a time — for a child that speaks a protocol as well as printing |
+| `Control` | a callback for a **third stream** — descriptor 3 in the child on Unix, a named pipe on Windows — one line at a time, for a child that speaks a protocol as well as printing |
 
 ## Running one
 
@@ -112,7 +112,7 @@ a line and answers.
 |---|---|
 | `Write(text)` | writes a line to the child's stdin. A newline is added when there is not one, because a line is what the other side is waiting on. **Queued, and never blocks**: lines go out in order while the program keeps running, so a child that writes while it reads cannot deadlock it. Answers whether there was still a child to write to, the way `Stop` does |
 | `CloseInput()` | the end of the child's stdin — after everything `Write` queued, so closing cannot drop a line. What tells a filter (`sort`, `wc`, `jq`, `git apply`) that the input is over, which is the thing it is waiting for. Answers whether there was still a pipe to close |
-| `Control` | an option: a callback for the child's **descriptor 3**, called once per line — until the run is over (stdout drained, child exited); a line after that is dropped |
+| `Control` | an option: a callback for the child's **third stream**, called once per line — until the run is over (stdout drained, child exited); a line after that is dropped. Unix gives it descriptor 3; Windows gives it `BINTANA_CONTROL_PIPE` |
 
 ```js
 const job = Exec(["some-tool", "--protocol"],
@@ -127,9 +127,15 @@ job.Write('{"do":"begin"}');
 to a *person* — it is what a log pane shows — and marking the protocol lines
 with a prefix means a child that prints the prefix breaks its own tooling,
 silently and rarely. stderr is taken too, by whatever the language prints when
-something goes wrong. A descriptor of its own is the only spelling with no
-failure mode. It is what `bintana --debug` writes on, and the IDE's debugger is
-its first caller.
+something goes wrong. A stream of its own is the only spelling with no failure
+mode. It is what `bintana --debug` writes on, and the IDE's debugger is its
+first caller.
+
+**Where the child finds it.** On Unix `Control` is descriptor 3, inherited from
+the parent. On Windows there is no descriptor 3: `Control` creates a named pipe
+and puts its name in the child's `BINTANA_CONTROL_PIPE`; a child that wants the
+stream opens that name and writes lines to it. `bintana --debug` does this by
+itself, which is why the IDE's debugger works on both systems.
 
 **The control stream ending is not the child ending.** It closes when the child
 stops speaking the protocol; what says the run is over is still stdout draining

@@ -1232,12 +1232,15 @@ spawns under a sanitizer, and that a plain build had waiting for a slow enough
 machine.
 
 **A third stream, for a child that speaks a protocol.** `Control` in the options
-is a callback for the child's **descriptor 3**, called once per line, and
-`Write` is the way back on its stdin. stdout is what a child says to a *person*
--- it is what a log pane shows -- so a protocol cannot share it: marking its
-lines with a prefix means a child that prints the prefix breaks its own tooling,
-silently and rarely. stderr is taken as well. A descriptor of its own is the one
-spelling with no failure mode, and `bintana --debug` is what writes on it.
+is a callback for the child's **third stream**, called once per line, and
+`Write` is the way back on its stdin. On Unix that stream is descriptor 3; on
+Windows it is a named pipe whose name arrives in `BINTANA_CONTROL_PIPE`, because
+Windows has no descriptor 3 -- `bintana --debug` opens it itself. stdout is what
+a child says to a *person* -- it is what a log pane shows -- so a protocol
+cannot share it: marking its lines with a prefix means a child that prints the
+prefix breaks its own tooling, silently and rarely. stderr is taken as well. A
+stream of its own is the one spelling with no failure mode, and
+`bintana --debug` is what writes on it.
 
 The control stream ending is **not** the child ending: it closes when the child
 stops speaking, and what says the run is over is still stdout draining and the
