@@ -2237,7 +2237,7 @@ clients.Save(c);                                      // UPDATE, by the key
 | `Transaction(fn)` | everything in `fn` or nothing. **Nests**, through savepoints, so a function that wraps its own work in one is safe to call from inside another |
 | `Columns(table)` | `[{ Name, Type, Required, Key }]` — what is really in the table, which is how a program checks that a record's shape still fits |
 | `Tables` (ro) | the tables and views, ordered |
-| `Dialect` (ro) | `{ Placeholder, Quote, NewKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
+| `Dialect` (ro) | `{ Placeholder, Quote, NewKey, KeyQuery, Page, Decimal, Types, AutoKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
 | `Path`, `Open` (ro), `Close()` | this driver's own |
 | `Each(sql, [params], fn)` | the rows **one at a time**: `fn(row)` for each, as `Query` would have made it, never an array of all of them -- a report over a year, an export. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
 | `Cursor(sql, [params], [{ Window }])` | a [`Cursor`](../reference/globals/Database.md): the rows a statement answers, counted, and read a window at a time |
@@ -2327,6 +2327,51 @@ clients.Save(c);                                      // UPDATE, by the key
   master or not at all.
 - sqlite is optional at build time; without it `Database.Sqlite` says which
   package is missing.
+
+## Database.Odbc
+
+Every other server: SQL Server, MySQL/MariaDB, PostgreSQL, Firebird, an Access
+file -- through the ODBC driver the machine has for it. What it answers **is a
+`Connection`**, so `Table`, `Cursor` and a form's `Model` work on it as on
+sqlite.
+
+```js
+const db = Database.Odbc("Driver={ODBC Driver 18 for SQL Server};" +
+                         "Server=erp.internal;Database=Ventas;Encrypt=yes",
+                         { User: "facturacion",
+                           Password: Environment.Get("ERP_DB_PASSWORD") });
+const invoices = db.Table("invoices", Invoice);   // the same Table
+```
+
+| | |
+|---|---|
+| `Query(sql, [params])` | the rows of the first result that has any, as **plain objects**; `[]` for a statement with none. Values are bound to `?`, never pasted: text, a number, a boolean, a `Decimal`, a `Bytes` or null |
+| `Execute(sql, [params])` | **one** statement, answering `{ Changes }` -- the rows it touched, `-1` when the driver cannot say. An `UPDATE` that matched nothing is `0`, not an error |
+| `Script(sql)` | several statements and **no parameters**, as the driver runs a batch: psqlODBC takes one, sqliteodbc refuses a second statement |
+| `Each(sql, [params], fn)` | the rows **one at a time**: `fn(row)` for each, never an array of all of them. `fn` returning `false` stops; the answer is how many rows were handed over. `Close()` is refused while it reads |
+| `Transaction(fn)` | everything in `fn` or nothing, and what `fn` returns. **Nests**, through savepoints in the engine's spelling. A throw rolls back and is rethrown |
+| `Columns(table)` | what is really in the table, from the driver's catalogue: `Type` is the engine's own name for it, `Key` the position in the primary key (0 for none); `[]` when there is no such table |
+| `Tables` (ro) | the tables and views, ordered, each name once whatever schema it is in; the engine's own schemas are left out |
+| `Dialect` (ro) | what differs per engine, from `Dbms`: `Placeholder`, `Quote`, `NewKey` (`"Returning"`, `"Output"`, `"Select"` with `KeyQuery`, or `"None"`), `Page`, `Decimal`, `Types` and `AutoKey` -- what `Table`, `Cursor` and `Model` read instead of assuming sqlite |
+| `Dbms` (ro) | the engine, as the driver names it: `"PostgreSQL"`, `"SQLite"`, `"Microsoft SQL Server"`. Still answers after `Close` |
+| `DbmsVersion` (ro) | the engine's version, as the driver writes it |
+| `Driver` (ro) | the driver's own file name: `"psqlodbcw.so"`, `"msodbcsql18.dll"` |
+| `Open` (ro) | whether it still is |
+| `Close()` | let it go; twice is not an error |
+
+- The connection string is **the driver's**, passed as written (`DSN=…` or
+  `Driver={…};…`). Options are `User`, `Password`, `Timeout` and
+  `StatementTimeout` (milliseconds) and nothing else. Never a dialog.
+- A failure throws with `Code` (the SQLSTATE), `Native` and `Details`. **The
+  message is in the desktop's language**: branch on `Code`.
+- `Dialect` comes from `Dbms`. A new key: `RETURNING` on PostgreSQL, `OUTPUT
+  INSERTED` on SQL Server, asked after the insert on MySQL and SQLite. `Cursor`
+  is refused on SQL Server; `Model` creates a table only on PostgreSQL and
+  SQLite -- elsewhere create it yourself and the `Model` uses it.
+- psqlODBC drops a `timestamptz`'s offset; sqliteodbc answers every error as
+  `HY000`. For a sqlite file use `Database.Sqlite`.
+- The driver is the machine's (`odbcinst`, or the ODBC administrator on
+  Windows); a Flatpak sees none. Optional at build time on Linux and macOS.
 
 ## Http
 

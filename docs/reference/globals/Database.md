@@ -3,8 +3,10 @@
 A [`Record`](Record.md) over a table.
 
 `Database.Sqlite` is a **driver** in C; `Table` is the portable half in
-`rad.js`. Nothing generic here carries the name of an implementation — the day
-there is another engine, the `Table` above it does not move.
+`rad.js`. Nothing generic here carries the name of an implementation, and the
+second engine proved it: [`Database.Odbc`](OdbcConnection.md) reaches every
+server with an ODBC driver, and the same `Table`, `Cursor` and `Model` work on
+it, reading what differs off `Dialect`.
 
 ```js
 class Client extends Record {
@@ -33,7 +35,7 @@ clients.Save(c);                                      // UPDATE, by the key
 |---|---|
 | `Close()` | let it go |
 | `Columns(table)` | `[{ Name, Type, Required, Key }]` — what is really in the table, which is how a program checks that a record's shape still fits |
-| `Dialect` (ro) | `{ Placeholder, Quote, NewKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
+| `Dialect` (ro) | `{ Placeholder, Quote, NewKey, KeyQuery, Page, Decimal, Types, AutoKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
 | `Execute(sql, [params])` | **one** statement, answering `{ Changes, LastId }` |
 | `Open` (ro) | whether it still is |
 | `Path` | the file this connection is |
@@ -115,7 +117,7 @@ first statement -- `Naming` or `as` is the answer, never a guess.
 | `Script(sql)` | several statements and **no parameters**: a schema, a migration |
 | `Columns(table)` | `[{ Name, Type, Required, Key }]` — what is really in the table, which is how a program checks that a record's shape still fits |
 | `Tables` (ro) | the tables and views, ordered |
-| `Dialect` (ro) | `{ Placeholder, Quote, NewKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
+| `Dialect` (ro) | `{ Placeholder, Quote, NewKey, KeyQuery, Page, Decimal, Types, AutoKey }` — **what differs per engine**, so the portable half above can build SQL without knowing which engine it is talking to |
 | `Path` | the file this connection is |
 | `Open` (ro) | whether it still is |
 | `Close()` | let it go |

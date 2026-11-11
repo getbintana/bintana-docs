@@ -2955,12 +2955,20 @@ it:
 | `Transaction(fn)` | all of it or none; nested through savepoints |
 | `Columns(table)` | `[{ Name, Type, Required, Key }]` |
 | `Tables` | tables and views, ordered |
-| `Dialect` | `{ Placeholder, Quote, NewKey }` |
+| `Dialect` | `{ Placeholder, Quote, NewKey, KeyQuery, Page, Decimal, Types, AutoKey }` |
 
 `Database.Sqlite` adds `Script(sql)` (several statements, no parameters — a
 schema), `Path`, `Open` and `Close()`. **`Table` and `Cursor` come for nothing**:
 both are the portable half, in `rad.js`, and a second driver that answers the
 table above has them.
+
+**`Database.Odbc(connection, [options])` is the second driver**: every server
+the machine has an ODBC driver for, through unixODBC on Linux and macOS and
+`odbc32` on Windows. It answers the same table, adds `Dbms`, `DbmsVersion` and
+`Driver`, and reads its `Dialect` off the engine -- a new key by `RETURNING`,
+`OUTPUT INSERTED` or a query after the insert, a cursor only where there is
+`LIMIT`/`OFFSET`, and a `Model` table only where the column types are known.
+See [`OdbcConnection`](reference/globals/OdbcConnection.md).
 
 ### A cursor: many rows, a window at a time
 

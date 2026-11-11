@@ -120,6 +120,7 @@ function docOwners(page, section) {
         return sec && sec !== "The classes" ? [sec.split(" ")[0]] : ["Widget"];
     if (page.endsWith("llm/library.md")) {
         const many = { "Database and Table": ["Connection", "Database"],
+                       "Database.Odbc": ["OdbcConnection", "Database"],
                        "Http": ["Http", "HttpClient", "Multipart"],
                        "Http Server": ["HttpServer", "HttpRequest"],
                        "Xml": ["Xml", "XmlDocument", "XmlNode"],

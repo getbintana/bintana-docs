@@ -149,6 +149,7 @@ members, twice — once in its summary and once where it is explained.
 | [Clipboard](globals/Clipboard.md) | copy and paste, which are not symmetrical |
 | [Csv](globals/Csv.md) | rows of text, the way spreadsheets and other programs exchange them |
 | [Database](globals/Database.md) | a [`Record`](globals/Record.md) over a table |
+| [OdbcConnection](globals/OdbcConnection.md) | a connection through an ODBC driver: SQL Server, MySQL, PostgreSQL and the rest |
 | [Day](globals/Day.md) | the calendar date, which is the value JavaScript does not have |
 | [Decimal](globals/Decimal.md) | exact base-10 arithmetic, with the ordinary operators. **This is what money is.** |
 | [Desktop](globals/Desktop.md) | the session the program is in, and the menu entries a user installs for themselves |
