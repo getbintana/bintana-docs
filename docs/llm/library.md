@@ -180,7 +180,9 @@ A TCP or Unix connection; `OnData` is bytes, `Line: true` is lines, `Tls` is the
 
 ## SerialPort
 
-A tty -- an RS-232 port or a USB adapter -- read and written on the main loop.
+A serial port -- a tty on Linux, a COM handle on Windows -- read and written
+on the main loop. `PortName` is `/dev/ttyUSB0` there and `COM3` (or
+`\\.\COM3`) here; the events and the configuration are the same.
 
 | | |
 |---|---|
@@ -195,9 +197,9 @@ A tty -- an RS-232 port or a USB adapter -- read and written on the main loop.
 | `OnError` | assign `(err) => …` with `{ Message, Kind }`; `Kind` is `"Error"` or `"Closed"`. The port is closed when it arrives |
 | `OnLine` | assign `(line) => …`: one complete line, without the separator, in `Line: true` mode |
 | `Open()` | open and configure the port. Answers the port; a second `Open` on an open port does nothing |
-| `Parity` | `"None"` (the default), `"Even"`, `"Odd"`, `"Mark"` or `"Space"`; the last two need the platform's `CMSPAR` |
-| `PortName` | the device path, `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux (and `COM3` on the Windows half when it arrives). Set before `Open` |
-| `Speed` | the baud rate, 1 to 4000000. A value the system has no `speed_t` for is refused by `Open`, which names it |
+| `Parity` | `"None"` (the default), `"Even"`, `"Odd"`, `"Mark"` or `"Space"`; the last two need the driver's support |
+| `PortName` | the device path, `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux, `COM3` (or `\\.\COM3`) on Windows. Set before `Open` |
+| `Speed` | the baud rate, 1 to 4000000. A rate the driver refuses is refused by `Open`, which names it |
 | `StopBits` | `1` (the default) or `2` |
 | `Write(data)` | queue text (UTF-8) or `Bytes`; answers the port. It throws when the port is not open, which is a mistake and not a late answer |
 | `WriteLine(data)` | `Write` followed by `EndOfLine` |
@@ -205,6 +207,9 @@ A tty -- an RS-232 port or a USB adapter -- read and written on the main loop.
 The C class is also a `FormPart`: `PortName`, `Speed`, `DataBits`, `Parity`,
 `StopBits`, `FlowControl`, `Line` and `EndOfLine` are serialised, and the
 form's close closes the port.
+
+On Windows `Open` asserts DTR and RTS, as a tty driver does; `Hardware` flow
+control hands RTS to the handshake.
 
 ## ServerSocket
 

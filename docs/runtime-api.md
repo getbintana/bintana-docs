@@ -3488,9 +3488,9 @@ scale.Write("W\n");
 **A serial chunk is not a message either.** `SerialPort` is the tty's byte
 stream, with `Line: true` the same one framing; `Open` is where a speed,
 parity or flow control the system cannot express is refused with a sentence.
-The port is closed by `Close` or by the form that owns it. The Windows half is
-not written yet: the class exists there, its properties answer, and `Open`
-says so.
+The port is closed by `Close` or by the form that owns it. On Windows the
+device is `COM3` (or `\\.\COM3`) and the configuration is a `DCB`; the reader
+thread and the events are the runtime's, and the surface is the same.
 
 **A TCP chunk is not a message.** `OnData` hands the bytes one read returned;
 `Line: true` is the only framing the runtime does, and it raises `OnLine` per
