@@ -3092,7 +3092,7 @@ exist for is machinery to make lazy loading safe, and lazy loading is what turns
 one screen into a thousand statements and hides it.
 
 Not built yet, and named so it is not looked for: **a detail saved with its
-master**, and a dialog for the `.conn` file a project names its database in.
+master**.
 
 ### A decimal column, and sqlite's limitation
 

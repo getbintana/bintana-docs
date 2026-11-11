@@ -2009,23 +2009,29 @@ a save is not the place to spend four child processes.
 
 ### The Data page, beside the tree
 
-A project that keeps its clients in SQLite was developed without the IDE
+A project that keeps its clients in SQLite, or on a server through ODBC, was developed without the IDE
 knowing the schema: the only way to see a table was to run the program and read
 the error. The **Data** view is the fourth page of the side bar, and the same
 page name in the bottom panel is its console.
 
 **Where a database is comes from the project.** Three things name one: a
-`.conn` file (`{ "kind": "sqlite", "path": "data/clients.db" }`, now a
-*Connections* category of the project tree, written and edited by
-[its own dialog](#a-connection-edited)), a form's `Connection` part with
-its `Path`, and a `.db`/`.sqlite` file left in the tree. The path is the
-identity, so a `.conn` and a form that name the same file are one entry, and
-the models of every form are gathered onto it. **A database that is not there
+`.conn` file (`{ "kind": "sqlite", "path": "data/clients.db" }`, or
+`{ "kind": "odbc", "connection": "DSN=Ventas", "user": "billing",
+"password_env": "VENTAS_DB_PASSWORD" }`, a *Connections* category of the
+project tree, written and edited by [its own dialog](#a-connection-edited)), a
+form's `Connection` part with its `Path` or its `Driver: "Odbc"` and
+`ConnectionString`, and a `.db`/`.sqlite` file left in the tree. The path --
+or the connection string with its user -- is the identity, so a `.conn` and a
+form that name the same database are one entry, and the models of every form
+are gathered onto it. **An ODBC password is never in the project**: a `.conn`
+names the environment variable that holds it, read by the IDE and by the
+program alike, and a form's part sets it in code, which the IDE cannot run --
+so such a part opens in the IDE only when its DSN carries the password. **A database that is not there
 yet is shown as not created**, and looking at it does not create it: a schema
 browser that writes is not a browser.
 
-**The tree is the runtime's answer.** `Database.Sqlite(path).Tables` is the
-list, `Columns(table)` gives `{ Name, Type, Required, Key }` for each, and the
+**The tree is the runtime's answer.** `Tables` of `Database.Sqlite(path)` or
+`Database.Odbc(connection)` is the list, `Columns(table)` gives `{ Name, Type, Required, Key }` for each, and the
 connection is closed again when the tree is built. A model whose table has not
 been created is listed by name -- that is the state a first run is in -- and a
 record's fields come from the project's `.record` files through `Binding`, the
@@ -2035,7 +2041,9 @@ same answer the designer's `Record` and `DataField` rows read.
 the SQL appears in the console (`SELECT * FROM "clients" LIMIT 200`) and its
 rows in the table below. The console is a `SourceEditor` with SQL highlighting
 over a `TableView`; `SELECT`, `PRAGMA`, `EXPLAIN` and `WITH` go through
-`Query`, everything else through `Execute`, whose answer is what changed.
+`Query`, everything else through `Execute`, whose answer is what changed. Over
+ODBC a select is read a row at a time and stops at what the table shows, and an
+engine with no `LIMIT` (SQL Server) previews with a bare `SELECT`.
 **The connection is the console's and is closed after each run** -- this is a
 window onto a file, not the application's session.
 
@@ -2044,9 +2052,13 @@ window onto a file, not the application's session.
 *File > New connection...* writes a `.conn`, and *Edit connection...* on the
 project tree's menu opens one -- the double click stays the Data view's, since
 looking at a database is what a connection is opened for. The dialog
-(`ConnectionForm`) asks the kind (an SQLite file, the one driver there is) and
-where the file is, relative to the project so it travels with it, with a chooser
-on the field. **Under the fields it says what the path leads to**, asked of
+(`ConnectionForm`) asks the kind -- an SQLite file, or a server through ODBC.
+A file is where it is, relative to the project so it travels with it, with a
+chooser on the field. A server is its driver's connection string, a user, and
+the environment variable its password is in; a connection string with a `PWD`
+in it is refused, and *Connect* asks the server now and says what it answered
+(*Connected to PostgreSQL 16.0: 3 tables*, or the driver's refusal with its
+SQLSTATE) -- the dialog never connects on a keystroke. **Under the fields it says what the path leads to**, asked of
 SQLite: *a database with 3 tables*, *not created yet* -- and looking does not
 create it; the program creates its database the first time it opens it -- or
 why SQLite will not open it, and whether the file is outside the project.

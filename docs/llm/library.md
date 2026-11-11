@@ -2320,8 +2320,7 @@ clients.Save(c);                                      // UPDATE, by the key
 - **A raw `Execute` binding a `Decimal` writes its exact text**, which is right
   for a TEXT column and becomes a double in a numeric one. A `Table` is the
   safe path.
-- **Not built**: a detail saved with its master (a `Field.List` is refused), a
-  cursor for a grid, and a `.conn` project resource. If one of those blocks the
+- **Not built**: a detail saved with its master (a `Field.List` is refused). If one of those blocks the
   application you were asked for, that is an [ISSUE](https://github.com/getbintana/bintana/blob/main/docs/llm/issues.md).
 - No lazy loading, no identity map, no session. A detail is loaded with its
   master or not at all.
@@ -2372,6 +2371,10 @@ const invoices = db.Table("invoices", Invoice);   // the same Table
   `HY000`. For a sqlite file use `Database.Sqlite`.
 - The driver is the machine's (`odbcinst`, or the ODBC administrator on
   Windows); a Flatpak sees none. Optional at build time on Linux and macOS.
+- A form's `Source` of `ventas.clientes` reads the table through a `.conn` too:
+  `{ "kind": "odbc", "connection": "DSN=Ventas", "user": "billing",
+  "password_env": "VENTAS_DB_PASSWORD" }` -- the password is read from that
+  variable, never written in the file.
 
 ## Http
 
