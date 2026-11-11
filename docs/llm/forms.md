@@ -736,25 +736,34 @@ this.Db.Query("select * from pulse");
 this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
 ```
 
-**A `Connection` is one database file and a `Model` is one record over one
-table.** A form can carry several Models over the same `Connection`; it is one
-file, opened once, not one per table. `Record` names a `.record`/`Record` class
-and `TableName` the table it lives in; `Model.Table` is the `Table`, and the
-first use creates the table with `CREATE TABLE IF NOT EXISTS` from the record's
-fields -- text, date, time, datetime, enum and decimal are `TEXT`, int and bool
+**A `Connection` is one database and a `Model` is one record over one
+table.** A form can carry several Models over the same `Connection`; it is
+opened once, not once per table. `Driver` is `"Sqlite"` unless told -- `Path`,
+a file of the project -- or `"Odbc"`, with `ConnectionString` and `User`
+([`Database.Odbc`](../reference/globals/OdbcConnection.md)). **The password is
+not a property**: set `this.Db.Password` in `Form_Open`, from `Keyring` or the
+environment, so it never reaches the `.form`. A part that gives the other
+driver's properties is refused when it opens.
+
+`Record` names a `.record`/`Record` class and `TableName` the table it lives
+in; `Model.Table` is the `Table`, and the first use creates the table when
+`Tables` does not have it, with the engine's types (`Dialect.Types`): on
+sqlite text, date, time, datetime, enum and decimal are `TEXT`, int and bool
 `INTEGER`, number `REAL`, bytes `BLOB`, and a single integer key is `INTEGER
-PRIMARY KEY`. `Field.List` and `Field.Record` are not columns and are refused.
+PRIMARY KEY`; on PostgreSQL `DATE`, `TIMESTAMP(0)`, `NUMERIC`, `BOOLEAN`,
+`BYTEA` and an identity key. An engine whose types are not known (SQL Server,
+MySQL) refuses: create the table and the Model uses it. `Field.List` and `Field.Record` are not columns and are refused.
 The creation never migrates an existing table: a shape that no longer fits is
 `Table`'s error, and changing the schema is a decision the program makes.
 
-`Connection` opens the SQLite file on first use, with `Db`, `Query`,
+`Connection` opens its database on first use, with `Db`, `Query`,
 `Execute`, `Table` and the rest of the connection's verbs; `Model` is the
 `Table` for its record; `HttpClient` makes the session on first use and offers
 `Client`, `Get`, `Post`, `Request` and the other verbs. Changing a property
 drops the handle, so the next use starts with the new setting.
 
 - **`type` is a part name**, not a control class. The runtime has `Timer`,
-  `Connection` (one `Database.Sqlite` file), `Model` (one record over one
+  `Connection` (one `Database.Sqlite` file or `Database.Odbc` server), `Model` (one record over one
   table) and `HttpClient` (an `Http.Client`). A part declares
   `static Properties` (what a `.form` may set) and `static Events` (what it
   raises); `PropertyNames()` and `EventNames()` answer them.
