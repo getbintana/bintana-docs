@@ -57,7 +57,7 @@ with `[object Object]`, and is now a refusal that says so.
 | `IsExtension(path, ext)` | whether the name ends in that extension, **case-insensitively** | [paths](#paths) |
 | `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised** | [paths](#paths) |
 | `Name(path)` | `/a/b/c.js` → `c.js` | [paths](#paths) |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself | [paths](#paths) |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself | [paths](#paths) |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` | [paths](#paths) |
 
 ## Text
@@ -157,7 +157,7 @@ and giving a file verb two meanings would be the wrong place to put it.
 | `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. It **concatenates**: a piece that is itself absolute does not replace the ones before it, so ask `IsAbsolute(path)` when a path may already stand on its own. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
 | `Absolute(path)` | the path resolved against the working directory |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
 | `BaseName(path)` | `/a/b/c.js` → `c` |
 | `Directory(path)` | `/a/b/c.js` → `/a/b` |
@@ -186,7 +186,10 @@ compared is the canonical bytes — `GFile`'s own rule, on every platform. A fil
 that is not under the root has no relative spelling, so `Relative` answers the
 path it was given — which is what a tree that lists files from inside *and*
 outside the project wants; ask `Within` first when the two have to be told
-apart.
+apart. **A relative spelling is written with `/` on every platform**, Windows
+included: it is a name inside a tree — what `sources` lists and what a tree
+keys its rows by — and Windows takes `/` in any path, so the same project gets
+the same names everywhere.
 
 `IsExtension` folds the case because the question almost every caller has is
 case-insensitive, and `Extension` answers the case that was on disk. It is what

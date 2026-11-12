@@ -503,7 +503,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Absolute(path)` | the path resolved against the working directory |
 | `IsAbsolute(path)` | whether the path stands on its own, by the **platform's** rule and not by a leading slash: `/x` on POSIX; `C:\x`, `C:/x` and a UNC share on Windows, where `C:` and `C:x` are drive-relative. Purely lexical, so a path that does not exist yet answers like any other |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
 | `Directory(path)` | `/a/b/c.js` → `/a/b` |
 | `Extension(path)` | `js` — no dot, `""` when there is none |
