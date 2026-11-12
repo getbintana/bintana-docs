@@ -67,12 +67,11 @@ that grandchild -- through the group, and never through the leader's pid, which
 the system may have handed to somebody else by then. They used to answer false
 and do nothing, and the exit callback never came.
 
-**Windows has no process group**, so a grandchild there cannot be named once its
-leader is gone. The job drains what the pipe already holds for a moment after
-the leader exits and then reports; `Exec.Wait` that reaches its `Timeout` stops
-reading and answers with `TimedOut` rather than waiting forever on a process it
-cannot reach. Write a Windows program that waits for its own children if their
-output has to arrive after the leader's.
+**On Windows the group is a job object**, and the run behaves the same: it ends
+when the output does, a grandchild's included, and `Stop()`, `Kill()` and
+`Timeout` terminate the whole job -- there is no gentler signal to send there,
+so `Stop()` ends it like `Kill()`. The child joins its job just after it starts,
+so a grandchild started in that very instant is outside it.
 
 ## Waiting for one
 
