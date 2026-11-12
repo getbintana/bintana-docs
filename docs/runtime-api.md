@@ -863,7 +863,7 @@ callbacks. See [`Tray`](reference/globals/Tray.md).
 | `Absolute(path)` | resolves against the current directory |
 | `IsAbsolute(path)` | whether the path stands on its own, by the platform's rule (`/x`, `C:\x`, `C:/x`, a UNC share) rather than a leading slash; `C:` and `C:x` are drive-relative |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole components |
-| `Relative(path, root)` | `path` with `root` taken off, or the path unchanged when there is no relative spelling |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform, or the path unchanged when there is no relative spelling |
 | `Name(path)` | the basename: `/a/b/c.js` → `c.js` |
 | `Directory(path)` | the dirname: `/a/b/c.js` → `/a/b` |
 | `Extension(path)` | `js`, without the dot, `""` if none |
