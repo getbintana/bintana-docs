@@ -16,9 +16,11 @@ otherwise; `2` is the command being used wrongly. `--json` writes one object per
 finding — `{ Event: "Finding", Kind, File, Line, Text }` — and a final
 `{ Event: "Done", Errors, Warnings, Infos, Strict }`.
 
-It needs no display, but it does need the runtime's GTK libraries, because the
-binary is linked against them. The installed runtime carries the console project
-and the library beside itself under `share/bintana/`; the source tree finds
+It needs no display and no toolkit: `bintana`, the console runtime, links no
+GTK and answers the classes from a description of them generated at build time,
+so a CI job or a git hook loads none of the toolkit. `bintana-gui check` gives the same findings and exit status, asking
+the real classes instead. The installed runtime carries the console project and
+the library beside itself under `share/bintana/`; the source tree finds
 `tools/check` one hop from `build/`.
 
 ## What it finds
