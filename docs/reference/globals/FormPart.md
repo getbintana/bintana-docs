@@ -64,7 +64,8 @@ its events reach nobody.
 `Timer` declares `Delay` and `Enabled` as properties and `Tick` as its event; see
 [Timer](Timer.md#a-timer-on-a-form). `Connection` declares `Driver` (`"Sqlite"` or
 `"Odbc"`), `Path`, `ConnectionString` and `User`, takes its password in code,
-and owns one `Database.Sqlite` file or one `Database.Odbc` connection. `Model` declares `Connection`, `Record` and
+and owns one `Database.Sqlite` file -- a `Path` relative to the project, or
+absolute for a file outside it -- or one `Database.Odbc` connection. `Model` declares `Connection`, `Record` and
 `TableName`; its `Table` is the table for that record, and `Ensure` creates it
 from the shape with the engine's `Dialect.Types`. Several models share one connection. `HttpClient` declares
 `BaseUrl`, `Timeout`, `Http1` and `FollowRedirects` and owns an `Http.Client`.

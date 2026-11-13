@@ -1265,7 +1265,8 @@ are what a part answers. `Form.Components` is the live list, and
 classes, `FormPart.TypeName(part)` names one, and `FormPart.New(type)` makes
 one; `FormPart.Properties(type)` and `FormPart.Events(type)` describe one
 without building it. `Connection` owns one
-`Database.Sqlite` file; `Model` names that connection, a record and a table,
+`Database.Sqlite` file -- a `Path` relative to the project, or absolute for
+one outside it; `Model` names that connection, a record and a table,
 and is its `Table`, creating the table from the shape on first use. Several
 models share one connection. `HttpClient` owns an `Http.Client`; both open on
 first use and close with the form. See

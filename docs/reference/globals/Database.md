@@ -219,7 +219,8 @@ this.Db.Query("select * from clients");
 
 **One `Connection` is one file; one `Model` is one record over one table.**
 Several models can use the same connection -- `this.Clients`, `this.Orders` --
-and the file is opened once. `Path` is relative to the project. `Model`'s
+and the file is opened once. `Path` is relative to the project, or absolute
+for a file outside it. `Model`'s
 `Record` names a `.record` (or a `Record` class in code), `TableName` the
 table, and `Model.Table` is the `Table`; its first use creates the table from
 the shape with `CREATE TABLE IF NOT EXISTS`. The mapping is the one `Table`

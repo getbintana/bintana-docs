@@ -2053,8 +2053,9 @@ window onto a file, not the application's session.
 project tree's menu opens one -- the double click stays the Data view's, since
 looking at a database is what a connection is opened for. The dialog
 (`ConnectionForm`) asks the kind -- an SQLite file, or a server through ODBC.
-A file is where it is, relative to the project so it travels with it, with a
-chooser on the field. A server is its driver's connection string, a user, and
+A file is where it is, relative to the project so it travels with it -- or
+absolute for a database outside it -- with a chooser on the field. A server is
+its driver's connection string, a user, and
 the environment variable its password is in; a connection string with a `PWD`
 in it is refused, and *Connect* asks the server now and says what it answered
 (*Connected to PostgreSQL 16.0: 3 tables*, or the driver's refusal with its

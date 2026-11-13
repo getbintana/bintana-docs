@@ -740,7 +740,7 @@ this.Api.Get("/status", {}, (res) => this.Lbl.Text = res.Body.ToText());
 **A `Connection` is one database and a `Model` is one record over one
 table.** A form can carry several Models over the same `Connection`; it is
 opened once, not once per table. `Driver` is `"Sqlite"` unless told -- `Path`,
-a file of the project -- or `"Odbc"`, with `ConnectionString` and `User`
+a file of the project, or absolute for one outside it -- or `"Odbc"`, with `ConnectionString` and `User`
 ([`Database.Odbc`](../reference/globals/OdbcConnection.md)). **The password is
 not a property**: set `this.Db.Password` in `Form_Open`, from `Keyring` or the
 environment, so it never reaches the `.form`. A part that gives the other
