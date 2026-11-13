@@ -23,6 +23,7 @@ The running program: what it is called, where its files are, and how it ends.
 | `Icons([contains])` | every icon name available, sorted, narrowed by substring — what an icon picker is built from | [asking about the machine](#asking-about-the-machine) |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once | [libraries](#libraries) |
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`** | [libraries](#libraries) |
+| `Uses([project])` | the libraries a run of that project loads, as directories, dependencies first -- what `uses` resolves to, **a library's own `uses` included**, out of the same walk the run makes | [libraries](#libraries) |
 | `Name` | from `project.btp` | [the project](#the-project) |
 | `OnError` | assign `(message, stack) => …` to take over uncaught errors — **two strings, not the `Error`** | [when something throws](#when-something-throws) |
 | `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again | [a second run](#a-second-run) |
@@ -161,6 +162,13 @@ hand-written table of fourteen global names**, which was missing about eighteen 
 |---|---|
 | `LibraryPath(name, [project])` | where a library by that name is, or `""` — **the same six-place search the runtime does for `uses`**. Published so that a tool which opens *other* projects asks about theirs rather than keeping a second copy of the path |
 | `Libraries([project])` | the names of every library those same six places offer, sorted, each one once. The other direction of the lookup: `LibraryPath` resolves a name you already know, this is what a dialog that offers a choice needs |
+| `Uses([project])` | the libraries a run of that project loads, as directories, dependencies first -- what `uses` resolves to, **a library's own `uses` included**, out of the same walk the run makes. With no project, the running one; `[]` for a project that uses nothing. A library that is not installed, or a cycle, throws the sentence the run would stop with |
+
+A library may name others in its own `project.btp` (`report` names `charts`
+and `drawing`), and **every name is resolved from the project**, so a project
+that carries its own copy of a library gets that copy wherever it is named.
+`Uses` is the list that walk produces; a checker or an editor that read the
+project's `uses` alone would miss what the libraries bring.
 
 ## When something throws
 
