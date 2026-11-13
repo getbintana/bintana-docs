@@ -261,6 +261,7 @@ of data is one nobody can read a number off; and its *config object*, because a 
 of nested options is the opposite of a designable control — which is the whole
 argument of this environment, and the reason `Type`, `Legend` and `Labels` are
 properties in a file. `Chart` is a component like any other: it is
-[`lib/charts/Chart.js`](https://github.com/getbintana/bintana/blob/main/lib/charts/Chart.js), about a thousand lines of
-ordinary Bintana, and a project that needs a shape it has not got can extend it
+[`lib/charts/Chart.js`](https://github.com/getbintana/bintana/blob/main/lib/charts/Chart.js) over
+[`ChartDocument.js`](https://github.com/getbintana/bintana/blob/main/lib/charts/ChartDocument.js),
+which draws, a few thousand lines of ordinary Bintana, and a project that needs a shape it has not got can extend it
 or copy it into its own `lib/`.
