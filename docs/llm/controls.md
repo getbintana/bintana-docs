@@ -1118,7 +1118,7 @@ measures with.
 | Member | |
 |---|---|
 | `Antialias` | smooth edges. Default `true`. **The one performance knob**: a line that crosses its own height on every segment costs 109 ms antialiased and 7.8 ms without, measured — the cost is in pixels covered, not in points |
-| `Color` | any CSS colour, the same spelling `Background` takes (`"rgba(53,132,228,0.2)"`). Reads back the string it was given; before anything is set, the theme's ink |
+| `Color` | a colour name (`"red"`), `#rgb` or `#rrggbb` with an optional alpha, `rgb()`/`rgba()` or `hsl()`/`hsla()` (`"rgba(53,132,228,0.2)"`) -- read the same way in every host and on every GTK. Reads back the string it was given; before anything is set, the theme's ink |
 | `Dark` (ro) | whether the ground is dark, derived from the ink's luminance. What a palette is chosen by |
 | `Font` | a Pango description (`"Cantarell Bold 10"`). Defaults to the widget's, so a drawing follows the desktop's font and text scale |
 | `Foreground` (ro) | the colour this widget's text is drawn in, resolved — the theme's, or the control's own `Foreground` if a form set one. The one fact a drawing cannot work out for itself. A *change* to it reaches the painter a turn later |
