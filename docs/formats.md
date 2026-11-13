@@ -110,6 +110,7 @@ soon as it lists the files. Qualifying the name is the way out.
 | `startup` | the class instantiated and shown at launch |
 | `main` | a **function** to call instead, for a project with no window (below). Excludes `startup` |
 | `singleInstance` | `true` makes a second run of the project **hand its arguments to the first and exit `0`**, raising the first's window, instead of opening another. Optional, default `false`. It **needs an `id`** (the name the instances find each other by on the session bus) and a value that is not `true` or `false` **stops the program when the project loads**. The first instance hears it in `Application.OnSecondInstance(args, directory)`. With no session bus there is only ever one process, as before |
+| `privileged` | an array of project directories under this one that `Privilege.Run`/`Privilege.Wait` may ask the OS to run elevated. Each must be a `main` project; a helper with a window is refused, because the application's own window is never elevated. Optional, default none: `Privilege.Run` refuses every helper |
 | `sources` | `.js` files to evaluate, in this order, as paths relative to the project (`"widgets/Stepper.js"`) |
 | `uses` | libraries of shared classes to load **before** the project's own sources (`["charts"]`) — see [Libraries](#libraries-uses) |
 | `description` | not used by the runtime; the IDE writes it and leaves it alone |
@@ -205,6 +206,18 @@ about the display rather than about the desktop. The other four fields of `Info`
 answer normally. A tool that asks what icons exist has to
 read the themes off the disk, which is what it wanted anyway (see
 [testing.md](https://github.com/getbintana/bintana/blob/main/docs/testing.md)).
+
+**A `main` project is also the only shape a privileged helper may take.** The
+`"privileged"` array names the helper projects under this one that
+`Privilege.Run`/`Privilege.Wait` may ask the OS to run; each must declare `main`,
+and a helper that declares `startup` is refused before anything is launched.
+**A directory with its own `project.btp` is a project of its own**: the
+application does not load its sources, and it is checked with
+`bintana check tools/install` rather than as a folder of the parent.
+The application's own window is never elevated: on Linux the launcher is
+`pkexec` and polkit's agent asks, on Windows it is UAC through the runtime's
+`--elevate` mode, and the helper prints its result to the job `Privilege.Run`
+answers. See [`Privilege`](reference/globals/Privilege.md).
 
 **No widget is not no drawing.** [`Drawing`](llm/library.md#drawing) hands a
 `Painter` over a PNG or a PDF with no control behind it, so a nightly job writes

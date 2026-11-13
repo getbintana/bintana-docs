@@ -1381,6 +1381,43 @@ grandchild holding the write end of the pipe, the read never sees EOF, and the
 wait that was supposed to end never does. A guard that does not guarantee an
 ending is worth less than an interrupt.
 
+## Privilege
+
+A privileged task is **a helper project**, not a function that runs as root.
+`Privilege.Run` asks the operating system to start a `main` project elevated —
+`pkexec` and polkit's agent on Linux, UAC through `runas` on Windows — and
+answers the same job handle `Exec` does. The application's own window is never
+elevated, and the password never reaches the runtime.
+
+```json
+{ "privileged": ["tools/install"] }
+```
+
+```js
+Privilege.Run("tools/install", ["--all-users"], {},
+    (line) => this.Log(line),
+    (code) => { if (code === 0) Message.Info("Installed."); });
+```
+
+| | |
+|---|---|
+| `Privilege.Elevated` | whether this process already has root/administrator rights |
+| `Privilege.CanElevate` | whether the OS can ask: `pkexec`/UAC, false in a Flatpak or a `Task` |
+| `Privilege.Invoker` | inside a helper, `{ Id, Name, Home }` of the person who asked — not `root` |
+| `Privilege.Run(helper, [args], [options], [onLine], [onExit])` | the `Exec`-shaped job; the helper is a `main` project declared in `"privileged"` |
+| `Privilege.Wait(helper, [args], [options])` | the blocking spelling, `{ ExitCode, Output }` |
+
+The helper is a separate `main` project and prints its result. A helper that
+declares `startup` is refused before the dialog: a window would run as root,
+which is the thing this exists not to do. On Windows the helper's output
+arrives when it exits, forwarded by the unelevated launcher; on Linux the lines
+arrive as `pkexec` forwards them.
+
+**`Wait` blocks the main loop** and belongs in a console project; a window uses
+`Run`. `Privilege.Run` inside a `Task` is refused — a worker has no display for
+the dialog. On Linux a helper's `HOME` is `/root`; `Privilege.Invoker.Home` is
+the person's, and anything written into their home needs its owner restored.
+
 ## Task
 
 A class that runs in a thread of its own — the third shape of long work, after

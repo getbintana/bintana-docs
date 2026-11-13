@@ -914,6 +914,34 @@ Without a `Timeout` a command that never ends hangs the program. Use it for
 for anything genuinely interactive, a [`Terminal`](controls.md#terminal) — which
 this build may not have, so ask `Widget.Available("Terminal")` first.
 
+## Privilege
+
+A privileged task is **a helper project** run by the OS's consent, not a
+function that runs as root. Declare it in `project.btp`'s `"privileged"` array;
+the helper is a `main` project, and `Privilege.Run` answers an `Exec`-shaped
+job. On Linux the launcher is `pkexec` and polkit's agent; on Windows it is UAC
+through the runtime's `--elevate` launcher. The application's window is never
+elevated.
+
+```js
+Privilege.Run("tools/install", ["--all-users"], {},
+    (line) => this.Log(line),
+    (code) => { if (code === 0) Message.Info("Installed."); });
+```
+
+| | |
+|---|---|
+| `Elevated` | whether this process already has root/administrator rights: true in a helper, false in the application that asked for one |
+| `CanElevate` | whether the OS can ask: `pkexec` on Linux, UAC on Windows, and false in a sandbox or a Task.  `Run` still works when `Elevated` is true, since there is nobody left to ask |
+| `Invoker` | `{ Id, Name, Home }` of the user who asked for the helper.  Inside a helper this is the person at the desktop, not `root`: on Linux it comes from `PKEXEC_UID`/`SUDO_UID`, and on Windows it is the same user with an elevated token |
+| `Run(helper, [args], [options], [onLine], [onExit])` | runs a helper project declared in `project.btp`'s `"privileged"` list, with the platform's consent dialog.  `helper` is a project directory with a `main`; `args` are its `Application.Arguments`; `options` are `Exec`'s (`Timeout`, `Env`, `Dir`).  Answers the same job handle `Exec` does, so `Stop`/`Kill` and the callbacks are the ones the language already has.  On Windows the helper's output arrives when it exits, because the unelevated launcher forwards the file UAC let it write |
+| `Wait(helper, [args], [options])` | the same, run to the end.  It blocks the main loop: use `Run` from a window, and `Wait` from a console project or a place that can wait |
+
+A helper that declares `startup` is refused before the dialog. `Wait` blocks the
+main loop and belongs in a console project. On Linux a helper's `HOME` is
+`/root`: use `Privilege.Invoker.Home`, and restore the owner of anything written
+into the person's home.
+
 ## Task
 
 A class that runs in a thread of its own. For a computation too long for the
