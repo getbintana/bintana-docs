@@ -2557,7 +2557,7 @@ Spelled out rather than `Log`, which next to a number reads as a logarithm.
 | | |
 |---|---|
 | `Logger.Level` | `"Debug"`, `"Info"` (default), `"Warning"`, `"Error"`, `"None"` — below it, nothing is even formatted |
-| `Logger.Target` | `"Terminal"` (default), `"Journal"`, or **a file path** — the lines are appended there and go nowhere else. A path that cannot be opened is refused and the target stands |
+| `Logger.Target` | `"Terminal"` (default), `"Journal"` on Linux, `"EventLog"` on Windows, or **a file path** — the lines are appended there and go nowhere else. A path that cannot be opened is refused and the target stands |
 | `Logger.Handler` | `(level, text) => …` — set it and it takes over completely |
 
 **The base is stdout and stderr**, which every system has: `Debug` and `Info` to
@@ -2576,10 +2576,16 @@ path, and `"Terminal"` closes it and gives the streams back.
 **Platform backends are extensions.** `Logger.Target = "Journal"` writes straight to
 the systemd journal with the level as its syslog priority, and it is compiled in
 only when `libsystemd` is found (`runtime/src/bta_journal.c`, `BTA_HAVE_JOURNAL`).
-On a build without it the assignment is **refused** rather than ignored — an
-application that asked for the journal and quietly got nothing would never find
-out. Another operating system's log is another file answering the same two
-questions: is it available, and take this message at this level.
+`Logger.Target = "EventLog"` writes to the Windows Application log with the level
+as the event type (Information, Warning, Error) and the line as the message. It
+needs no administrator; run `bintana --register-event-source` once from an elevated
+prompt so the source has a message table and Event Viewer shows the line as a
+sentence — without it the event is recorded with its data and no description
+(`runtime/src/bta_eventlog.c`). On a platform without the named log the assignment
+is **refused** rather than ignored — an application that asked for the journal and
+quietly got nothing would never find out. Another operating system's log is
+another file answering the same two questions: is it available, and take this
+message at this level.
 
 ## Clipboard
 

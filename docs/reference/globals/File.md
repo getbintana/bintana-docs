@@ -64,7 +64,7 @@ with `[object Object]`, and is now a refusal that says so.
 
 | | |
 |---|---|
-| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A `Cancellable` last ends a read that is stuck |
+| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A **UTF-8 BOM is dropped** and a **UTF-16LE/BE or UTF-32LE/BE BOM is decoded**, so a `.btp`, `.form` or source file written by Notepad or PowerShell reads as the text it is; bytes with no BOM are returned unchanged. `LoadBytes` is the byte-for-byte road. A `Cancellable` last ends a read that is stuck |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 
@@ -76,7 +76,7 @@ and destroys a PNG.
 
 | | |
 |---|---|
-| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
+| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer. A UTF-8 BOM, or a UTF-16LE/BE file a Windows editor wrote, arrives as the text it looks like: `File.Load` normalizes it before this parses it |
 | `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.btp` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 
 ## XML
@@ -131,7 +131,7 @@ one case worth confirming.
 
 | | |
 |---|---|
-| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
+| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()`. A save is reported once as `"Changed"`: a deletion the monitor reports before a replacement is held for a moment and becomes that one change -- as does a `Created` for a path that was already there -- while a path still gone is `"Deleted"` after the moment |
 
 **Only settled events arrive.** A save is a burst, and many editors write a
 temporary and rename it over; both roads arrive as one `"Changed"`. A watch may

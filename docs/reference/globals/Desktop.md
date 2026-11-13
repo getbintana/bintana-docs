@@ -23,6 +23,7 @@ Desktop.Entries.Installed()            // ["hello", "world"]
 | `DataDirectory` | `$XDG_DATA_HOME`, or `~/.local/share` when the desktop has not moved it | [the directories](#the-directories) |
 | `Directory` | `DataDirectory/applications`, created on first use | [where an entry lives](#where-an-entry-lives) |
 | `Entries` | the module below | [desktop entries](#desktop-entries) |
+| `Shortcut` | the Windows `.lnk` object below | [Start Menu shortcuts](#start-menu-shortcuts) |
 | `Exec(argv)` | the value for the `Exec` key: the arguments as an array — the shape `Exec` and `Terminal.Run` already take — quoted and escaped the format's way | [the command line](#the-command-line) |
 | `Install(id, entry)` | writes `Directory/<id>.desktop` and answers the path | [installing](#installing) |
 | `Write(path, entry)` | the same entry and the same checks at a path the caller names, **making the directory** when it is not there | [installing](#installing) |
@@ -156,6 +157,30 @@ Measured against `gio launch` and `desktop-file-validate`, which are a real
 `GDesktopAppInfo` and the specification's own checker: an argument containing a
 space, a `"`, a `$`, a `\`, a `` ` ``, a `%` or an accent comes out the other side
 exactly as it went in.
+
+## Start Menu shortcuts
+
+The same *put this in my menu* on Windows, where the entry is a `.lnk` in the
+user's Start Menu rather than a `.desktop` file. `Shortcut` is that object and
+`Entries` is the Linux road: `Available` says which one this platform has, and
+the other one's verbs refuse instead of writing a file nothing reads.
+
+| | |
+|---|---|
+| `Shortcut` | the Windows `.lnk` object below; `Available` says whether it is there |
+
+The verbs are `Directory`, the Start Menu folder
+(`<APPDATA>/Microsoft/Windows/Start Menu/Programs/Bintana`, made by `Write`);
+`Write(id, entry)`, which writes `Directory/<id>.lnk` with
+`System.AppUserModel.ID` and answers the path; `Installed()`, the ids this object
+wrote, sorted; `Read(id)`, one record or `null`; and `Remove(id)`, which takes the
+shortcut and its record away and answers whether either was there.
+
+**The AppUserModelID is the difference from a `.desktop` file.** It ties the
+running process, the shortcut and its toast together, which is what makes the
+taskbar group one application instead of showing the runtime's own icon. The
+record of what was installed is a sidecar under `%APPDATA%\Bintana\apps`, not a
+second file in a folder the user opens.
 
 ## See also
 

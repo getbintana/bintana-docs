@@ -36,7 +36,7 @@ The running program: what it is called, where its files are, and how it ends.
 | | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in four places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, and on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those names is something nobody looks at until a dock shows the wrong icon |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `BTA_VERSION` | **a bare global, not a member of this** — the runtime's own release as text, the one number `CMakeLists.txt` declares, and what `bintana --version` prints. It is here because this is where the confusion lives; a worker has it too |
 | `Arguments` | whatever followed the project directory on the command line, as an array |
@@ -182,7 +182,7 @@ matching on the message is the shape this language refuses elsewhere.
 
 | | |
 |---|---|
-| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. `null` until assigned |
+| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. On Windows a local mutex and a named pipe carry the same message, so no session bus is needed. `null` until assigned |
 
 The second process does nothing else: it hands those two over and exits `0`, with no
 window of its own, and **the first instance's window is brought forward after your
