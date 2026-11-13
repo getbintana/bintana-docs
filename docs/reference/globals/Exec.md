@@ -67,6 +67,12 @@ that grandchild -- through the group, and never through the leader's pid, which
 the system may have handed to somebody else by then. They used to answer false
 and do nothing, and the exit callback never came.
 
+**On Windows the group is a job object**, and the run behaves the same: it ends
+when the output does, a grandchild's included, and `Stop()`, `Kill()` and
+`Timeout` terminate the whole job -- there is no gentler signal to send there,
+so `Stop()` ends it like `Kill()`. The child joins its job just after it starts,
+so a grandchild started in that very instant is outside it.
+
 ## Waiting for one
 
 ```js

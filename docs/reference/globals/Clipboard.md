@@ -15,7 +15,7 @@ Copy and paste, which are not symmetrical.
 
 | | |
 |---|---|
-| `Copy(text)` | **immediate**: the text is on the clipboard when the call returns |
+| `Copy(text)` | **immediate**: the text is on the clipboard when the call returns. An empty string empties the clipboard on Windows, where GTK cannot serve empty text to another program; `Paste` answers `""` either way. |
 
 What a *Copy* button, a context menu and Ctrl+C all end up in. Copy the **value**
 and not what is drawn: the id rather than the truncated label, the amount rather

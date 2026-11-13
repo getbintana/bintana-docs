@@ -53,17 +53,18 @@ with `[object Object]`, and is now a refusal that says so.
 | `BaseName(path)` | `/a/b/c.js` → `c` | [paths](#paths) |
 | `Directory(path)` | `/a/b/c.js` → `/a/b` | [paths](#paths) |
 | `Extension(path)` | `js` — no dot, `""` when there is none | [paths](#paths) |
+| `IsAbsolute(path)` | whether the path stands on its own, by the **platform's** rule and not by a leading slash | [paths](#paths) |
 | `IsExtension(path, ext)` | whether the name ends in that extension, **case-insensitively** | [paths](#paths) |
 | `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised** | [paths](#paths) |
 | `Name(path)` | `/a/b/c.js` → `c.js` | [paths](#paths) |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself | [paths](#paths) |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself | [paths](#paths) |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` | [paths](#paths) |
 
 ## Text
 
 | | |
 |---|---|
-| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A `Cancellable` last ends a read that is stuck |
+| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A **UTF-8 BOM is dropped** and a **UTF-16LE/BE or UTF-32LE/BE BOM is decoded**, so a `.btp`, `.form` or source file written by Notepad or PowerShell reads as the text it is; bytes with no BOM are returned unchanged. `LoadBytes` is the byte-for-byte road. A `Cancellable` last ends a read that is stuck |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 
@@ -75,7 +76,7 @@ and destroys a PNG.
 
 | | |
 |---|---|
-| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
+| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer. A UTF-8 BOM, or a UTF-16LE/BE file a Windows editor wrote, arrives as the text it looks like: `File.Load` normalizes it before this parses it |
 | `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.btp` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 
 ## XML
@@ -105,7 +106,7 @@ For a picture, an archive, anything downloaded: what
 |---|---|
 | `Exists(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
 | `IsDir(path)` | whether it is a directory — the question to ask before [`Directory`](Directory.md)'s three verbs, which throw on anything else |
-| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. Where the platform has no shared MIME database, the common media types are answered from the extension instead of a bare `.pdf`. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
 | `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
 
 `.Icon` is the one field that needs a display: in a console project it answers
@@ -130,7 +131,7 @@ one case worth confirming.
 
 | | |
 |---|---|
-| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
+| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()`. A save is reported once as `"Changed"`: a deletion the monitor reports before a replacement is held for a moment and becomes that one change -- as does a `Created` for a path that was already there -- while a path still gone is `"Deleted"` after the moment |
 
 **Only settled events arrive.** A save is a burst, and many editors write a
 temporary and rename it over; both roads arrive as one `"Changed"`. A watch may
@@ -153,18 +154,27 @@ and giving a file verb two meanings would be the wrong place to put it.
 
 | | |
 |---|---|
-| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. It **concatenates**: a piece that is itself absolute does not replace the ones before it, so ask `IsAbsolute(path)` when a path may already stand on its own. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
 | `Absolute(path)` | the path resolved against the working directory |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
 | `BaseName(path)` | `/a/b/c.js` → `c` |
 | `Directory(path)` | `/a/b/c.js` → `/a/b` |
 | `Extension(path)` | `js` — no dot, `""` when there is none |
+| `IsAbsolute(path)` | whether the path stands on its own, by the **platform's** rule and not by a leading slash: `/x` on POSIX; `C:\x`, `C:/x` and a UNC share on Windows, where `C:` and `C:x` are drive-relative. Purely lexical, so a path that does not exist yet answers like any other |
 | `IsExtension(path, ext)` | whether the name ends in that extension, **case-insensitively**. `"js"` and `".js"` are both taken, and a suffix like `"tar.gz"` is refused: the extension is what [`Extension`](#paths) answers, which stops at the last dot |
 
 These are **string** operations and touch no disk: they answer about a path that
 need not exist.
+
+`IsAbsolute` is the platform's question and not a prefix test, which is why it
+exists: a program that writes `startsWith("/")` answers no for every `C:\...`
+path on Windows. It is also what to ask before `Join`, because **`Join`
+concatenates and does not replace**: `Join("C:\proj", "C:\pics\a.png")` is
+`C:\proj\C:\pics\a.png`, and a caller that meant the second path whole wants
+`IsAbsolute` first. A path that arrives from a document, a settings file or a
+command line may be either.
 
 `Within` and `Relative` are the pair a program that shows a tree needs, and they
 are the question and the spelling — the same bargain as
@@ -176,7 +186,10 @@ compared is the canonical bytes — `GFile`'s own rule, on every platform. A fil
 that is not under the root has no relative spelling, so `Relative` answers the
 path it was given — which is what a tree that lists files from inside *and*
 outside the project wants; ask `Within` first when the two have to be told
-apart.
+apart. **A relative spelling is written with `/` on every platform**, Windows
+included: it is a name inside a tree — what `sources` lists and what a tree
+keys its rows by — and Windows takes `/` in any path, so the same project gets
+the same names everywhere.
 
 `IsExtension` folds the case because the question almost every caller has is
 case-insensitive, and `Extension` answers the case that was on disk. It is what
@@ -199,6 +212,11 @@ case-insensitive, and `Extension` answers the case that was on disk. It is what
 - **A file from outside the project was shown as if it were inside it.** A
   prefix test says yes to `/home/u/proj2` for a root of `/home/u/proj`;
   `File.Within` is the question and `File.Relative` is the name.
+- **An absolute picture was joined onto the project.** A report element named
+  `C:\pics\a.png` and the library's `startsWith("/")` test said *relative*, so
+  the path became `<project>\C:\pics\a.png` and the PDF was never written.
+  `File.IsAbsolute` is the question, and the answer is the platform's: on
+  Windows a drive path and a UNC share are absolute, `C:` and `C:x` are not.
 
 ## See also
 

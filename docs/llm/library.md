@@ -7,13 +7,13 @@ Every name here is a global: ambient, always present, no import.
 | | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in three places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, and the Flatpak app id. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those three is something nobody looks at until a dock shows the wrong icon |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in four places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, and on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those names is something nobody looks at until a dock shows the wrong icon |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `Directory` | the project directory, absolute. What a relative path in a project resolves against — an image a report draws, a document a viewer opens, a data file that ships with the application |
 | `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](../reference/globals/Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other |
 | `Executable` | the `bintana` binary that is running this, so a project can re-invoke it — which is how the IDE runs a project and how the test runner runs the suites |
 | `Arguments` | whatever followed the project directory on the command line, as an array |
-| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. `null` until assigned |
+| `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. On Windows a local mutex and a named pipe carry the same message, so no session bus is needed. `null` until assigned |
 | `HasIcon(name)` | whether that icon will actually **draw** something. Not whether the theme claims it: an icon that cannot be rasterised here is the same nothing as one that is missing |
 | `HasCommand(name)` | whether that program is on the PATH. **The question that does not need an exception**, since [`Exec`](../reference/globals/Exec.md) throws when the program is not there |
 | `Icons([contains])` | every icon name available, sorted, narrowed by substring — what an icon picker is built from |
@@ -61,7 +61,8 @@ those belong to the application, not to the system.
 
 The session this program is running in: where a user's own things go, by the
 freedesktop conventions every Linux desktop follows. `DataDirectory`,
-`ConfigDirectory`, `CacheDirectory` and `Entries`.
+`ConfigDirectory`, `CacheDirectory` and `Entries`; on Windows the Start Menu is
+`Shortcut`, where the entry is a `.lnk` instead.
 
 | | |
 |---|---|
@@ -69,6 +70,7 @@ freedesktop conventions every Linux desktop follows. `DataDirectory`,
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config`. Settings, kept apart from data because a backup or a sync usually wants one and not the other |
 | `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt |
 | `Entries` | the module below |
+| `Shortcut` | the Windows `.lnk` object below; `Available` says whether it is there |
 
 `ConfigDirectory` is the root and **not** `Application.ConfigDirectory`, which is
 this project's own directory inside it.
@@ -482,10 +484,10 @@ made a folder called `undefined`. The one exception is the question:
 
 | | |
 |---|---|
-| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A `Cancellable` last ends a read that is stuck |
+| `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A **UTF-8 BOM is dropped** and a **UTF-16LE/BE or UTF-32LE/BE BOM is decoded**, so a `.btp`, `.form` or source file written by Notepad or PowerShell reads as the text it is; bytes with no BOM are returned unchanged. `LoadBytes` is the byte-for-byte road. A `Cancellable` last ends a read that is stuck |
 | `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
-| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer |
+| `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer. A UTF-8 BOM, or a UTF-16LE/BE file a Windows editor wrote, arrives as the text it looks like: `File.Load` normalizes it before this parses it |
 | `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.btp` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 | `LoadXml(path)` | the file as a [`Xml`](../reference/globals/Xml.md) document. **The error names the file**, and the document's own declaration says what encoding it is in: this reads bytes, unlike `Load` |
 | `SaveXml(path, node)` | the canonical XML shape, atomically, honouring neither locale nor encoding guesses |
@@ -497,13 +499,14 @@ made a folder called `undefined`. The one exception is the question:
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 | `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
-| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
-| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()` |
+| `Info(path, [cancellable])` | `{ Size, Modified, Type, Icon, IsDir }`, or `null`. `.Type` is a content type you can test (`"image/png"`), `.Icon` is the name the desktop draws for that kind of file, and `.Modified` is a real `Date`, to the millisecond. Where the platform has no shared MIME database, the common media types are answered from the extension instead of a bare `.pdf`. A `Cancellable` last ends a query that is stuck, and throws rather than answering `null` |
+| `Watch(path, cb)` | `cb(event, path)` — `"Changed"`, `"Created"`, `"Deleted"` — and answers something with a `Stop()`. A save is reported once as `"Changed"`: a deletion the monitor reports before a replacement is held for a moment and becomes that one change -- as does a `Created` for a path that was already there -- while a path still gone is `"Deleted"` after the moment |
 | `Open(path)` | hands the file to whatever the desktop opens that kind with. **It answers before the file is open**: launching is asynchronous and the program that opens it is somebody else's, so what this promises is that the request was made. A file that is not there is refused *here*, which is the failure a caller can do something about |
-| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
+| `Join(a, b, …)` | one path out of pieces, with the separator the platform uses, **and normalised**: `.` and `..` are worked out by the letters, so `Join(root, "../../etc/x")` answers `/etc/x` -- a name that is data cannot hide where it leads. Whether it is still inside is `Within(path, root)`. It **concatenates**: a piece that is itself absolute does not replace the ones before it, so ask `IsAbsolute(path)` when a path may already stand on its own. A relative path keeps the `..` it cannot climb out of; nothing is asked of the disk, so `..` after a link goes back up the name |
 | `Absolute(path)` | the path resolved against the working directory |
+| `IsAbsolute(path)` | whether the path stands on its own, by the **platform's** rule and not by a leading slash: `/x` on POSIX; `C:\x`, `C:/x` and a UNC share on Windows, where `C:` and `C:x` are drive-relative. Purely lexical, so a path that does not exist yet answers like any other |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole path components — `/a/proj2` is **not** inside `/a/proj` |
-| `Relative(path, root)` | `path` with `root` taken off; the path unchanged when there is no relative spelling, and `""` for the root itself |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform; the path unchanged when there is no relative spelling, and `""` for the root itself |
 | `Name(path)` | `/a/b/c.js` → `c.js` |
 | `Directory(path)` | `/a/b/c.js` → `/a/b` |
 | `Extension(path)` | `js` — no dot, `""` when there is none |
@@ -867,7 +870,10 @@ and it answers whether there was still a child to write to), `CloseInput()` (the
 end of its stdin, after what `Write` queued -- what tells `sort`, `wc` or `jq`
 that the input is over). `Write` is queued and never blocks, so a child that
 echoes what it reads cannot hang the program; and `Stop`/`Kill`/`Timeout` still
-reach a grandchild that holds the output after the leader has exited.
+reach a grandchild that holds the output after the leader has exited. On Windows
+there is no process group, so a leader that has exited while a grandchild holds
+a pipe is drained for a moment and then reported; a `Wait` that times out there
+answers `TimedOut` instead of waiting forever.
 
 A child that speaks a protocol as well as printing gets a stream of its own:
 `Control` in the options is a callback for the child's **third stream**, one
@@ -908,6 +914,36 @@ Without a `Timeout` a command that never ends hangs the program. Use it for
 `msgmerge`, `git status`, `tar`. For anything long, use the callback spelling;
 for anything genuinely interactive, a [`Terminal`](controls.md#terminal) — which
 this build may not have, so ask `Widget.Available("Terminal")` first.
+
+## Privilege
+
+A privileged task is **a helper project** run by the OS's consent, not a
+function that runs as root. Declare it in `project.btp`'s `"privileged"` array;
+the helper is a `main` project, and `Privilege.Run` answers an `Exec`-shaped
+job. On Linux the launcher is `pkexec` and polkit's agent; on Windows it is UAC
+through the runtime's `--elevate` launcher. The application's window is never
+elevated.
+
+```js
+Privilege.Run("tools/install", ["--all-users"], {},
+    (line) => this.Log(line),
+    (code) => { if (code === 0) Message.Info("Installed."); });
+```
+
+| | |
+|---|---|
+| `Elevated` | whether this process already has root/administrator rights: true in a helper, false in the application that asked for one |
+| `CanElevate` | whether the OS can ask: `pkexec` on Linux, UAC on Windows, and false in a sandbox or a Task.  `Run` still works when `Elevated` is true, since there is nobody left to ask |
+| `Invoker` | `{ Id, Name, Home }` of the user who asked for the helper.  Inside a helper this is the person at the desktop, not `root`: on Linux it comes from `PKEXEC_UID`/`SUDO_UID`, and on Windows it is the same user with an elevated token |
+| `Run(helper, [args], [options], [onLine], [onExit])` | runs a helper project declared in `project.btp`'s `"privileged"` list, with the platform's consent dialog.  `helper` is a project directory with a `main`; `args` are its `Application.Arguments`; `options` are `Exec`'s (`Timeout`, `Env`, `Dir`).  Answers the same job handle `Exec` does, so `Stop`/`Kill` and the callbacks are the ones the language already has.  On Windows the helper's output arrives when it exits, because the unelevated launcher forwards the file UAC let it write |
+| `Wait(helper, [args], [options])` | the same, run to the end.  It blocks the main loop: use `Run` from a window, and `Wait` from a console project or a place that can wait |
+
+`Privilege` is there in both hosts: a `main` run by `bintana` may ask for a
+helper too, and on Linux the helper runs in `bintana`, with no GTK as root.
+A helper that declares `startup` is refused before the dialog. `Wait` blocks the
+main loop and belongs in a console project. On Linux a helper's `HOME` is
+`/root`: use `Privilege.Invoker.Home`, and restore the owner of anything written
+into the person's home.
 
 ## Task
 
@@ -1947,8 +1983,11 @@ name the program did not choose needs it.
 ## Logger
 
 `Logger.Debug`, `Info`, `Warning`, `Error` — arguments joined with a space, like
-`print`. Plus `Level`, `Target` (`"Terminal"`, `"Journal"`, or a file path to
-append to) and `Handler`. This is what `console` used to be.
+`print`. Plus `Level`, `Target` (`"Terminal"`, `"Journal"` on Linux, `"EventLog"`
+on Windows, or a file path to append to) and `Handler`. This is what `console`
+used to be. On Windows, `bintana --register-event-source` from an elevated prompt
+gives the Application log a message table, so Event Viewer describes the events
+instead of showing only their data.
 
 ## Clipboard
 

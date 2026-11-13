@@ -34,12 +34,21 @@ All four join their arguments with a space, like `print`.
 
 | | |
 |---|---|
-| `Target` | where the lines are written: `"Terminal"` (the default, and stdout/stderr under it), `"Journal"` where the build has one, or **a file path** — opened in append mode and flushed per line, and it reads back as the path |
+| `Target` | where the lines are written: `"Terminal"` (the default, and stdout/stderr under it), `"Journal"` on Linux or `"EventLog"` on Windows where the platform has one, or **a file path** — opened in append mode and flushed per line, and it reads back as the path. Writing to the Event Log needs no administrator; run `bintana --register-event-source` once from an elevated prompt so the viewer can describe the events instead of showing their raw data |
 | `Handler` | assign `(level, text) => …` and every line arrives there instead — which is how a log pane inside the application is fed, and how a test captures what was logged |
 
 A target that cannot be opened — a path in a directory that is not there — is
 **refused**, and the target it had stands. `Logger.Target = "Terminal"` closes
 the file and gives the streams back.
+
+**On Windows, `"EventLog"` is the Application log**, where `eventvwr.exe` shows
+it under *Windows Logs*: `Debug` and `Info` are Information, `Warning` is
+Warning and `Error` is Error, and the line is the event's message. Writing needs
+no administrator. Run `bintana --register-event-source` once from an elevated
+prompt so the source has a message table and the viewer describes each event;
+without it the event is still recorded with its data, and the viewer says the
+description cannot be found. On Linux the word is refused, as `"Journal"` is on
+Windows — the other platform's log is not a file name.
 
 ## A log is not a message
 

@@ -862,8 +862,9 @@ callbacks. See [`Tray`](reference/globals/Tray.md).
 | `Open(path)` | hands it to whatever the desktop opens that kind of file with |
 | `Join(a, b, ...)` | builds a path with the platform separator |
 | `Absolute(path)` | resolves against the current directory |
+| `IsAbsolute(path)` | whether the path stands on its own, by the platform's rule (`/x`, `C:\x`, `C:/x`, a UNC share) rather than a leading slash; `C:` and `C:x` are drive-relative |
 | `Within(path, root)` | whether `path` is `root` or under it, by whole components |
-| `Relative(path, root)` | `path` with `root` taken off, or the path unchanged when there is no relative spelling |
+| `Relative(path, root)` | `path` with `root` taken off, written with `/` on every platform, or the path unchanged when there is no relative spelling |
 | `Name(path)` | the basename: `/a/b/c.js` → `c.js` |
 | `Directory(path)` | the dirname: `/a/b/c.js` → `/a/b` |
 | `Extension(path)` | `js`, without the dot, `""` if none |
@@ -874,7 +875,10 @@ callbacks. See [`Tray`](reference/globals/Tray.md).
 obvious are the ones worth having. `Type` is the content type — `"image/png"`,
 `"text/javascript"` — a *value* one can test against, and not GIO's
 human-readable description, which GIO translates into the desktop's language and
-no catalogue of ours could reach. `Icon` is the name the desktop draws for that
+no catalogue of ours could reach. Where the platform has no shared MIME database
+(Windows in this tree) a platform answer that is only a dot-suffix is replaced
+from the extension for the common media types — `application/pdf`,
+`image/png` — and a real content type is never overruled. `Icon` is the name the desktop draws for that
 kind of file, resolved to the first one this theme really has: it is what a file
 tree wants, and what one otherwise writes a table of guesses for. Resolving it
 means asking the icon theme, so it is the one field of the five that needs a
@@ -1377,6 +1381,45 @@ both, and no escape hatch would orphan anything. But it breaks the guard into a
 grandchild holding the write end of the pipe, the read never sees EOF, and the
 wait that was supposed to end never does. A guard that does not guarantee an
 ending is worth less than an interrupt.
+
+## Privilege
+
+A privileged task is **a helper project**, not a function that runs as root.
+`Privilege.Run` asks the operating system to start a `main` project elevated —
+`pkexec` and polkit's agent on Linux, UAC through `runas` on Windows — and
+answers the same job handle `Exec` does. The application's own window is never
+elevated, and the password never reaches the runtime.
+
+```json
+{ "privileged": ["tools/install"] }
+```
+
+```js
+Privilege.Run("tools/install", ["--all-users"], {},
+    (line) => this.Log(line),
+    (code) => { if (code === 0) Message.Info("Installed."); });
+```
+
+| | |
+|---|---|
+| `Privilege.Elevated` | whether this process already has root/administrator rights |
+| `Privilege.CanElevate` | whether the OS can ask: `pkexec`/UAC, false in a Flatpak or a `Task` |
+| `Privilege.Invoker` | inside a helper, `{ Id, Name, Home }` of the person who asked — not `root` |
+| `Privilege.Run(helper, [args], [options], [onLine], [onExit])` | the `Exec`-shaped job; the helper is a `main` project declared in `"privileged"` |
+| `Privilege.Wait(helper, [args], [options])` | the blocking spelling, `{ ExitCode, Output }` |
+
+`Privilege` is a global of both hosts, so a `main` run by `bintana` may ask too;
+on Linux `pkexec` starts the helper in the console runtime, never with GTK.
+The helper is a separate `main` project and prints its result. A helper that
+declares `startup` is refused before the dialog: a window would run as root,
+which is the thing this exists not to do. On Windows the helper's output
+arrives when it exits, forwarded by the unelevated launcher; on Linux the lines
+arrive as `pkexec` forwards them.
+
+**`Wait` blocks the main loop** and belongs in a console project; a window uses
+`Run`. `Privilege.Run` inside a `Task` is refused — a worker has no display for
+the dialog. On Linux a helper's `HOME` is `/root`; `Privilege.Invoker.Home` is
+the person's, and anything written into their home needs its owner restored.
 
 ## Task
 
@@ -2554,7 +2597,7 @@ Spelled out rather than `Log`, which next to a number reads as a logarithm.
 | | |
 |---|---|
 | `Logger.Level` | `"Debug"`, `"Info"` (default), `"Warning"`, `"Error"`, `"None"` — below it, nothing is even formatted |
-| `Logger.Target` | `"Terminal"` (default), `"Journal"`, or **a file path** — the lines are appended there and go nowhere else. A path that cannot be opened is refused and the target stands |
+| `Logger.Target` | `"Terminal"` (default), `"Journal"` on Linux, `"EventLog"` on Windows, or **a file path** — the lines are appended there and go nowhere else. A path that cannot be opened is refused and the target stands |
 | `Logger.Handler` | `(level, text) => …` — set it and it takes over completely |
 
 **The base is stdout and stderr**, which every system has: `Debug` and `Info` to
@@ -2573,10 +2616,16 @@ path, and `"Terminal"` closes it and gives the streams back.
 **Platform backends are extensions.** `Logger.Target = "Journal"` writes straight to
 the systemd journal with the level as its syslog priority, and it is compiled in
 only when `libsystemd` is found (`runtime/src/bta_journal.c`, `BTA_HAVE_JOURNAL`).
-On a build without it the assignment is **refused** rather than ignored — an
-application that asked for the journal and quietly got nothing would never find
-out. Another operating system's log is another file answering the same two
-questions: is it available, and take this message at this level.
+`Logger.Target = "EventLog"` writes to the Windows Application log with the level
+as the event type (Information, Warning, Error) and the line as the message. It
+needs no administrator; run `bintana --register-event-source` once from an elevated
+prompt so the source has a message table and Event Viewer shows the line as a
+sentence — without it the event is recorded with its data and no description
+(`runtime/src/bta_eventlog.c`). On a platform without the named log the assignment
+is **refused** rather than ignored — an application that asked for the journal and
+quietly got nothing would never find out. Another operating system's log is
+another file answering the same two questions: is it available, and take this
+message at this level.
 
 ## Clipboard
 
