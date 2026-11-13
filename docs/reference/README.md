@@ -193,6 +193,7 @@ members, twice — once in its summary and once where it is explained.
 | | |
 |---|---|
 | [Chart](libraries/Chart.md) | a chart, as a component: one class, and `Type` says which kind |
+| [ChartDocument](libraries/ChartDocument.md) | a chart with no control: what a `Chart` shows, and what a `main` draws with |
 | [Markdown](libraries/Markdown.md) | a Markdown document, as a component |
 | [Metainfo](libraries/Metainfo.md) | the AppStream file a project carries, which the IDE edits |
 | [Package](libraries/Package.md) | the files a package is built from: the metainfo, the menu entry, the icon and the Flatpak manifest |
@@ -200,6 +201,7 @@ members, twice — once in its summary and once where it is explained.
 | [QrCode](libraries/QrCode.md) | a QR code, as data: the encoder, and the modules it made |
 | [QrView](libraries/QrView.md) | a QR code on a form: text in, the symbol drawn as big as the room allows |
 | [Report](libraries/Report.md) | a banded report, as a component |
+| [ReportDocument](libraries/ReportDocument.md) | a banded report with no control: what a `Report` shows, and what a `main` writes a PDF with |
 | [Xlsx](libraries/Xlsx.md) | a workbook, written: the sheet somebody on the other side of the table asks for |
 
 **A small class gets a short page, not a padded one.** `Label` has seven members

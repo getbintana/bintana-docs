@@ -311,7 +311,7 @@ needs a display. With no display, or for a page, it is the document's.
 |---|---|
 | `Document` (ro) | the chart itself — a `ChartDocument`, which is what draws. Every property below that is not about the pointer is a property of it |
 
-**A chart is a `ChartDocument`, and the control shows one.** The type, the
+**A chart is a [`ChartDocument`](ChartDocument.md), and the control shows one.** The type, the
 series, the axes and the drawing of them are the document's; what the `Chart`
 adds is a screen — the pointer, the wheel, a drag and `Select`, `Hover` and
 `Range`. Every property above that is not about the pointer is the document's
@@ -373,7 +373,7 @@ control — which is the whole argument of this environment, and the reason `Typ
 
 ## See also
 
-[`Report`](Report.md) · [`Markdown`](Markdown.md) ·
+[`ChartDocument`](ChartDocument.md), the chart with no control · [`Report`](Report.md) · [`Markdown`](Markdown.md) ·
 [`DrawingArea`](../widgets/DrawingArea.md) ·
 [`examples/charts`](https://github.com/getbintana/bintana/tree/main/examples/charts) ·
 [llm/charts.md](../../llm/charts.md), the short form

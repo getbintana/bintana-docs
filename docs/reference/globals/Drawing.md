@@ -62,11 +62,11 @@ things:
   `Foreground`; a document has no theme, and the theme's ink on white paper is
   the invisible drawing — on a dark desktop it is light. So `p.Foreground` is
   black here, and anything that draws in the painter's ink (a
-  [`ChartDocument`](../libraries/Chart.md#the-document) does) comes out readable
+  [`ChartDocument`](../libraries/ChartDocument.md) does) comes out readable
   on paper. `Dark` is `false`.
 - **The font is the one `Text` measures with**, at the resolution `Text` measures
   at. A page laid out with `Text.Size` is drawn by this at the size it was
-  measured — which is what lets [`ReportDocument`](../libraries/Report.md#the-document)
+  measured — which is what lets [`ReportDocument`](../libraries/ReportDocument.md)
   measure and draw a report with no display.
 - **It is valid while `draw` runs** and refuses every call after, like any
   painter whose frame is over.
@@ -93,5 +93,5 @@ page throws.
 
 [`DrawingArea`](../widgets/DrawingArea.md) ·
 [`Painter`](../../llm/controls.md#painter) · [`Text`](Text.md) ·
-[`Printer`](Printer.md) · [`ReportDocument`](../libraries/Report.md#the-document) ·
-[`ChartDocument`](../libraries/Chart.md#the-document)
+[`Printer`](Printer.md) · [`ReportDocument`](../libraries/ReportDocument.md) ·
+[`ChartDocument`](../libraries/ChartDocument.md)

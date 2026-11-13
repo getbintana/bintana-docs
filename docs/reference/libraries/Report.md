@@ -187,7 +187,7 @@ invisible drawing.
 |---|---|
 | `Document` (ro) | the report itself — a `ReportDocument`, which is what draws. Everything below that is not about the screen is a property of it |
 
-**A report is a `ReportDocument`, and the control shows one.** The paper, the
+**A report is a [`ReportDocument`](ReportDocument.md), and the control shows one.** The paper, the
 bands, the rows, the pages and the drawing of each page are the document's; the
 `Report` adds what a screen has — `Page`, the two events and `Send`. Every
 property above but `Page` is the document's too, under the same name, and
@@ -236,7 +236,7 @@ installs no painter and no `Drawing`.
 
 ## See also
 
-[`Chart`](Chart.md) · [`Markdown`](Markdown.md) ·
+[`ReportDocument`](ReportDocument.md), the report with no control · [`Chart`](Chart.md) · [`Markdown`](Markdown.md) ·
 [`DrawingArea`](../widgets/DrawingArea.md) ·
 [`examples/report`](https://github.com/getbintana/bintana/tree/main/examples/report) ·
 [llm/report.md](../../llm/report.md), the short form and the full element grammar
