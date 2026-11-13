@@ -3398,7 +3398,7 @@ Printer.ToFile(this.Sheet, path, { Pages: 12 })  // a PDF, and no dialog
 | `ToFile(area, path, [setup])` | the same sheets as one PDF, no dialog. → how many pages |
 | `Names` | the printers this session can reach. `[]` for none, `null` if this build cannot ask |
 | `Default` | the one it would use. `""` for none, `null` if it cannot ask |
-| `Papers` | `{ A4: { Width, Height }, … }` in points, read off GTK |
+| `Papers` | `{ A4: { Width, Height }, … }` in whole points -- the standard sizes, one table in every host, a `main` included |
 
 On Linux `Names`/`Default` are `gtk_enumerate_printers`; on Windows they ask
 `EnumPrintersW`/`GetDefaultPrinterW`, because GTK's Win32 backend opens the

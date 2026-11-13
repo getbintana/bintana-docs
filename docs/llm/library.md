@@ -1141,8 +1141,9 @@ BtnPrint_Click() {
 }
 ```
 
-`Printer.Papers` is `{ A4: { Width, Height }, Letter: …, A5: … }` in points,
-read off GTK rather than written down — the **one** table, which is why
+`Printer.Papers` is `{ A4: { Width, Height }, Letter: …, A5: … }` in whole
+points, the standard sizes in every host -- a `main` with no display included --
+and the **one** table, which is why
 `lib/report` and `lib/markdown` no longer each carry a copy. They did, and
 both called it `PAPERS` at the top level, so a project that named both
 libraries did not start.

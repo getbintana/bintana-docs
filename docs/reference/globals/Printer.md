@@ -21,7 +21,7 @@ Printer.ToFile(this.Sheet, path, { Pages: 12 })  // a PDF, and no dialog
 |---|---|---|
 | `Default` | the one it would use | [what the machine has](#what-the-machine-has) |
 | `Names` | the printers this session can reach | [what the machine has](#what-the-machine-has) |
-| `Papers` | `{ A4: { Width, Height }, Letter: …, A5: … }`, in **points** | [the paper sizes](#the-paper-sizes) |
+| `Papers` | `{ A4: { Width, Height }, Letter: …, A5: … }`, in whole **points** -- the standard sizes, the same table in every host, so a document with no display lays itself out on the sheet a print context hands the handler here | [the paper sizes](#the-paper-sizes) |
 | `Preview(area, [setup], [cb])` | the pages on the screen before paper, and the window they are in: one of this runtime's, with every page drawn by the control's own `DrawPage`, a zoom, and *Print…*, which opens `Send`'s dialog with the same setup and hands it `cb` | [previewing](#previewing) |
 | `Send(area, [setup], cb)` | the print dialog, then a printer | [sending](#sending) |
 | `ToFile(area, path, [setup])` | the same sheets as one PDF, with **no dialog**; → how many pages it wrote | [to a file](#to-a-file) |
@@ -91,7 +91,7 @@ second look that asked only about `undefined`.
 
 | | |
 |---|---|
-| `Papers` | `{ A4: { Width, Height }, Letter: …, A5: … }`, in **points**. Read off GTK, so a size that reads 595 here is the 595 the print context hands the handler |
+| `Papers` | `{ A4: { Width, Height }, Letter: …, A5: … }`, in whole **points** -- the standard sizes, the same table in every host, so a document with no display lays itself out on the sheet a print context hands the handler here |
 
 ```js
 Printer.Papers.A4          // { Width: 595, Height: 842 }
