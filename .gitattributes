@@ -1,0 +1,7 @@
+# Line endings are part of what this repository is.
+#
+# `check.sh` compares the pages with what `tools/docs` writes from `api.json`,
+# and a Windows checkout with `core.autocrlf=true` rewrites every text file.
+# The comparison then fails for the line endings and not for the documentation.
+# `eol=lf` makes the working tree the same bytes on every platform.
+* text=auto eol=lf
