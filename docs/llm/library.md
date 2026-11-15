@@ -1002,8 +1002,9 @@ instead of holding the thread: `Http.GetWait(url, this.Cancellable)`. A call
 given none is not cancelled by `Stop()` asking, so a `Run` that saw `Stopping`
 can still read and run things while it winds down; when the `Timeout` runs out
 or `KillAfter` comes, every blocking call ends, given the token or not. A token is never an option: `{ Cancellable }`
-is refused. `File.Hash`, `Gzip`'s four verbs and `ZipArchive.ExtractAll` take
-one too, and stop between two blocks or two entries.
+is refused. `File.Hash`, `Gzip`'s four verbs, `Zlib`'s two and
+`ZipArchive.ExtractAll` take one too, and stop between two blocks or two
+entries.
 
 **A message is plain data**: objects, arrays, strings, numbers, booleans, null
 — plus `Decimal`, which crosses as its own digits and arrives as a real one
@@ -1538,9 +1539,41 @@ untouched. The new file keeps the old one's permissions, as `gzip` does.
 
 About 50 MB a second to compress and 500 to decompress: a big one belongs in a
 [`Task`](#task), which has it. Compressed data is not text — `Decompress` takes
-`Bytes`, and `ToText()` is the way back to a string. There is no zlib framing,
-raw deflate or zip here; the name goes out when something needs it.
+`Bytes`, and `ToText()` is the way back to a string. **zlib framing and raw
+DEFLATE are [`Zlib`](#zlib)**, the same engine without the gzip wrapper.
 [`examples/backup`](https://github.com/getbintana/bintana/tree/main/examples/backup) is the file verbs in use, with every copy read back.
+
+## Zlib
+
+zlib framing and raw DEFLATE, on the same engine: the two formats that are
+neither gzip nor a zip archive.
+
+```js
+const packed = Zlib.Compress("some text")                 // zlib framing, Bytes
+const raw    = Zlib.Compress("some text", { Raw: true })  // raw DEFLATE
+Zlib.Decompress(packed).ToText()                          // "some text"
+Zlib.Decompress(raw, { Raw: true }).ToText()
+```
+
+| | |
+|---|---|
+| `Compress(data, [{ Raw, Level }], [cancellable])` | `data` (text as its UTF-8, or a `Bytes`) as one stream: zlib framing (RFC 1950) unless `Raw` is true, which writes raw DEFLATE (RFC 1951). `Level` is 1 (fast) to 9 (small), 6 unless told. An option it does not know, or a value that is neither text nor `Bytes`, is refused. About 50 MB a second: a big one belongs in a `Task`, and a `Cancellable` last stops it between two 64 KB chunks |
+| `Decompress(bytes, [{ Raw, MaxSize }], [cancellable])` | what `bytes` holds, **all of it**: `Raw` says the bytes are raw DEFLATE rather than zlib-framed, a stream that stops inside one **throws** (naming how far it got) rather than answering what it had, and so does anything that is not the format asked for. Bytes after the stream are refused. The answer may not pass `MaxSize` bytes (256 MiB unless told). **Raw DEFLATE carries no checksum**: a damaged byte can decode to a different document without an error, so zlib framing is the one that catches damage. A `Cancellable` last stops it |
+
+**Say which framing the bytes are in.** Zlib framing is PNG's `IDAT`, a Git
+loose object and most HTTP `deflate`; raw DEFLATE is the stream inside draw.io's
+compressed pages, `permessage-deflate` and a zip entry. The wrong `Raw` throws
+rather than guessing, and the two are not interchangeable.
+
+**One stream, and raw checks nothing.** Bytes after the stream throw instead of
+being read as a second one; a truncated stream throws. The zlib wrapper ends in
+Adler-32, so damage is refused, but **raw DEFLATE has no checksum at all** — a
+flipped bit can be a different document and a success. A caller that needs
+integrity uses zlib framing or a checksum of its own.
+
+Compressed data is not text: `Decompress` takes `Bytes`, and `ToText()` is the
+way back to a string. There are no file verbs here; `Gzip` has them. A worker has
+`Zlib` too.
 
 ## Keyring
 

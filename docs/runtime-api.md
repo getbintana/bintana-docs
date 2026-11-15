@@ -1973,8 +1973,25 @@ beside the destination and rename it over once the stream is whole, so a failure
 leaves nothing. Measured on 47 MB: about 960 ms to compress and 90 ms to inflate,
 which is why the page sends big ones to a `Task` — where a `Cancellable` given
 last, `this.Cancellable`, stops all four between two 64 KB chunks, and a stopped
-file verb removes its temporary. Only gzip is published; zlib
-framing and raw deflate are other names for one algorithm.
+file verb removes its temporary. **zlib framing (RFC 1950) and raw DEFLATE
+(RFC 1951) are [`Zlib`](reference/globals/Zlib.md)**, the same engine with
+another wrapper; the loop itself is `bta_deflate.c`, shared by both.
+
+## Zlib
+
+`Zlib.Compress` and `Decompress`, in `bta_zlib.c` over the engine in
+`bta_deflate.c`: zlib framing, or raw DEFLATE with `{ Raw: true }`. The gzip
+wrapper has members; these have one stream. Bytes after it are refused, naming
+the byte; a truncated stream throws; the `MaxSize` ceiling is the same 256 MiB.
+
+**Raw DEFLATE carries no checksum.** The zlib wrapper ends in Adler-32 and
+damage is refused; a raw stream with a flipped literal is a different document
+and a success, which is why the surface says so instead of promising integrity
+it cannot provide. A damaged zlib stream and the wrong framing both throw.
+
+`Zip` already built the raw converters for its entries, so this needed no new
+dependency and no new CI job. The level is 1 to 9, as `Gzip`'s; 0 is refused.
+There are no file verbs: a caller loads the bytes and uses the value verbs.
 
 ## Key
 

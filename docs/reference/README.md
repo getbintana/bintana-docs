@@ -161,6 +161,7 @@ members, twice — once in its summary and once where it is explained.
 | [Exec](globals/Exec.md) | running another program, and reading what it prints |
 | [File](globals/File.md) | reading and writing files, and the names of the paths they live at |
 | [Gzip](globals/Gzip.md) | compressing and decompressing, in memory or file to file |
+| [Zlib](globals/Zlib.md) | zlib framing and raw DEFLATE, which are not gzip |
 | [Hash](globals/Hash.md) | a checksum, of a string or of a file |
 | [Http](globals/Http.md) | a native HTTP client, and a server of its own |
 | [HttpServer](globals/HttpServer.md) | serving over the same transport, on the loop the application already runs |

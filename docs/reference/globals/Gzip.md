@@ -1,6 +1,7 @@
 # Gzip
 
-The one compression format, on the zlib that GIO already links.
+The gzip format, on the zlib that GIO already links. **zlib framing and raw
+DEFLATE are [`Zlib`](Zlib.md)** — the same engine, another wrapper.
 
 ```js
 const z = Gzip.Compress("some text")                  // Bytes
@@ -96,15 +97,16 @@ a [`Task`](Task.md), which has `Gzip` — nothing here calls back or keeps a lis
 
 ## What is not here
 
-**zlib framing, raw deflate, tar, and a stream type.** One name per published
-format, and a name goes out when something needs one; the file verbs are the
-answer to a file too big to hold, and the language has no stream to hand out.
-**zip is [`Zip`](Zip.md)**, which reads archives and writes them.
+**tar, and a stream type.** The file verbs are the answer to a file too big to
+hold, and the language has no stream to hand out. **zlib framing and raw DEFLATE
+are [`Zlib`](Zlib.md)**, the same engine without the gzip wrapper. **zip is
+[`Zip`](Zip.md)**, which reads archives and writes them.
 
 ## What goes wrong
 
-- **`Decompress` threw *not gzip data*.** The input is a zlib stream, a zip, or
-  text that was never compressed. gzip starts with the bytes `1f 8b`.
+- **`Decompress` threw *not gzip data*.** The input is a zlib stream (use
+  [`Zlib`](Zlib.md)), a zip, or text that was never compressed. gzip starts
+  with the bytes `1f 8b`.
 - **It threw *truncated*.** The download was cut short, or the file was copied while
   it was still being written.
 - **It threw about `MaxSize`.** The data inflates past the ceiling. If it is yours,
