@@ -34,10 +34,10 @@ Network.Probe((r) => {
 
 | | |
 |---|---|
-| `Connectivity` | what the network reaches, as far as this machine can know: `"Unknown"` (not answered yet), `"None"`, `"Local"` (a network with no way out), `"Routed"` (a way out that nobody checked reaches the internet -- what most backends can honestly say), `"Limited"`, `"Portal"` (a captive portal: a sign-in page first) or `"Full"` (the internet, checked). Advice, not a guarantee: whether a server answers is a request to it, or `Reach` |
+| `Connectivity` | what the network reaches, as far as this machine can know: `"Unknown"` (not answered yet), `"None"`, `"Local"` (a network with no way out), `"Routed"` (a way out that nobody checked reaches the internet -- what most backends can honestly say), `"Limited"`, `"Portal"` (a captive portal: a sign-in page first) or `"Full"` (the internet, checked). On Windows it is Windows' own check: `"Full"`, `"Local"` or `"None"`. Advice, not a guarantee: whether a server answers is a request to it, or `Reach` |
 | `Online` | `Connectivity` is `"Full"`, and nothing weaker -- never *an interface is up* |
 | `Metered` | the connection costs by the byte or is capped -- a phone's hotspot -- so a large upload can wait. `false` where the system cannot tell |
-| `OnChange` | assign `() => …`: called when `Connectivity` or `Metered` changed, once per change however many notices it took. Read them again inside; `null` takes it off |
+| `OnChange` | assign `() => …`: called when `Connectivity` or `Metered` changed, once per change however many notices it took. Read them again inside; `null` takes it off. On Windows the internet check finishes a few seconds after the network comes up and raises no notice of its own, so a program waiting to be `Online` reads it again on a `Timer` rather than only waiting for this |
 
 **Which levels a machine can reach depends on who answers**, and the runtime
 never claims more than that:
@@ -90,7 +90,7 @@ and Windows do: a **plain-HTTP** request to a URL that answers `204 No Content`
 (Google's `generate_204` unless `Url` says otherwise), without following a
 redirect. It calls `callback({ Connectivity, Url, Why })`:
 
-| `Connectivity` | what the network reaches, as far as this machine can know: `"Unknown"` (not answered yet), `"None"`, `"Local"` (a network with no way out), `"Routed"` (a way out that nobody checked reaches the internet -- what most backends can honestly say), `"Limited"`, `"Portal"` (a captive portal: a sign-in page first) or `"Full"` (the internet, checked). Advice, not a guarantee: whether a server answers is a request to it, or `Reach` |
+| `Connectivity` | what the network reaches, as far as this machine can know: `"Unknown"` (not answered yet), `"None"`, `"Local"` (a network with no way out), `"Routed"` (a way out that nobody checked reaches the internet -- what most backends can honestly say), `"Limited"`, `"Portal"` (a captive portal: a sign-in page first) or `"Full"` (the internet, checked). On Windows it is Windows' own check: `"Full"`, `"Local"` or `"None"`. Advice, not a guarantee: whether a server answers is a request to it, or `Reach` |
 |---|---|
 | `"Full"` | it answered `204` |
 | `"Portal"` | a redirect (`Url` is where it sends: the sign-in page) or another page in place of `204` |
