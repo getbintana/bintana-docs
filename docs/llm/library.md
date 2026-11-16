@@ -2464,16 +2464,16 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`, `MaxSize` (bytes an answer may hold in memory, 256 MiB unless asked). The options are an object — a bare URL is refused |
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one |
 | `MaxConns`, `MaxPerHost` | constructor-only (`10`/`2` unless told): soup takes them once, so assigning later throws |
 | `Request(method, url, [body], [opts], onDone, [onError])` | any verb: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`; anything else is refused, in the blocking spelling too |
 | `Auth` | `{ User, Password }`, Basic and preemptive; reads back `null` when none is set. An explicit `Authorization` header wins over it, and an explicit `Content-Type` header wins over the one the body's shape implies |
-| `Get(url, [opts], onDone, [onError])` | the ordinary read. **`{ SaveTo: path }` writes the answer to that file as it arrives**, one block in memory whatever its size: the record then has `Saved` (the path) and `Length` (the bytes written) and an empty `Body`, and nothing is left under any name if it does not finish. A 2xx goes to the file; anything else is answered into `Body` with no file made. `Progress(received, total, handle)` beside it is told how far it got, at most ten times a second and once at the end (`total` `-1` with no declared length), and **`Timeout` is then the silence allowed, not the length** -- a download that keeps arriving is never cut. `Request` takes the same, with any verb but `HEAD` |
+| `Get(url, [opts], onDone, [onError])` | the ordinary read. **`{ SaveTo: path }` writes the answer to that file as it arrives**, one block in memory whatever its size: the record then has `Saved` (the path) and `Length` (the bytes written) and an empty `Body`, and nothing is left under any name if it does not finish. A 2xx goes to the file; anything else is answered into `Body` with no file made. `Progress(received, total, handle)` beside it is told how far it got, at most ten times a second and once at the end (`total` `-1` with no declared length), and **`Timeout` is then the silence allowed, not the length** -- a download that keeps arriving is never cut. `Request` takes the same, with any verb but `HEAD`. **`MaxSize`** (256 MiB unless asked, `0` no ceiling) is what `Body` may hold: past it the answer is `Kind: "TooLarge"` |
 | `Post(url, body, [opts], onDone, [onError])` | `body` is text, [`Bytes`](../reference/globals/Bytes.md), an object (canonical JSON, `application/json`) or a [`Multipart`](../reference/globals/Http.md#uploads) |
 | `Put(url, body, [opts], onDone, [onError])`, `Patch(…)` | with body, like `Post` |
 | `Delete(url, [opts], onDone, [onError])`, `Head(…)` | no body, like `Get` |
-| `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `onLine(line, handle)` once per text line, the newline stripped, blank lines included. Method-first like `Request`, so a `POST` whose answer comes in pieces needs no second name |
+| `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `onLine(line, handle)` once per text line, the newline stripped, blank lines included. Method-first like `Request`, so a `POST` whose answer comes in pieces needs no second name. **A line may be 1 MiB**: one that grows past it with no end ends the stream with `Kind: "TooLarge"`, and an answer that is not a 2xx is read into `Body` up to `MaxSize` |
 | `RequestWait(method, url, [body], [opts], [cancellable])` | the blocking spelling: answers with the record, **throws** on transport failure — and what it throws carries the same `Kind` and `Status` the callback would have been handed. A `Cancellable` last ends the flight when raised -- in a task, `this.Cancellable` is how `Stop` reaches it |
 | `GetWait(url, [opts], [cancellable])`, `PostWait(url, body, [opts], [cancellable])` | same, per verb |
 | `PutWait(url, body, [opts], [cancellable])`, `PatchWait(…)` | same, with body |
@@ -2489,7 +2489,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 `onDone({ Status, Reason, Headers, Body, Url })` — `4xx/5xx` come here, it is an
 answer. `Headers` keys are lower-cased. `Body` is always `Bytes` (`ToText()` is
 strict UTF-8). `onError({ Message, Kind, Status })` — `Kind` is one of
-`Timeout`, `Dns`, `Tls`, `Refused`, `Cancelled`, `Redirect`, `Error`.
+`Timeout`, `Dns`, `Tls`, `Refused`, `Cancelled`, `Redirect`, `TooLarge`, `Error`.
 Both callbacks are handed the request's own **handle as a second argument**,
 so a form with more than one request in the air can tell whose answer arrived:
 `Stop()` asks rather than undoes, and a cancelled request still answers a turn
@@ -2501,14 +2501,18 @@ server that does not answer; `{ Http1: true }` on the call or the client makes
 them prompt ([cancelling over
 HTTP/2](../reference/globals/Http.md#cancelling-over-http2)). Per-request `opts` carry
 `Headers`, `Query: {k:v}` (appended escaped), `Body`, `ContentType`, `Timeout`,
-`FollowRedirects`, `Auth`, `Http1`, `SaveTo`, `Progress` — and naming any of them is
+`FollowRedirects`, `Auth`, `Http1`, `MaxSize`, `SaveTo`, `Progress` — and naming any of them is
 what makes an object options rather than a JSON body. **`SaveTo: path` writes the
 answer to that file as it arrives** (one block in memory whatever its size; the
 record says `Saved` and `Length`, `Body` is empty, and a non-2xx is answered into
 `Body` with no file made); `Progress(received, total, handle)` reports it at most
 ten times a second and once at the end, and with `SaveTo` **`Timeout` is the
 silence allowed, not the length** ([downloading to a
-file](../reference/globals/Http.md#downloading-to-a-file)). A repeated response header keeps the last of
+file](../reference/globals/Http.md#downloading-to-a-file)). **`MaxSize` is what
+`Body` may hold**: 256 MiB unless asked (per request, or on the client), `0` for
+none; past it -- a declared length before the body is read, anything else as it
+arrives, decoded -- the answer is `Kind: "TooLarge"`. A `Stream` line may be 1
+MiB, and one with no end past that is `TooLarge` too. A repeated response header keeps the last of
 them, `Set-Cookie` included, which is what `Cookies: true` is for. A `Query`
 value of `undefined` or `null` is not sent, and a header or query value that
 cannot become text is refused by the call — not skipped with the conversion's

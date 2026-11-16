@@ -58,6 +58,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one | [the client](#the-client) |
 | `Log` | `"none"` unless told | [the client](#the-client) |
 | `MaxConns` | how many connections at once, `10` unless told | [the client](#the-client) |
+| `MaxSize` | bytes an answer may hold in memory | [what an answer may hold](#what-an-answer-may-hold) |
 | `MaxPerHost` | how many of those to one host, `2` unless told | [the client](#the-client) |
 | `Tls` | `{ Ca, Cert }`, or nothing | [a server the system does not trust](#a-server-the-system-does-not-trust) |
 | `UserAgent` | sent as-is | [the client](#the-client) |
@@ -77,7 +78,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 
 | | |
 |---|---|
-| `Get(url, [opts], onDone, [onError])` | the ordinary read. **`{ SaveTo: path }` writes the answer to that file as it arrives**, one block in memory whatever its size: the record then has `Saved` (the path) and `Length` (the bytes written) and an empty `Body`, and nothing is left under any name if it does not finish. A 2xx goes to the file; anything else is answered into `Body` with no file made. `Progress(received, total, handle)` beside it is told how far it got, at most ten times a second and once at the end (`total` `-1` with no declared length), and **`Timeout` is then the silence allowed, not the length** -- a download that keeps arriving is never cut. `Request` takes the same, with any verb but `HEAD` |
+| `Get(url, [opts], onDone, [onError])` | the ordinary read. **`{ SaveTo: path }` writes the answer to that file as it arrives**, one block in memory whatever its size: the record then has `Saved` (the path) and `Length` (the bytes written) and an empty `Body`, and nothing is left under any name if it does not finish. A 2xx goes to the file; anything else is answered into `Body` with no file made. `Progress(received, total, handle)` beside it is told how far it got, at most ten times a second and once at the end (`total` `-1` with no declared length), and **`Timeout` is then the silence allowed, not the length** -- a download that keeps arriving is never cut. `Request` takes the same, with any verb but `HEAD`. **`MaxSize`** (256 MiB unless asked, `0` no ceiling) is what `Body` may hold: past it the answer is `Kind: "TooLarge"` |
 | `Head(url, [opts], onDone, [onError])` | the headers and no body, for *is it there* and *has it changed* |
 | `Delete(url, [opts], onDone, [onError])` | no body, like `Get` |
 | `Post(url, body, [opts], onDone, [onError])` | `body` is text, [`Bytes`](Bytes.md), an object (canonical JSON, `application/json`) or a [`Multipart`](#uploads) |
@@ -90,7 +91,8 @@ they are answers, not failures. `Headers` keys are lower-cased, and `Body` is
 always [`Bytes`](Bytes.md), whose `ToText()` is strict UTF-8.
 
 `onError({ Message, Kind, Status })` — `Kind` is `Timeout`, `Dns`, `Tls`,
-`Refused`, `Cancelled`, `Redirect` or `Error`. **The kind is there so a program
+`Refused`, `Cancelled`, `Redirect`, `TooLarge` ([what an answer may
+hold](#what-an-answer-may-hold)) or `Error`. **The kind is there so a program
 can answer differently**: a retry, a *check your connection*, a login.
 
 **Both callbacks are handed the request's own handle as a second argument**, so a
@@ -100,8 +102,9 @@ handle answers `Running`, `TimedOut`, `Url`, `Method` and `Stop()` — and
 later, with `Kind: "Cancelled"`.
 
 Per-request `opts` carry `Headers`, `Query: {k: v}` (appended escaped), `Body`,
-`ContentType`, `Timeout`, `FollowRedirects`, `Auth`, `Http1`, `SaveTo` and
-`Progress` ([downloading to a file](#downloading-to-a-file)) — and **naming any of them
+`ContentType`, `Timeout`, `FollowRedirects`, `Auth`, `Http1`, `MaxSize`
+([what an answer may hold](#what-an-answer-may-hold)), `SaveTo` and `Progress`
+([downloading to a file](#downloading-to-a-file)) — and **naming any of them
 is what makes an object options rather than a JSON body**. A `Query` value of
 `undefined` or `null` is not sent — `{ page: undefined }` used to go out as
 `page=undefined` — and a header or query value that cannot become text is refused
@@ -114,7 +117,7 @@ with `application/json`.
 
 | | |
 |---|---|
-| `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `onLine(line, handle)` once per text line, the newline stripped, blank lines included. Method-first like `Request`, so a `POST` whose answer comes in pieces needs no second name |
+| `Stream(method, url, [body], [opts], onLine, [onDone], [onError])` | the answer **as it arrives**: `onLine(line, handle)` once per text line, the newline stripped, blank lines included. Method-first like `Request`, so a `POST` whose answer comes in pieces needs no second name. **A line may be 1 MiB**: one that grows past it with no end ends the stream with `Kind: "TooLarge"`, and an answer that is not a 2xx is read into `Body` up to `MaxSize` |
 
 The other verbs answer **once, when the response is complete**. A server-sent
 event stream is never complete — so read with `Get` it delivers nothing at all
@@ -140,6 +143,10 @@ answer — an API's error JSON. So it is read whole and handed to `onDone` the
 way `Get` would have, with `onLine` never called. A line arriving at all
 therefore means the status was 2xx.
 
+**A line may be 1 MiB.** One that grows past it with no end -- a server that
+is not a feed, or one that never sends a newline -- ends the stream with
+`Kind: "TooLarge"` instead of growing until the process dies.
+
 **`Timeout` is the whole flight, not the gap between lines.** A feed meant to
 stay open asks with `Timeout: 0`; a client with a `Timeout` of its own cuts one
 at its deadline. What arrived before a deadline or a `Stop()` **stays
@@ -156,6 +163,25 @@ while the loop is frozen is a contradiction. And there is no framing here —
 `event:`, `id:`, `retry:` and reconnection while leaving NDJSON and a log tail
 second-class. A body that is not valid UTF-8 ends the flight through `onError`
 rather than arriving as mojibake, the same bargain `ToText()` makes.
+
+## What an answer may hold
+
+**An answer read into `Body` may hold 256 MiB unless asked**: `MaxSize`, per
+request or on the client (`Http.Client({ MaxSize })`, and the `MaxSize`
+property), in bytes, with `0` (or `Infinity`) for no ceiling. Past it the
+answer is `onError` -- or a throw, in the `…Wait` spelling -- with
+`Kind: "TooLarge"` and the `Status` the server answered:
+
+- **a declared length past it is refused before the body is read**, so a
+  4 GB file costs nothing to turn down;
+- **anything else is counted as it arrives, decoded** -- a small gzip that
+  inflates to gigabytes is held to the same ceiling as an answer that says
+  nothing about its size.
+
+A file is what a large answer is for: [`SaveTo`](#downloading-to-a-file) is not
+counted, and the refusal says so. A `Stream` line has a ceiling of its own
+([1 MiB](#following-a-stream)); an error page a stream or a download is
+answered with is held to `MaxSize`.
 
 ## Downloading to a file
 
@@ -241,7 +267,7 @@ reach a request that has not answered. A call handed none is not cancelled by
 
 | | |
 |---|---|
-| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`. The options are an object — a bare URL is refused |
+| `Client([opts])` | a client with its own session: `BaseUrl`, `Headers`, `Timeout` (ms, `0` waits forever for the callback verbs), `FollowRedirects` (default `true`), `Http1` (default `false`), `Language`, `UserAgent`, `Proxy`, `Auth`, `Cookies`, `IdleTimeout`, `MaxConns`, `MaxPerHost`, `MaxSize` (bytes an answer may hold in memory, 256 MiB unless asked). The options are an object — a bare URL is refused |
 | `BaseUrl` | what a relative path in a call is relative to, so the program's requests are one-liners |
 | `Headers` | sent with every request this client makes — an API key, an `Accept` |
 | `Timeout` | ms before a request is given up on; `0` waits forever for the callback verbs. The blocking ones use it when it is not zero and otherwise give up after 30 s — `{ Timeout: 0 }` on the call is the explicit *wait forever* |
@@ -255,6 +281,7 @@ reach a request that has not answered. A call handed none is not cancelled by
 | `Log` | `"none"` unless told: `"minimal"`, `"headers"` or `"body"` sends the traffic through `Logger` at `Debug` — so `Logger.Level = "Debug"` shows it and a `Handler` takes it; a `Wait`'s never reaches a `Handler`, since its context is private and its caller is blocked |
 | `IdleTimeout` | ms a pooled connection idles before soup closes it (`0` is soup's own 60 s); soup counts seconds, so anything under one becomes one |
 | `MaxConns` | how many connections at once, `10` unless told. **Constructor-only**: soup takes it once, so assigning later throws |
+| `MaxSize` | bytes an answer may hold in memory: **256 MiB when nothing is said**, `0` (or `Infinity`) for no ceiling, and a request's own `MaxSize` speaks for that request. A declared length past it is refused before the body is read, and anything else once it passes it -- counted decoded, so a small gzip that inflates is held to it too -- with `Kind: "TooLarge"` and the status the server answered. An answer written to a file with `SaveTo` is not counted |
 | `MaxPerHost` | how many of those to one host, `2` unless told. Likewise |
 | `Tls` | `{ Ca, Cert }`, or nothing. `Ca` is a **certificate to verify the server's against** — the company's own CA on an internal network, or the server's own file when it is self-signed, which is exactly the case the system store cannot reach and a per-program file can. `Cert` is **the server's certificate, pinned**: it must be byte for byte that one. Either accepts; `null` when none is set. Both files are read where they are assigned, so a wrong path is a mistake on the next line rather than on the first internal request. **The system's store is still trusted**, and a server it already accepts never reaches the check at all — this is a second opinion, not a replacement |
 
