@@ -469,7 +469,7 @@ A photograph, which is not an icon.
 
 | Member | |
 |---|---|
-| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](../reference/widgets/Image.md) draws one and this does not. Setting it clears `Source` |
+| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](../reference/widgets/Image.md) draws one and this does not. Setting it clears `Source`; `""` or `null` takes the picture off |
 | `LoadBytes(bytes)` | the photograph out of memory instead — a download shown without a temporary file. Clears `File` and `Source`; `SourceWidth` and `SourceHeight` measure it the same way |
 | `Source` | a `Bitmap` to show -- the value `Scale`, `Crop` and `Rotate` answer. Setting it clears `File`; `null` clears it. The getter answers the `Bitmap` it was given, or `null` for a file or bytes. **Not saved**: a Bitmap is runtime data, like `LoadBytes` |
 | `Fit` | what to do with the room there is: `Contain` (the whole picture, letterboxed), `Cover` (fill the room, cropping), `Fill` (stretch, distorting) or `ScaleDown` (never enlarge). Default `"Contain"` |
@@ -883,13 +883,13 @@ A list with columns, **and its rows may nest**. The control to reach for wheneve
 | `RemoveNode(key)` | takes that node out, **and the subtree with it**. **Tree only** — a flat table says `RemoveRow(index)` |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one |
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
-| `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
-| `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
-| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }` |
+| `SetCell(row, column, value)` | one cell, in place. The selection stays where it is. `column` is a declared one, a cell the row already holds, or the one right after its last, which adds it; anything further is a `RangeError` |
+| `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table. The column is a declared one or a cell the row holds |
+| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }`. The column is a declared one or a cell the row holds |
 | `SetRange(fromRow, fromColumn, toRow, toColumn)` | mark a rectangle of cells with `bta-cell-range`: two visible positions and two columns, inclusive, in either order. A tree counts its rows as shown, so a fold moves them |
 | `ClearRange()` | take the mark off every cell; `SetRange` puts one back |
-| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
-| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }` |
+| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table. The column is a declared one or a cell the row holds |
+| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }`. The column is a declared one or a cell the row holds |
 | `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor`. Answers whether it did -- `false` for a cell that is not on screen (`Reveal` first), not editable, or refused by `CellEditor` |
 | `EndEdit([commit])` | ends the open edit: committed as Enter would, or with `false` given up as Escape would. Answers whether one was open |
 | `Select(index)`, `Deselect(index)` | move the selection from code. `Select` leaves the others alone where several are allowed |

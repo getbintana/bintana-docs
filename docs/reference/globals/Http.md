@@ -77,7 +77,7 @@ const r = Http.GetWait("https://example.com/", { Timeout: 5000 });
 
 | | |
 |---|---|
-| `Get(url, [opts], onDone, [onError])` | the ordinary read |
+| `Get(url, [opts], onDone, [onError])` | the ordinary read. **`{ SaveTo: path }` writes the answer to that file as it arrives**, one block in memory whatever its size: the record then has `Saved` (the path) and `Length` (the bytes written) and an empty `Body`, and nothing is left under any name if it does not finish. A 2xx goes to the file; anything else is answered into `Body` with no file made. `Progress(received, total, handle)` beside it is told how far it got, at most ten times a second and once at the end (`total` `-1` with no declared length), and **`Timeout` is then the silence allowed, not the length** -- a download that keeps arriving is never cut. `Request` takes the same, with any verb but `HEAD` |
 | `Head(url, [opts], onDone, [onError])` | the headers and no body, for *is it there* and *has it changed* |
 | `Delete(url, [opts], onDone, [onError])` | no body, like `Get` |
 | `Post(url, body, [opts], onDone, [onError])` | `body` is text, [`Bytes`](Bytes.md), an object (canonical JSON, `application/json`) or a [`Multipart`](#uploads) |
@@ -100,7 +100,8 @@ handle answers `Running`, `TimedOut`, `Url`, `Method` and `Stop()` — and
 later, with `Kind: "Cancelled"`.
 
 Per-request `opts` carry `Headers`, `Query: {k: v}` (appended escaped), `Body`,
-`ContentType`, `Timeout`, `FollowRedirects`, `Auth` and `Http1` — and **naming any of them
+`ContentType`, `Timeout`, `FollowRedirects`, `Auth`, `Http1`, `SaveTo` and
+`Progress` ([downloading to a file](#downloading-to-a-file)) — and **naming any of them
 is what makes an object options rather than a JSON body**. A `Query` value of
 `undefined` or `null` is not sent — `{ page: undefined }` used to go out as
 `page=undefined` — and a header or query value that cannot become text is refused
@@ -156,11 +157,64 @@ while the loop is frozen is a contradiction. And there is no framing here —
 second-class. A body that is not valid UTF-8 ends the flight through `onError`
 rather than arriving as mojibake, the same bargain `ToText()` makes.
 
+## Downloading to a file
+
+`Body` is the whole answer in memory, which is right for an API's JSON and
+wrong for a 4 GB image. **`SaveTo: path` writes the answer to that file as it
+arrives**, one block in memory whatever its size, on `Get`, `Request` and their
+`…Wait` spellings:
+
+```js
+Http.Get(url, {
+    SaveTo:   File.Join(dir, "debian.iso"),
+    Progress: (received, total) => this.Bar.Value = received * 100 / total,
+}, (r) => this.Done.Text = `${r.Length} bytes in ${r.Saved}`,
+   (e) => this.Done.Text = e.Message);
+```
+
+- **The record says where it went**: `Saved` is the path and `Length` the bytes
+  written, beside the usual `Status`, `Headers` and `Url`; `Body` is empty.
+- **Only a 2xx is saved.** A `4xx` or `5xx` is an answer, read whole into
+  `Body` the way `Get` gives it, and **no file is made** — the same rule
+  [`Stream`](#following-a-stream) follows.
+- **Nothing is left half written.** The bytes go to a `.part` beside the file,
+  renamed over it at the end (an older file of that name is replaced only
+  then), and removed if the download is stopped, times out or fails.
+- **`Progress(received, total, handle)`** is told how far it got **at most ten
+  times a second, and once at the end** with the whole. `total` is the declared
+  length, or `-1` when the server does not say (or sends it compressed). It
+  goes with `SaveTo` only.
+- **`Timeout` is the silence allowed, not the length.** A download that keeps
+  arriving is never cut, however long it takes; one that stops arriving for
+  `Timeout` ms ends with `Kind: "Timeout"`. That holds for a `…Wait` too, whose
+  default 30 s become *30 s with nothing arriving*. A failure of the disk —
+  no space, no permission — is `Kind: "Error"` with a message that says
+  *cannot save … to …* rather than *cannot reach*.
+- Refused before anything is sent: a folder that is not there, a `SaveTo` that
+  is a folder, a `HEAD` (it has no body), and `Stream` (which hands lines over).
+
+**In a task**, the blocking spelling with `Progress` handing each report to
+the window through `this.Report` is the whole of a download manager's worker
+— `examples/downloads` is that:
+
+```js
+class Fetcher extends Task {
+    Run(msg) {
+        const r = Http.GetWait(msg.url, {
+            Http1:    true,
+            SaveTo:   msg.path,
+            Progress: (received, total) => this.Report({ received, total }),
+        }, this.Cancellable);
+        return { size: r.Length };
+    }
+}
+```
+
 ## Waiting
 
 | | |
 |---|---|
-| `GetWait(url, [opts], [cancellable])` | the blocking `Get` |
+| `GetWait(url, [opts], [cancellable])` | the blocking `Get`. `SaveTo` and `Progress` as on `Get`; in a task, `Progress` runs on the worker and `this.Report` hands it on |
 | `HeadWait(url, [opts], [cancellable])` | the blocking `Head` |
 | `DeleteWait(url, [opts], [cancellable])` | the blocking `Delete` |
 | `PostWait(url, body, [opts], [cancellable])` | the blocking `Post` |

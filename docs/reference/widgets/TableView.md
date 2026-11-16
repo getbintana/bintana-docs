@@ -261,10 +261,10 @@ row shorter than there are columns simply reads blank in the rest.
 | `Count` | how many rows — **settable**, which is the on-demand mode: the table then asks `Data(row, column)` for each cell it draws. **Settable**, and setting it is the on-demand shape. Assigning it puts the table in this shape and clears any rows it held |
 | `Cell(row, column)` | one value. Refused on an on-demand table, which has no cells to answer about |
 | `Row(index)` | that row's values, as the array it was given — including any it was given beyond the columns declared. Refused on an on-demand table |
-| `SetCell(row, column, value)` | one cell, in place. The selection stays where it is |
-| `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table |
-| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }` |
-| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table |
+| `SetCell(row, column, value)` | one cell, in place. The selection stays where it is. `column` is a declared one, a cell the row already holds, or the one right after its last, which adds it; anything further is a `RangeError` |
+| `SetIcon(row, column, name)` | an icon from the theme beside a cell's text. `""` takes it off. Refused on an on-demand table. The column is a declared one or a cell the row holds |
+| `SetStyle(row, column, style)` | the theme class a cell wears -- a name like `"heading"`, the way `Style` takes one on a control, not a colour. `""` takes it off, and recycling a cell takes it off too. Refused on an on-demand table, whose `Data` answers `{ Text, Style }`. The column is a declared one or a cell the row holds |
+| `SetUri(row, column, uri)` | where a `Link` cell goes when that is not its text. `""` makes the cell not a link, `null` goes back to opening its text. Refused on an on-demand table. The column is a declared one or a cell the row holds |
 | `RemoveRow(index)` | takes that row out. **Flat only** — a tree says `RemoveNode(key)`, and this one refuses with that sentence |
 | `RemoveNode(key)` | takes that node out, **and the subtree with it**. **Tree only** — a flat table says `RemoveRow(index)` |
 | `Reveal(index)` | brings that visible row into view with the least scrolling it takes, and answers whether there was one |
@@ -587,7 +587,7 @@ Plan_CellEditor = (row, column) => {
 
 | | |
 |---|---|
-| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }` |
+| `SetEditable(row, column, editable)` | whether this row's cell edits, in a column with an `Editor`: `false` draws it dim and opens nothing, **before** anything is typed -- a summary's dates, which are its children's. Refused on an on-demand table, whose `Data` answers `{ Text, Editable: false }`. The column is a declared one or a cell the row holds |
 | `EditCell(row, column)` | the click, from code: opens that cell's editor, turns a `Check`, or raises a `Custom` cell's `CellEditor`. Answers whether it did -- `false` for a cell that is not on screen (`Reveal` first), not editable, or refused by `CellEditor` |
 | `EndEdit([commit])` | ends the open edit: committed as Enter would, or with `false` given up as Escape would. Answers whether one was open |
 | **event** `CellEditor(row, column)` | an edit is about to begin -- a click, F2 or `EditCell`. `row` is an index in a flat table and a key in a tree. **Returning `false` refuses it**; an object is this edit's editor over the column's -- `{ Items: [...] }` for a list that is the row's, `{ Max: 1000 }`, or `{ Kind: "Date" }` for a cell whose kind depends on its row (a `Check` column stays one). For a `Custom` column this is the whole edit: open the dialog here and write with `SetCell` |

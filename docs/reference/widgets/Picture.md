@@ -27,7 +27,7 @@ It is a `Widget` and a control like any other, so everything on
 
 | | |
 |---|---|
-| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](Image.md) draws one and this does not. Setting it clears `Source` |
+| `File` | the path. What `GdkTexture` reads: PNG, JPEG, WebP, TIFF, BMP. **SVG is not among them** — a scalable icon is the pixbuf loaders' business, which is why an [`Image`](Image.md) draws one and this does not. Setting it clears `Source`; `""` or `null` takes the picture off |
 | `LoadBytes(bytes)` | the photograph out of memory instead — a download shown without a temporary file. Clears `File` and `Source`; `SourceWidth` and `SourceHeight` measure it the same way |
 | `Source` | a `Bitmap` to show -- the value `Scale`, `Crop` and `Rotate` answer. Setting it clears `File`; `null` clears it. The getter answers the `Bitmap` it was given, or `null` for a file or bytes. **Not saved**: a Bitmap is runtime data, like `LoadBytes` |
 

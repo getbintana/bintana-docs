@@ -250,7 +250,7 @@ power manager directly is planned.
 
 | | |
 |---|---|
-| `Theme` | `"dark"` or `"light"` to draw the whole application in that variant of the theme whatever the desktop prefers, `""` (the default) to follow it. Assignable at any time: open windows follow, a `Form` raises `ThemeChange` and `Dark` answers the new ground. `""` puts back what the desktop said. **The program outranks `--theme`**, which sets the starting value; a word that is not one of the three is refused. A theme forced with the `GTK_THEME` variable (`Adwaita:dark`) is beyond it |
+| `Theme` | `"dark"` or `"light"` to draw the whole application in that variant of the theme whatever the desktop prefers, `""` (the default) to follow it. Assignable at any time: open windows follow, a `Form` raises `ThemeChange` and `Dark` answers the new ground. `""` puts back what the desktop said. **The program outranks `--theme`**, which sets the starting value; a word that is not one of the three is refused. A theme forced with the `GTK_THEME` variable (`Adwaita:dark`) is beyond it. On Windows `""` follows the system's *app mode* (Settings → Personalization → Colors), live, which GTK alone does not |
 
 ```js
 // a setting the person chose, applied before the first window is drawn
