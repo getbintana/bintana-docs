@@ -1005,7 +1005,7 @@ nothing more is claimed. `ide/modules/Completion.js` answers the other half, thr
 |---|---|
 | `this.` | everything the `.form` beside this file names -- its controls, its **menu items** and its **commands** -- and the methods this file declares |
 | `this.Btn1.` | `PropertyNames()` on a real `Button` -- the class's own, not a list kept here |
-| `this.MnuSave.` | the same, on a real `MenuItem`: `Enabled`, `Items`, `Value` |
+| `this.MnuSave.` | the same, on a real `MenuItem`: `Enabled`, `Visible`, `Items`, `Value` |
 | `Btn1_` | `EventNames()`, most derived first, so `Ok_Click` comes before the mouse events |
 | `File.`, `Timer.`, `Confirm.` | `Widget.Members(name)` -- a global, a class of the runtime or a class of a library this project `uses`, statics included, each with its signature, what it answers and what it is for. A global that gains a member in C gains it here |
 | `Ide.` | what the project's own sources assign into that namespace |

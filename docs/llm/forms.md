@@ -493,7 +493,7 @@ Declared on the form, next to its controls, and handled like any other event.
 | `radio` | `true` on a `dynamic` item: marks the chosen entry, `Value` is its index |
 | `enabled` | `false` for an item that starts disabled. The same state a command declares, for an item that is nobody's command — and the only way a menu built for the moment can say *not now* without leaving the entry out |
 
-Each item is exposed by name with `Name`, `Enabled`, `Value`, `Click()` and —
+Each item is exposed by name with `Name`, `Enabled`, `Visible`, `Value`, `Click()` and —
 on a `dynamic` one — `Items`, the entries the application assigns. It answers
 `PropertyNames()` and `EventNames()` too, the way a control does: a menu item is
 not a widget, so `Widget.New` cannot make one to ask, and a tool that wants to
@@ -512,6 +512,11 @@ this.MnuTheme.Value = 1;                            /* Dark, marked, and fires n
 
 - **Disabling an item also kills its accelerator**, so a shortcut can never fire
   a command the UI shows as unavailable.
+- **`Visible = false` takes the item out of the menu, shortcut and all**, and
+  `Click()` does nothing while it is out; its `Enabled` is kept for when it
+  comes back. It is for a command that does not exist here (a Windows-only one
+  on Linux), where a grey row would be a question nobody can answer. Plain and
+  `check` items only: a `dynamic` one is refused.
 - **A focused text field keeps its editing keys.** An item or command whose
   `shortcut` is a standard editing key (`<Control>c`, `x`, `v`, `a`, `z`,
   `<Control><Shift>z`, `<Control>y`) does not run its handler while the focus
