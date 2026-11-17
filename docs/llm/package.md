@@ -29,7 +29,7 @@ user's files adds `--filesystem=home` (or a narrower one).
 |---|---|
 | `Package.Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went |
 | `Package.defaults` | what the manifest carries when the caller says nothing: the GNOME runtime, the shared BaseApp and its version, the branch, and the permissions an ordinary windowed application needs |
-| `Package.configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir }`, or a refusal naming what is missing |
+| `Package.configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir }`, or a refusal naming what is missing or an `id` that is not an application id |
 | `Package.commandName(id)` | `bintana-notes` for `io.github.you.Notes` |
 
 `options` is laid over `Package.defaults` one key at a time: `Runtime`,
@@ -50,7 +50,8 @@ there not named `*-symbolic` is taken, and more than one is refused. An svg goes
 to `hicolor/scalable`, a PNG to `hicolor/<its size>`, read out of the file.
 
 **What it refuses is the point, and it refuses before it writes.** A project
-with no `id`, no metainfo, no icon, an `icons/` it cannot tell the icon in, a
+with no `id` or one that is not a reverse-DNS application id (`../x`,
+`a.b;c`, a space), no metainfo, no icon, an `icons/` it cannot tell the icon in, a
 PNG icon that is not square or not a size the theme has (64 to 512), a metainfo
 whose `<id>`/`<name>` disagrees with `project.btp`, or one `appstreamcli
 validate` would refuse (an empty or multi-line `<summary>`, an empty
