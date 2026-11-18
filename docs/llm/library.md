@@ -62,7 +62,9 @@ those belong to the application, not to the system.
 The session this program is running in: where a user's own things go, by the
 freedesktop conventions every Linux desktop follows. `DataDirectory`,
 `ConfigDirectory`, `CacheDirectory` and `Entries`; on Windows the Start Menu is
-`Shortcut`, where the entry is a `.lnk` instead.
+`Shortcut`, where the entry is a `.lnk` instead. `OpenUri` hands an address
+(`https:`, `mailto:`) to the program the desktop opens it with -- the verb for a
+link held in a string; a file is `File.Open`'s.
 
 | | |
 |---|---|
@@ -71,6 +73,7 @@ freedesktop conventions every Linux desktop follows. `DataDirectory`,
 | `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt |
 | `Entries` | the module below |
 | `Shortcut` | the Windows `.lnk` object below; `Available` says whether it is there |
+| `OpenUri(uri)` | hands the address to whatever the desktop opens that kind with — a browser for `https:`, the mail program for `mailto:`. **It answers before anything is open**: the request was made, and a failure after it goes to the log. An address with no scheme is refused here, since a path is `File.Open`'s; so is any address under a `main`, which has no desktop in either host |
 
 `ConfigDirectory` is the root and **not** `Application.ConfigDirectory`, which is
 this project's own directory inside it.

@@ -24,6 +24,7 @@ Desktop.Entries.Installed()            // ["hello", "world"]
 | `Directory` | `DataDirectory/applications`, created on first use | [where an entry lives](#where-an-entry-lives) |
 | `Entries` | the module below | [desktop entries](#desktop-entries) |
 | `Shortcut` | the Windows `.lnk` object below | [Start Menu shortcuts](#start-menu-shortcuts) |
+| `OpenUri(uri)` | hands the address to whatever the desktop opens that kind with — a browser for `https:`, the mail program for `mailto:` | [opening an address](#opening-an-address) |
 | `Exec(argv)` | the value for the `Exec` key: the arguments as an array — the shape `Exec` and `Terminal.Run` already take — quoted and escaped the format's way | [the command line](#the-command-line) |
 | `Install(id, entry)` | writes `Directory/<id>.desktop` and answers the path | [installing](#installing) |
 | `Write(path, entry)` | the same entry and the same checks at a path the caller names, **making the directory** when it is not there | [installing](#installing) |
@@ -182,7 +183,28 @@ taskbar group one application instead of showing the runtime's own icon. The
 record of what was installed is a sidecar under `%APPDATA%\Bintana\apps`, not a
 second file in a folder the user opens.
 
+## Opening an address
+
+A web page, a mail to write, any address whose scheme the desktop has a program
+for. `File.Open` is the same request for a file, and `LinkButton` makes it for
+its own `Uri` when it is clicked; this is the verb for a program that holds an
+address in a string -- a link in a markdown view, a *Help* menu item.
+
+| | |
+|---|---|
+| `OpenUri(uri)` | hands the address to whatever the desktop opens that kind with — a browser for `https:`, the mail program for `mailto:`. **It answers before anything is open**: the request was made, and a failure after it goes to the log. An address with no scheme is refused here, since a path is `File.Open`'s; so is any address under a `main`, which has no desktop in either host |
+
+```js
+Desktop.OpenUri("https://github.com/getbintana/bintana-docs");
+Desktop.OpenUri("mailto:someone@example.org?subject=Hello");
+```
+
+**What opens it is the person's choice**, made once in their desktop, and the
+request goes through the desktop's portal where there is one -- which is what
+works inside a Flatpak. The address is handed over whole: an `&`, a `%20` or a
+`#` reaches the program as written, with no shell in between.
+
 ## See also
 
 [`Application`](Application.md) · [`Environment`](Environment.md) ·
-[`File`](File.md)
+[`File`](File.md) · [`LinkButton`](../widgets/LinkButton.md)

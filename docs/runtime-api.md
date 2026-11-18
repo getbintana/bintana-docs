@@ -501,6 +501,7 @@ user's own applications directory. It is in `bta_desktop.c`.
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config` |
 | `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache` |
 | `Entries` | the module below |
+| `OpenUri(uri)` | hands an address (`https:`, `mailto:` ...) to the program the desktop opens it with, through `GtkUriLauncher` and so the portal where there is one; answers once the request is made, and refuses an address with no scheme and any address under a `main` |
 
 ```js
 Desktop.Entries.Directory              // <DataDirectory>/applications, created
