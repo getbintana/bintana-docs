@@ -39,7 +39,7 @@ are made of.
 | `Replace(text)` | the match the cursor is standing on | [search](#search) |
 | `ReplaceAll(text)` | every match, and how many | [search](#search) |
 | `Search(text, [{CaseSensitive, WholeWord, Regex}])` | how many there are, highlighting every one | [search](#search) |
-| `ShowCompletion()` | opens the completion popup from code | [completion](#completion) |
+| `ShowCompletion()` | asks the completion to show itself from code, and answers whether it was asked — `false` when the editor has no window yet, is not visible, does not have the focus, or has a selection, which are the states the library refuses in | [completion](#completion) |
 | **event** `Complete(word, line, column, text)` | a completion was asked for | [completion](#completion) |
 | **event** `FoldChange(line, folded)` | the user clicked a fold marker in the margin | [folding](#folding) |
 
@@ -239,7 +239,7 @@ the word `this.Btn.Txt` carries the sentence.
 |---|---|
 | `Completion` | offer the buffer's own words while typing — the floor of what an editor owes, and the whole of what can be known without being told |
 | `CompletionTitle` | the heading of the popup your own provider fills. **Translated** |
-| `ShowCompletion()` | opens the completion popup from code |
+| `ShowCompletion()` | asks the completion to show itself from code, and answers whether it was asked — `false` when the editor has no window yet, is not visible, does not have the focus, or has a selection, which are the states the library refuses in. The popover is built on its own time, so `true` is "asked" and not "shown" |
 | **event** `Complete(word, line, column, text)` | a completion was asked for. Answer with a list, or nothing. An entry is a **word**, or `{ Text, Detail }` for one that says what it is beside itself — a type, a one-line description. An entry that is neither is skipped, not refused |
 
 ```js
