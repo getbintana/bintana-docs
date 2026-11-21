@@ -92,7 +92,7 @@ in the section.
 | `PropertyOptions(name)` | the exact strings that property accepts, or an empty list | [what it answers about itself](#what-it-answers-about-itself) |
 | `Raise()` | to the top of the painting order, among its siblings on a surface | [how it is placed](#how-it-is-placed) |
 | `Remove()` | detaches it from its parent **without destroying it**, so it can be put somewhere else | [shown, enabled, focused](#shown-enabled-focused) |
-| `Resize(width, height)` | sets `Width` and `Height` together | [where it is and how big](#where-it-is-and-how-big) |
+| `Resize(width, height)` | sets `Width` and `Height` together; on a shown `Form` it is the window's size, asked again for a few frames so that a configure for an earlier size cannot undo it | [where it is and how big](#where-it-is-and-how-big) |
 | `SetFocus()` | gives it the keyboard focus | [shown, enabled, focused](#shown-enabled-focused) |
 | `Show()` | makes it visible | [shown, enabled, focused](#shown-enabled-focused) |
 | `SizeRequest()` | `[width, height]` as requested, with `-1` on an axis nobody declared | [where it is and how big](#where-it-is-and-how-big) |
@@ -158,7 +158,7 @@ if you want events from it, and why two controls on one form may not share one.
 | `MinWidth` | the floor a stretched control may not be squeezed below. Only means something on an axis whose `HAlign` is `Fill` |
 | `MinHeight` | the same for `VAlign` |
 | `Move(x, y)` | `X` and `Y` together, because that reads better in a loop |
-| `Resize(width, height)` | sets `Width` and `Height` together |
+| `Resize(width, height)` | sets `Width` and `Height` together; on a shown `Form` it is the window's size, asked again for a few frames so that a configure for an earlier size cannot undo it |
 | `SizeRequest()` | `[width, height]` as requested, with `-1` on an axis nobody declared. What the serialiser asks, so that a measurement never becomes a floor |
 | `Bounds([container])` | `{ X, Y, Width, Height }`: what GTK really allocated, in window coordinates or in the coordinates of the container you pass |
 | `OriginIn(container)` | `[x, y]`: where this widget's corner is in that container's space |

@@ -227,7 +227,7 @@ Every control and every container has all of this.
 | `PropertyOptions(name)` | the exact strings that property accepts, or an empty list. What fills a drop-down in the property grid, and the reason a list of values is never typed twice |
 | `Raise()` | to the top of the painting order, among its siblings on a surface |
 | `Remove()` | detaches it from its parent **without destroying it**, so it can be put somewhere else |
-| `Resize(width, height)` | sets `Width` and `Height` together |
+| `Resize(width, height)` | sets `Width` and `Height` together; on a shown `Form` it is the window's size, asked again for a few frames so that a configure for an earlier size cannot undo it |
 | `SetFocus()` | gives it the keyboard focus |
 | `Show()` | makes it visible |
 | `SizeRequest()` | `[width, height]` as requested, with `-1` on an axis nobody declared. What the serialiser asks, so that a measurement never becomes a floor |
