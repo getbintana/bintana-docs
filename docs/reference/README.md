@@ -184,6 +184,7 @@ members, twice — once in its summary and once where it is explained.
 | [Test](globals/Test.md) | a project's own tests, run by `bintana test` |
 | [Text](globals/Text.md) | what a string measures, asked where there is no painter |
 | [Time](globals/Time.md) | the clock half of [`Day`](globals/Day.md), and the same bargain |
+| [Zone](globals/Zone.md) | what the clock reads in a place at an instant: the IANA time zones |
 | [Timer](globals/Timer.md) | doing something later, or repeatedly |
 | [FormPart](globals/FormPart.md) | something a form owns that is not a control: a timer, a connection, a model or a client |
 | [UndoStack](globals/UndoStack.md) | what Edit › Undo takes back, as pairs of functions |

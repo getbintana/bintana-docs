@@ -272,6 +272,7 @@ const GLOBAL_SECTIONS = [
     ["Text",              "Text"],
     ["Screen",            "Screen"],
     ["Time",              "Time"],
+    ["Zone",              "Zone"],
     ["Logger",            "Logger"],
     ["Record and Field",  "Record", "Field"],
     ["Database and Table", "Connection", "Table", "Cursor"],
@@ -488,6 +489,7 @@ const GLOBAL_PAGE_OWNERS = {
     Lock:        ["Lock"],
     Text:        ["Text"],
     Time:        ["Time"],
+    Zone:        ["Zone"],
     Xml:         ["Xml", "XmlDocument", "XmlNode", "XmlSchema"],
     Zip:         ["Zip", "ZipArchive", "ZipWriter"],
 };

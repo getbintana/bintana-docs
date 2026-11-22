@@ -1975,6 +1975,42 @@ The shape is strict: `"8:30"` is refused rather than guessed at, and so is
 strictness is what makes `a < b` order two of them, which is the whole reason for
 holding a time as text.
 
+## Zone
+
+What the clock reads in a place at an instant: the IANA time zones. An instant
+is a `Date` (or milliseconds); what a place reads is a [`Day`](#day) and a
+[`Time`](#time).
+
+| | |
+|---|---|
+| `At(id, when)` → { Offset, Abbreviation, Dst } | what the clock in `id` is doing at the instant `when` (a `Date`, or milliseconds): `{ Offset, Abbreviation, Dst }` -- the offset in **minutes east of Greenwich** (Buenos Aires `-180`, Kathmandu `345`), the abbreviation the database gives (`"JST"`, or `"-03"` where there is none in use), and whether it is daylight saving time |
+| `Day(id, when)` → string | the date it is in `id` at the instant `when`, as a [`Day`](#day) (`"YYYY-MM-DD"`) -- what `Locale.Date` writes in the reader's language |
+| `Directory` → string | where the time zone database is read from: `TZDIR` when it is set, then the system's (`/usr/share/zoneinfo`), then the copy beside the runtime (`share/zoneinfo`, which is what Windows has), then `zoneinfo` in the desktop's data directories. `""` when there is none, and then every member that reads a zone refuses |
+| `Info(id)` → { Id, Country, CountryName, Latitude, Longitude, Comment } | where a zone is: `{ Id, Country, CountryName, Latitude, Longitude, Comment }` -- the ISO 3166 code and its English name, the principal city's position in degrees (north and east positive) and the table's note on what the zone covers. A retired name (`America/Buenos_Aires`) answers for the zone it links to, under that zone's `Id`. `null` for a zone that is no place (`UTC`); a refusal for one the machine does not have |
+| `Instant(id, day, [time])` → Date | the instant at which the clock in `id` reads `day` and `time` (`"YYYY-MM-DD"`, `"HH:MM"` or `"HH:MM:SS"`, midnight when left out), as a `Date`. Twice a year a reading is ambiguous and once it does not exist: **an hour that happens twice is the first of them, and one the clocks skipped is moved forward by the gap** (02:30 on the morning New York springs forward is 03:30 EDT) -- the rule Temporal calls `"compatible"` |
+| `List()` → string[] | every zone that is a place a person picks -- the rows of `zone.tab` and `zone1970.tab`, about four hundred, sorted. `UTC` and the `Etc/` zones are not places and are not in it, though `At` and the rest take them |
+| `Local` → string | the zone this machine is set to, as an IANA id (`"America/Argentina/Buenos_Aires"`): `TZ` when it names a zone, else `/etc/localtime`, else on Windows the registry's zone through CLDR's table -- and `"UTC"` when the machine cannot say |
+| `Next(id, when)` → { When, Before, After } | the next time the clocks in `id` move after `when`: `{ When, Before, After }`, a `Date` and the two readings `At` gives either side of it -- so "clocks go back an hour, EDT to EST" is `Before` and `After`. Only a change of **offset** counts: a new abbreviation at the same offset moves no clock. `null` for a zone that does not change |
+| `Time(id, when)` → string | the time of day it is in `id` at the instant `when`, as a [`Time`](#time) with seconds (`"21:03:58"`), the way `Time.Now` answers |
+| `Version` → string | which release of the IANA database is being read (`"2026f"`), from its `tzdata.zi` or `+VERSION`; `""` when the copy does not say |
+
+```js
+const when = new Date("2026-11-22T15:00:00Z");
+Zone.At("Asia/Tokyo", when)                      // { Offset: 540, Abbreviation: "JST", Dst: false }
+Zone.Day("Asia/Tokyo", when)                     // "2026-11-23"
+Locale.Date(Zone.Day("Asia/Tokyo", when), "Weekday")   // "lunes", in the reader's language
+Zone.Instant("America/New_York", "2026-12-24", "18:00")  // a Date
+```
+
+**There is no `Intl` and `toLocaleString({ timeZone })` ignores the zone**:
+`Zone` is the way to ask. The database is the machine's own on Linux and macOS,
+updated by the distribution, and a copy the runtime carries on Windows.
+
+**A `Date` never carries a zone.** Keep the instant as a `Date`, and ask `Zone`
+for what a place reads when you show it; store what a person typed as a `Day`
+and a `Time` together with the zone's id, and `Zone.Instant` makes the instant
+when one is needed.
+
 ## Regex
 
 A pattern, with nothing remembered between questions.

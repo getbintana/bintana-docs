@@ -2506,6 +2506,65 @@ compares `min`/`max` as plain strings for the same reason.
 `Field.Time` is in rad.js beside the other field kinds, with `required`, `min`
 and `max`.
 
+## Zone
+
+The IANA time zones: what the clock reads in a place at an instant. The third of
+`Day` and `Time` -- an instant is a `Date`, a place reads it as a `Day` and a
+`Time`, and the zone is what turns one into the other.
+
+```js
+const when = new Date("2026-11-22T15:00:00Z");
+Zone.At("Asia/Tokyo", when)        // { Offset: 540, Abbreviation: "JST", Dst: false }
+Zone.Day("Asia/Tokyo", when)       // "2026-11-23"
+Zone.Time("Asia/Tokyo", when)      // "00:00:00"
+Zone.Next("America/New_York", when)
+    // { When: Date(2027-03-14T07:00Z), Before: { … "EST" }, After: { … "EDT" } }
+Zone.Instant("America/New_York", "2026-12-24", "18:00")   // a Date
+Zone.Local                         // "America/Argentina/Buenos_Aires"
+Locale.Date(Zone.Day("Asia/Tokyo", when), "Weekday")      // "lunes"
+```
+
+| | |
+|---|---|
+| `At(id, when)` | `{ Offset, Abbreviation, Dst }` -- minutes **east** of Greenwich |
+| `Next(id, when)` | `{ When, Before, After }`, the next change of **offset**, or `null` |
+| `Day(id, when)` / `Time(id, when)` | the wall clock there, as a `Day` and a `Time` with seconds |
+| `Instant(id, day, [time])` | the reverse, a `Date` |
+| `List()` | the zones that are places, from `zone.tab` and `zone1970.tab` |
+| `Info(id)` | `{ Id, Country, CountryName, Latitude, Longitude, Comment }`, or `null` |
+| `Local` | this machine's zone as an IANA id, `"UTC"` when it cannot say |
+| `Directory` / `Version` | where the database is read from, and which release |
+
+**The runtime reads the database itself.** QuickJS has no `Intl`, so
+`toLocaleString({ timeZone })` silently answers the local zone. GLib takes no
+IANA id on Windows (its TZif reader is compiled for Unix only), and the ICU in
+Windows' `System32` carries tzdata 2022g, which reads wrong today for Cairo,
+Almaty and Nuuk. So `bta_zone.c` says where the TZif files are -- `TZDIR`, then
+`/usr/share/zoneinfo`, then `share/zoneinfo` beside the runtime, which is what
+the Windows tree carries -- and rad.js reads them (RFC 8536, with the POSIX
+rule at the end of each file for the years after its last stored change). The
+same reader on every platform, so an abbreviation or a transition is the same
+answer everywhere. The measurements are in `bintana`'s
+`docs/notes/time-zones.md`.
+
+**Instants are `Date`s and the readings are text.** `Zone.Day` answers a `Day`,
+so the weekday in Tokyo in the reader's language is `Locale.Date` of it, with
+no `Date` pretending to be local somewhere it is not. **An offset is minutes
+east**: `-180` for Buenos Aires, `345` for Kathmandu -- the sign of the `-03:00`
+an ISO date is written with, and the opposite of `getTimezoneOffset()`.
+
+**`Next` counts a change of offset, not of name**: Grand Turk went from EDT to
+AST in 2015 at -04:00 on both sides, and no clock moved.
+
+**`Instant` decides the two readings a clock change makes ambiguous** the way
+Temporal's `"compatible"` does: an hour that happens twice is the first of
+them, and one the clocks skipped is moved forward by the gap -- 02:30 on the
+morning New York springs forward is 03:30 EDT.
+
+**An id is checked before it is a path**: letters, digits, `_`, `-`, `+` and
+`/`, nothing that leaves the database. A zone the database lacks is refused by
+name, never answered as UTC.
+
 ## Regex
 
 A pattern, with nothing remembered between questions.
