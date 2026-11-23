@@ -23,8 +23,9 @@ the answer available when the layout is being worked out.
 | `Size(text, [font], [options])` | `{ Width, Height, Lines }` in **one** measurement, which is one layout instead of three | [measuring](#measuring) |
 | `Width(text, [font], [options])` | how wide it lays out, in pixels | [measuring](#measuring) |
 
-`font` is a Pango description (`"Cantarell Bold 10"`); `""` or nothing means
-`Font`. `options` is `{ Width, Markup, Align }` — the same three
+`font` is a Pango description (`"Cantarell Bold 10"`), or a partial one said over
+`Font` -- `"Bold 11"` is its family in bold at 11, as a painter's is; `""` or
+nothing means `Font`. `options` is `{ Width, Markup, Align }` — the same three
 [`Painter`](../../llm/controls.md#painter) draws with.
 
 ## Measuring

@@ -1843,8 +1843,9 @@ Text.Font                                            // "Cantarell 11"
 | `OffsetAt(text, line, [column])` | the **character** offset of that line and column, clamped the way an editor's `Select` clamps |
 | `Font` (ro) | the desktop's UI font, which is what a control draws with unless CSS says otherwise. Where there is no desktop to ask — a `main` project — GTK's own default, `"Sans 10"`, which is what `Drawing` draws in |
 
-`font` is a Pango description (`"Cantarell Bold 10"`); `""` or nothing means
-`Text.Font`. `options` is `{ Width, Markup, Align }`, the same three
+`font` is a Pango description (`"Cantarell Bold 10"`), or a partial one said over
+`Text.Font` -- `"Bold 11"` is its family in bold at 11, as a painter's is; `""` or
+nothing means `Text.Font`. `options` is `{ Width, Markup, Align }`, the same three
 [`Painter`](controls.md#painter) draws with: `Width` wraps to that many pixels,
 which is what makes `Height` and `Lines` interesting; `Markup` says the string is
 Pango markup; `Align` is what wrapped lines are aligned to inside `Width` and
