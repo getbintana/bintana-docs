@@ -76,6 +76,10 @@ class Customer extends Record {
 
 `as` is the column or key this field is called on the outside; `def` is what it
 starts as.
+`Field.Bool` also takes its default first, since it is all a boolean says --
+`Field.Bool(true)`, `Field.Bool(false, { as: "on" })` -- and
+`Field.Bool({ def: true, as: "on" })` reads the same. A default given both ways,
+or that is not `true` or `false`, is refused where the field is declared.
 
 **A field written by hand is a field**: an ordinary getter on the class is part of
 what the record answers, and being read-only it is never written back.

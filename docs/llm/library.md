@@ -2112,6 +2112,12 @@ class Customer extends Record {
 | `Field.Record(of, o)` | another record: the class, or `() => the class` for a shape that contains itself | `required` |
 | `Field.Decimal(o)` | a [`Decimal`](../reference/globals/Decimal.md) at a fixed scale | `required`, `min`, `max`, `decimals` (2 by default) |
 
+**Every field takes its default as the `def` option**: `Field.Text({ def: "Sin nombre" })`.
+`Field.Bool` also takes it first, since it is all a boolean says --
+`Field.Bool(true)`, `Field.Bool(false, { as: "on" })` -- and
+`Field.Bool({ def: true, as: "on" })` reads the same. A default given both ways,
+or that is not `true` or `false`, is refused where the field is declared.
+
 **A field can also be built from a document.** `Field.Kinds()` answers every kind a
 field can be, by name, and `Field.Spec(spec)` builds one from the object a `.record`
 file holds for it — refusing what a class body refuses.

@@ -2779,6 +2779,12 @@ without being told which it has. Declaring is only how the accessors get written
 | `Field.Record(of, o)` | another record: the class, or `() => the class` for a shape that contains itself | `required` |
 | `Field.Decimal(o)` | a [`Decimal`](#decimal) at a fixed scale, from text, a number or a decimal | `required`, `min`, `max`, `decimals` (2 by default) |
 
+**Every field takes its default as the `def` option**: `Field.Text({ def: "Sin nombre" })`.
+`Field.Bool` also takes it first, since it is all a boolean says --
+`Field.Bool(true)`, `Field.Bool(false, { as: "on" })` -- and
+`Field.Bool({ def: true, as: "on" })` reads the same. A default given both ways,
+or that is not `true` or `false`, is refused where the field is declared.
+
 | On a record | |
 |---|---|
 | `new C({ Name: "Ana" })` | through the setters, so every value is checked |
