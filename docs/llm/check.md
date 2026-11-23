@@ -33,7 +33,8 @@ the library beside itself under `share/bintana/`; the source tree finds
 - a `.js` on disk that `sources` does not list, so it is never loaded;
 - a key in `project.btp` that nothing reads;
 - a `singleInstance` that is not `true` or `false`, or is `true` with no `id`
-  -- the two manifests the window's runtime refuses to start;
+  -- the two manifests the window's runtime refuses to start -- and one on a
+  `main` project, where there is no window to bring forward and it does nothing;
 - `this.Control.Member` where the class has no such member, and a
   `Control_Event` handler for an event the control does not raise;
 - a name two modules export and a file uses without importing it;
