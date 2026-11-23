@@ -249,6 +249,14 @@ Editor_Complete(word, line, column, before) {
 }
 ```
 
+**A word just written is offered about five seconds later.** The words are
+GtkSourceView's own provider, which indexes changed text five seconds after the
+change and starts that wait again every time it builds a list -- so while
+somebody types on, the word from the line above is not among the proposals yet.
+A file that was open before the typing is indexed already. There is no setting
+for it; [UPSTREAM-gtksourceview-words-delay](https://github.com/getbintana/bintana/blob/main/docs/issues/UPSTREAM-gtksourceview-words-delay.md)
+has the code. A `Complete` handler's answers have no such wait.
+
 **Nothing here is inferred**, which is the whole reason a completion this useful
 is possible without a parser: the runtime publishes what it knows about itself
 and the `.form` beside a class says what every control on it is, so the
