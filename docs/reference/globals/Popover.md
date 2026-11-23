@@ -59,6 +59,15 @@ goes on reaching the entry; the program closes it, and the price is that a click
 a bare background moves no focus and tells it nothing. A suggestion list is the
 second shape, and there is no way to have both.
 
+**A popover that stays goes away with its window's turn.** When the window stops
+being the active one -- another application, alt-tab, a dialog of its own -- an
+`Autohide: false` popover is put away and comes back when the window is active
+again, without `Closed` and with `IsOpen` still true: on X11 a popover is a
+surface of its own above every window, and it used to float over whatever the
+person had moved to. A `Close` while it is put away closes it and calls `Closed`.
+The completion lists of a `SourceEditor` and a `TextBox` go the same way and do
+not come back; the next key offers them again.
+
 **`Closed`** is a function called **once** when it went down, by any road: `Close`,
 Escape or a click outside, the anchor being deleted or hidden, or its window
 closing. It arrives **a turn after** the thing that closed it and never from
