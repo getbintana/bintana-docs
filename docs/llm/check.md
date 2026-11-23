@@ -32,6 +32,8 @@ the library beside itself under `share/bintana/`; the source tree finds
 - a `.js` that does not compile, whether or not a `.form` sits beside it;
 - a `.js` on disk that `sources` does not list, so it is never loaded;
 - a key in `project.btp` that nothing reads;
+- a `singleInstance` that is not `true` or `false`, or is `true` with no `id`
+  -- the two manifests the window's runtime refuses to start;
 - `this.Control.Member` where the class has no such member, and a
   `Control_Event` handler for an event the control does not raise;
 - a name two modules export and a file uses without importing it;
