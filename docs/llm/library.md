@@ -455,6 +455,10 @@ the desktop's `LC_TIME`; on Windows, Windows' own for the regional format the
 person chose (`GetDateFormatEx`) -- so a Spanish desktop reads `31/08/2026`,
 `lunes` and `agosto` on both. `LC_ALL`, `LC_TIME` or `LANG` name another
 locale on either, and `C` is the known one: `08/31/2026`, `Monday`, `August`.
+`Weekday` and `Month` are always the Gregorian calendar's names, since they
+go in a sentence with a day and a year the program holds; `Date`, `Time` and
+`DateTime` are in the person's calendar, which on Windows may be another (ar-SA's
+is the Hijri).
 
 Reaching for `new Date(y, m, d, 12)` to get a month or a weekday out of one is the
 mistake this saves you — the noon is there to dodge the time zone that borrowing an
