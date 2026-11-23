@@ -8,7 +8,7 @@ the whole thing out as a PDF. It ships in the `markdown` library and is reached
 with `uses`.
 
 ```json
-{ "name": "Guide", "startup": "GuideForm", "uses": ["markdown"] }
+{ "name": "Guide", "id": "io.github.you.Guide", "startup": "GuideForm", "uses": ["markdown"] }
 ```
 
 ```json

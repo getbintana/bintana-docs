@@ -32,6 +32,8 @@ the library beside itself under `share/bintana/`; the source tree finds
 - a `.js` that does not compile, whether or not a `.form` sits beside it;
 - a `.js` on disk that `sources` does not list, so it is never loaded;
 - a key in `project.btp` that nothing reads;
+- a project with a `startup` or a `main` and no `id` (`declares no id`), which
+  neither host starts; a library, with neither key, needs none;
 - a `singleInstance` that is not `true` or `false`, or is `true` with no `id`
   -- the two manifests the window's runtime refuses to start -- and one on a
   `main` project, where there is no window to bring forward and it does nothing;
@@ -54,7 +56,7 @@ a flag day.
 A tool can use the same code by naming the library:
 
 ```json
-{ "name": "lint", "main": "Main", "uses": ["check"] }
+{ "name": "lint", "id": "io.github.you.Lint", "main": "Main", "uses": ["check"] }
 ```
 
 The classes are the implementation, not a second answer kept in step with the

@@ -52,11 +52,12 @@ that go by the portal or a native service tell all four apart.
 
 ### The project needs an `id`
 
-A notification is sent in the name of an application, so `project.btp` has to
-declare an `id` (reverse DNS, as [the project format](../../formats.md) says). With
-none, GLib fails an assertion and **sends nothing, without telling the program** —
-five calls and zero on the bus, measured — so this refuses with a sentence naming
-the key.
+A notification is sent in the name of an application, which is `project.btp`'s
+`id` (reverse DNS, as [the project format](../../formats.md) says) — and every
+project that runs declares one, since the runtime does not start one without it.
+With no id, GLib fails an assertion and **sends nothing, without telling the
+program** — five calls and zero on the bus, measured — which is why it was made
+required rather than left for this to find.
 
 ### A project with a `main` cannot send
 

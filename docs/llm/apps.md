@@ -5,7 +5,7 @@ without root and without a package, and the one place to see them again, read
 what each installed, and take them out.
 
 ```json
-{ "name": "Notes", "startup": "MainForm", "uses": ["apps"] }
+{ "name": "Notes", "id": "io.github.you.Notes", "startup": "MainForm", "uses": ["apps"] }
 ```
 
 A user application is a `.desktop` file in `~/.local/share/applications` on

@@ -5,7 +5,7 @@
 library is: name it in `project.btp`, then use its class in a `.form`.
 
 ```json
-{ "name": "Guide", "startup": "GuideForm", "uses": ["markdown"] }
+{ "name": "Guide", "id": "io.github.you.Guide", "startup": "GuideForm", "uses": ["markdown"] }
 ```
 
 ```json

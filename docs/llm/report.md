@@ -5,7 +5,7 @@
 library is: name it in `project.btp`, then use its class in a `.form`.
 
 ```json
-{ "name": "Statement", "startup": "ReportForm", "uses": ["report"] }
+{ "name": "Statement", "id": "io.github.you.Statement", "startup": "ReportForm", "uses": ["report"] }
 ```
 
 ```json
@@ -262,7 +262,7 @@ No events: nothing here is on a screen, so nothing is raised while a `.form`
 loads and nothing has to be told. `Refresh()` **answers** the count instead.
 
 ```json
-{ "name": "nightly", "main": "Main", "uses": ["report"] }
+{ "name": "nightly", "id": "io.github.you.Nightly", "main": "Main", "uses": ["report"] }
 ```
 
 ```js

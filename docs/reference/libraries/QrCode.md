@@ -11,7 +11,7 @@ receipt or written out as an SVG document, and it is why
 [`QrView`](QrView.md) is a separate class that wraps it.
 
 ```json
-{ "name": "Cards", "startup": "MainForm", "uses": ["qr"] }
+{ "name": "Cards", "id": "io.github.you.Cards", "startup": "MainForm", "uses": ["qr"] }
 ```
 
 ```js

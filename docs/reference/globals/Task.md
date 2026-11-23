@@ -207,8 +207,9 @@ the classes are the same classes: `Decimal` and `Bytes` out of their own
 files, and `Dictionary`, `Regex`, `Stopwatch`, `Record`, `Field`, `Table` and
 `Namespace` out of the prelude. Plus `print`, `Logger`, `Day`/`Time`, `Hash`,
 `File` and `Directory` for reading, `Database`/`Sqlite`, and an `Application`
-that answers facts (`Name`, `Version`, `Directory`, `ConfigDirectory`,
-`Executable`, `Arguments`).
+that answers facts (`Name`, `Id`, `Version`, `Directory`, `ConfigDirectory`,
+`DataDirectory`, `Executable`, `Arguments`) -- so a worker opens the
+application's database where the main thread does, in `DataDirectory`.
 
 **What is missing is what would leave a callback hanging off the main loop**,
 and that is the whole rule — not reading against writing:

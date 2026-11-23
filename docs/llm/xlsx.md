@@ -4,7 +4,7 @@
 for. It ships in the `xlsx` library, reached the way any library is:
 
 ```json
-{ "name": "Clients", "startup": "ClientsForm", "uses": ["xlsx"] }
+{ "name": "Clients", "id": "io.github.you.Clients", "startup": "ClientsForm", "uses": ["xlsx"] }
 ```
 
 ```js

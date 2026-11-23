@@ -8,7 +8,7 @@ question is a form"*. These are those forms, shipped, so a project writes one ca
 instead of a window.
 
 ```json
-{ "name": "Notes", "startup": "MainForm", "uses": ["dialog"] }
+{ "name": "Notes", "id": "io.github.you.Notes", "startup": "MainForm", "uses": ["dialog"] }
 ```
 
 ```js

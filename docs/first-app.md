@@ -6,7 +6,9 @@ the same shape as [`examples/hello`](https://github.com/getbintana/bintana/tree/
 
 ## 1. New project
 
-`Ctrl+Shift+N`, name it, pick a folder. The IDE creates the shape every
+`Ctrl+Shift+N`, name it, pick a folder. Keep the id it proposes
+(`io.github.you.MyApp`) or write your own: every application needs one, since
+its settings and data are kept under it. The IDE creates the shape every
 project has:
 
 ```

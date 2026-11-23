@@ -194,10 +194,11 @@ boundary is the process: the IDE already runs a project as a child.
 | Member | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | the application's identity in reverse DNS, from `project.btp`; `""` when it declares none. It becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
+| `Id` | the application's identity in reverse DNS, from `project.btp`. **Every project that runs declares one** (a library needs none): a project with `startup` or `main` and no `id` does not start. It names `ConfigDirectory` and `DataDirectory`, it becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
 | `Version` | what the project calls its own release, from `project.btp`; `""` when it declares none. **Not the runtime's**, which is `BTA_VERSION` |
 | `Directory` | the project directory, absolute |
-| `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup** |
+| `ConfigDirectory` | `~/.config/<id>`, **created at startup**: configuration, what a person chose. `Settings` writes there |
+| `DataDirectory` | `~/.local/share/<id>`, **created at startup**: what the application makes and keeps -- a database, a saved document, a download |
 | `Executable` | the `bintana` binary, from `/proc/self/exe`, so a project can re-invoke it |
 | `Arguments` | whatever followed the project directory on the command line |
 | `HasIcon(name)` | whether that icon will actually draw something |
@@ -310,10 +311,18 @@ with the answer. Read once at startup, since a desktop that rearranges its butto
 mid-session is not worth a signal.
 
 **`ConfigDirectory`** exists so saving a setting is one `File.Save` and no
-ceremony. Being named after the project, two projects never read each other's
-settings — which is also why the test projects cannot touch the IDE's recent
-list. What everybody was going to write in it has a name of its own:
-[`Settings`](#settings).
+ceremony. Being named after the project's `id`, two projects never read each
+other's settings — which is also why the test projects cannot touch the IDE's
+recent list. What everybody was going to write in it has a name of its own:
+[`Settings`](#settings). **`DataDirectory`** is its other half: what the
+application makes and keeps rather than what a person chose -- a database, a
+saved document, a download -- in `~/.local/share/<id>`, because a backup or a
+sync usually wants one and not the other. Both are named by the id the way a
+native program's or a Flatpak's are, and both are created at startup. On Windows
+GLib answers `%LOCALAPPDATA%` for both roots, so both are `%LOCALAPPDATA%\<id>`,
+one folder; in a Flatpak, the sandbox's own. `ConfigDirectory` was
+`~/.config/bintana/<name>` until the id became required, and what was saved
+there is not moved.
 
 **`Executable` plus `Arguments`** is how the IDE runs a project: it spawns itself
 with the project directory as the argument, through
@@ -516,7 +525,9 @@ Desktop.Entries.Exec(argv)             // the Exec= value for that command
 its two siblings read the XDG variables and fall back to the home directory, so a
 machine that moved its data home is followed rather than ignored. `Desktop`
 answers them; it creates none of them but `Entries.Directory`, which is made on
-first use because an entry has to go somewhere.
+first use because an entry has to go somewhere. These are the roots;
+`Application.ConfigDirectory` and `Application.DataDirectory` are this
+application's own folders inside them, named by its `id`.
 
 **The entry format is `GKeyFile`'s**, which is the platform's implementation of
 the Desktop Entry Specification and the same reader the desktop's own menu is
@@ -1477,7 +1488,10 @@ booleans, null — plus `Decimal`, which crosses as its own digits and comes
 back as a real one, thirds and all. Functions, class instances, cycles,
 `undefined`, non-finite numbers and `Bytes` are refused out loud, because
 `JSON.stringify` would drop or null them in silence; a `Record` crosses as
-what `Serialize` writes and comes back through `Load`.
+what `Serialize` writes and comes back through `Load`. The worker's
+`Application` answers the facts -- `Name`, `Id`, `Version`, `Directory`,
+`ConfigDirectory`, `DataDirectory`, `Executable`, `Arguments` -- so a task opens
+the application's database where the main thread does.
 
 **What a worker does not get is what would leave a callback on the main
 loop.** Not reading against writing — that is the wrong axis. GTK is gone

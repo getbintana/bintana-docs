@@ -10,7 +10,7 @@ It ships in the `propertygrid` library, is reached with `uses`, and is a
 any other control.
 
 ```json
-{ "name": "Settings", "startup": "MainForm", "uses": ["propertygrid"] }
+{ "name": "Settings", "id": "io.github.you.Settings", "startup": "MainForm", "uses": ["propertygrid"] }
 ```
 
 ```json

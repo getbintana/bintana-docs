@@ -40,9 +40,11 @@ Desktop.Entries.Installed()            // ["hello", "world"]
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config`. Settings, kept apart from data because a backup or a sync usually wants one and not the other |
 | `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt |
 
-**Not `Application.ConfigDirectory`**, which is this *project's* own directory —
-`~/.config/bintana/<name>` — and the place a program's settings go. These three
-are the roots a desktop gives every application.
+**Not `Application.ConfigDirectory` or `Application.DataDirectory`**, which are
+this *application's* own directories inside two of them, named by its `id` —
+`~/.config/<id>` for its settings and `~/.local/share/<id>` for what it makes and
+keeps. Those are created at startup and are where a program's own files go;
+these three are the roots a desktop gives every application.
 
 They are asked of GLib and never assembled from `HomeDirectory`: a machine whose
 data home lives somewhere else is exactly the case the XDG variables exist for,

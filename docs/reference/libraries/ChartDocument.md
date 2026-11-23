@@ -12,7 +12,7 @@ what a drawing that paints several charts itself — a dashboard on one
 chart. It ships in the `charts` library.
 
 ```json
-{ "name": "Weekly", "main": "Main", "uses": ["charts"] }
+{ "name": "Weekly", "id": "io.github.you.Weekly", "main": "Main", "uses": ["charts"] }
 ```
 
 ```js

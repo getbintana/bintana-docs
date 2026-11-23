@@ -15,8 +15,8 @@
 
 | Key | Meaning |
 |---|---|
-| `name` | `Application.Name`, and the folder under `~/.config/bintana` the settings go in |
-| `id` | reverse-DNS identity, optional: `Application.Id` reads it back. It is the window's class (`GtkApplication`'s application id, and the program name X11's `WM_CLASS` is built from) and the name the project's `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit) stops the program when the project loads |
+| `name` | `Application.Name`: what the program is called. It names no folder -- the `id` does |
+| `id` | reverse-DNS identity, **required for a project that runs** (one with `startup` or `main`): without it the runtime refuses to start the project, exits `2` and says what to add (`"id": "io.github.you.App"`); `bintana check` reports `declares no id`. A library (neither key) needs none. `Application.Id` reads it back. It names the settings and data folders, `~/.config/<id>` (`Application.ConfigDirectory`) and `~/.local/share/<id>` (`Application.DataDirectory`), and it is the window's class (`GtkApplication`'s application id, and the program name X11's `WM_CLASS` is built from) and the name the project's `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit) stops the program when the project loads |
 | `version` | free text, optional. `Application.Version` reads it back; `""` when absent. **Not** the runtime's version, which is `BTA_VERSION` |
 | `startup` | the class instantiated and shown at launch. A `Form` subclass |
 | `main` | a **function** to call instead, for a tool with no window. Excludes `startup` |
@@ -47,7 +47,7 @@ symlink. See [validation.md](https://github.com/getbintana/bintana-llm/blob/main
 ### A tool with no window
 
 ```json
-{ "name": "report", "main": "Main" }
+{ "name": "report", "id": "io.github.you.Report", "main": "Main" }
 ```
 
 `main` names a function, called once with no arguments after the sources load.

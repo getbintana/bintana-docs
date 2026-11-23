@@ -6,7 +6,7 @@ is reached the way any library is: name it in `project.btp`, then use its class
 in a `.form`, or call the encoder from code.
 
 ```json
-{ "name": "Cards", "startup": "MainForm", "uses": ["qr"] }
+{ "name": "Cards", "id": "io.github.you.Cards", "startup": "MainForm", "uses": ["qr"] }
 ```
 
 ```json

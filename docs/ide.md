@@ -13,7 +13,7 @@ ide/
   forms/             a window each: the .form and the class that answers it
     MainForm         the whole window: toolbar, tree, tabs, designer, console
     AskForm          "type a name"                    ConfirmForm    yes/no
-    NewProjectForm   name, description, folder        ProjectForm    its settings
+    NewProjectForm   name, id, description, folder    ProjectForm    its settings
     MenuForm         the menu editor                  ColumnForm     a TableView's columns
     ActionForm       the command editor
     IconForm         the icon chooser                 ImageForm      an image, full size
@@ -456,6 +456,13 @@ is one function in one place), and **no `app.css`**, since a stylesheet for a
 program with nothing on screen is a file that can only ever be wrong. The hint
 line under the fields names what will be created, so which kind was chosen is
 visible before accepting and not discovered in the tree afterwards.
+
+**It asks for the id too, and will not create a project without one**, since
+the runtime does not start a project with no `id`. It proposes one from the
+name — the words joined and capitalised (`My App` → `MyApp`), after the prefix
+the last project used, or `io.github.<login>` the first time — and a value that
+is not an application id is refused there, with the sentence, rather than at
+the first run. The prefix of the id accepted is remembered for the next one.
 
 The folder names are the categories the project view groups by, which is the
 point — the directory ends up shaped like the view one reads it in.
@@ -1134,7 +1141,8 @@ has written when one stops to go and look something up.
 
 Every thirty seconds — or whatever **File > Autosave...** says — the dirty tabs
 are copied into
-`~/.config/bintana/Bintana IDE/recovery/<digest>.json`, one file per project,
+`~/.config/io.github.getbintana.Ide/recovery/<digest>.json` (the IDE's
+`Application.ConfigDirectory`, named by its id), one file per project,
 named after a digest of the project's path — not its name, since two directories
 can share one and recovering the wrong `hello` is worse than recovering nothing.
 
