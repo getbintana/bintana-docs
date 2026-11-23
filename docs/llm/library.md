@@ -445,10 +445,16 @@ in a field somebody is typing into.
 [`Day`](#day) or a `Field.Date` holds ever needs converting:
 
 ```js
-Locale.Date("2026-12-25")             // 25/12/26
+Locale.Date("2026-12-25")             // 25/12/2026
 Locale.Date("2026-12-25", "Weekday")  // viernes
 Locale.Date("2026-12-25", "Month")    // diciembre
 ```
+
+**The words and the order are the system's.** On Linux they are glibc's for
+the desktop's `LC_TIME`; on Windows, Windows' own for the regional format the
+person chose (`GetDateFormatEx`) -- so a Spanish desktop reads `31/08/2026`,
+`lunes` and `agosto` on both. `LC_ALL`, `LC_TIME` or `LANG` name another
+locale on either, and `C` is the known one: `08/31/2026`, `Monday`, `August`.
 
 Reaching for `new Date(y, m, d, 12)` to get a month or a weekday out of one is the
 mistake this saves you — the noon is there to dodge the time zone that borrowing an

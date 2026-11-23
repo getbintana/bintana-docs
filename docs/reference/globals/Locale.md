@@ -93,10 +93,16 @@ reason a total on screen and a total in the database are the same number.
 | `Date(when, [format])` | `"Date"` `"Time"` `"DateTime"` `"ISO"` `"Weekday"` `"Month"`. `when` is a `Date` **or** a `"YYYY-MM-DD"` string. The default -- `"Date"` -- is the desktop's own pattern **with the year in four digits** |
 
 ```js
-Locale.Date("2026-12-25")             // 25/12/26
+Locale.Date("2026-12-25")             // 25/12/2026
 Locale.Date("2026-12-25", "Weekday")  // viernes
 Locale.Date(new Date(), "DateTime")   // lun 31 ago 2026 14:05:09
 ```
+
+**The words and the order are the system's.** On Linux they are glibc's for
+the desktop's `LC_TIME`; on Windows, Windows' own for the regional format the
+person chose (`GetDateFormatEx`) -- so a Spanish desktop reads `31/08/2026`,
+`lunes` and `agosto` on both. `LC_ALL`, `LC_TIME` or `LANG` name another
+locale on either, and `C` is the known one: `08/31/2026`, `Monday`, `August`.
 
 **It takes a calendar date as it stands**, so nothing a [`Day`](Day.md) or a
 `Field.Date` holds ever needs converting. Reaching for `new Date(y, m, d, 12)` to
