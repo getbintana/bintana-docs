@@ -33,7 +33,7 @@ the files must say.
 
 | | | |
 |---|---|---|
-| `Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went | [writing](#writing) |
+| `Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went, and in `Data` the database files the copy carries (`dataFiles`) | [writing](#writing) |
 | `defaults` | what the manifest carries when the caller says nothing | [the manifest](#the-manifest) |
 | `configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir, HasMain }`; `HasMain` decides which host a Windows launcher starts | [the manifest](#the-manifest) |
 | `commandName(id)` | `bintana-notes` for `io.github.you.Notes` | [the command](#the-command) |

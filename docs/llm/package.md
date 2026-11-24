@@ -27,7 +27,7 @@ user's files adds `--filesystem=home` (or a narrower one).
 
 | | |
 |---|---|
-| `Package.Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went |
+| `Package.Write(project, out, [options])` | writes `<id>.metainfo.xml`, `<id>.desktop`, the icon as `<id>.svg\\|png`, a copy of the project and `<id>.json`; answers where each went, and in `Data` the database files the copy carries (`dataFiles`) |
 | `Package.defaults` | what the manifest carries when the caller says nothing: the GNOME runtime, the shared BaseApp and its version, the branch, and the permissions an ordinary windowed application needs |
 | `Package.configOf(project)` | `project.btp` as `{ Id, Name, Version, Dir, HasMain }` (`HasMain`: it declares a `main`, read as the runtime reads it -- any string, the empty one included), or a refusal naming what is missing or an `id` that is not an application id |
 | `Package.commandName(id)` | `bintana-notes` for `io.github.you.Notes` |
