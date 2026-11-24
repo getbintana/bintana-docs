@@ -506,7 +506,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
 | `Delete(path)` | a file, or an **empty** directory. Throws on failure |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
-| `Rename(from, to)` | also moves; refuses to clobber |
+| `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
 | `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 | `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |

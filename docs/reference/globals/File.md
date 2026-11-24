@@ -117,7 +117,7 @@ For a picture, an archive, anything downloaded: what
 | | |
 |---|---|
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
-| `Rename(from, to)` | also moves; refuses to clobber |
+| `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
 | `Delete(path)` | a file, or an **empty** directory. Throws on failure |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 
