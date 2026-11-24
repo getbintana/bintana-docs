@@ -501,14 +501,14 @@ made a folder called `undefined`. The one exception is the question:
 | | |
 |---|---|
 | `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A **UTF-8 BOM is dropped** and a **UTF-16LE/BE or UTF-32LE/BE BOM is decoded**, so a `.btp`, `.form` or source file written by Notepad or PowerShell reads as the text it is; bytes with no BOM are returned unchanged. `LoadBytes` is the byte-for-byte road. A `Cancellable` last ends a read that is stuck |
-| `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
+| `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file. On Windows a read-only target is refused; elsewhere the folder's permission decides, as a rename does, and a read-only file in a writable folder is replaced |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 | `LoadJson(path)` | the file, parsed. **The error names the file**, which is the whole reason to use it over `JSON.parse(File.Load(p))` — a syntax error in *something* is not an answer. A UTF-8 BOM, or a UTF-16LE/BE file a Windows editor wrote, arrives as the text it looks like: `File.Load` normalizes it before this parses it |
 | `SaveJson(path, value)` | one canonical shape: indented by two, one trailing newline. Every `.form` and every `project.btp` in this tree is written by it, which is why a file saved by the IDE and one written by hand look the same. **What JSON cannot hold is refused**, naming where it is: `NaN`, `Infinity` and `-Infinity`, and `undefined` inside a list -- all of which `JSON.stringify` writes as `null` without a word. To write those nulls on purpose, `File.Save(path, JSON.stringify(value, null, 2))` |
 | `LoadXml(path)` | the file as a [`Xml`](../reference/globals/Xml.md) document. **The error names the file**, and the document's own declaration says what encoding it is in: this reads bytes, unlike `Load` |
 | `SaveXml(path, node)` | the canonical XML shape, atomically, honouring neither locale nor encoding guesses |
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
-| `Delete(path)` | a file, or an **empty** directory. Throws on failure |
+| `Delete(path)` | a file, or an **empty** directory. Throws on failure. On Windows a delete refused because another program holds the path a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second; a read-only file is refused at once, and a directory that is not empty is never taken. Elsewhere the folder's permission decides, as `unlink` does: a read-only file in a writable folder goes. A directory's read-only attribute is not honored by Windows, so an empty directory carrying it still goes |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 | `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
 | `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
@@ -1353,7 +1353,11 @@ one line per test). `tests/<Name>Test.js`, one class per file named like it,
 `Setup()`/`Teardown()` around it. Assertions: `Eq(got, want, [what])`,
 `Check(cond, [what])`, `Throws(fn, [what])` (answers the error), `Fail(msg)`.
 `Until(cond, then, [{ Ms, What }])` is the only way to wait. Ends `0` when all
-passed, `1` otherwise. A normal run never loads `tests/`.
+passed, `1` otherwise. A normal run never loads `tests/`. A library has no
+`startup` or `main`; `bintana test` runs its tests under the test host's id,
+`io.github.getbintana.Test` -- in the console host when it has no display
+half, in the graphical host when it declares one -- so `Application.Id` and
+its directories are real without inventing an id for the library.
 
 ## Profile
 

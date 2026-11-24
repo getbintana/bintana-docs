@@ -194,7 +194,7 @@ boundary is the process: the IDE already runs a project as a child.
 | Member | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | the application's identity in reverse DNS, from `project.btp`. **Every project that runs declares one** (a library needs none): a project with `startup` or `main` and no `id` does not start. It names `ConfigDirectory`, `DataDirectory` and `CacheDirectory`, it becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
+| `Id` | the application's identity in reverse DNS, from `project.btp`. **Every project that runs declares one** (a library needs none; `bintana test` runs a library under `io.github.getbintana.Test`): a project with `startup` or `main` and no `id` does not start. It names `ConfigDirectory`, `DataDirectory` and `CacheDirectory`, it becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
 | `Version` | what the project calls its own release, from `project.btp`; `""` when it declares none. **Not the runtime's**, which is `BTA_VERSION` |
 | `Directory` | the project directory, absolute |
 | `ConfigDirectory` | `~/.config/<id>`, **created at startup**: configuration, what a person chose. `Settings` writes there |

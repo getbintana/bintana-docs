@@ -46,6 +46,18 @@ It ends **`0` when every test passed and `1` when one did not**, which is what
 CI reads. A project with a startup form needs a display, as its run does; one
 that declares `main` needs none.
 
+**A library's tests run under the test host.** A library declares neither a
+startup form nor a `main`, so there is no run of its own -- but its `tests/`
+still run, under the fixed identity `io.github.getbintana.Test`: in the
+console host when it has no display half, and in the graphical host when it
+declares one (`"display": true`, or the files that are), because those tests
+may build controls. Inside them `Application.Id` is the test host's,
+and so are `ConfigDirectory`, `DataDirectory` and `CacheDirectory`;
+`Application.Directory` is still the library's. A library does not need an id
+of its own, and `bintana check` warns when one declares it, because only an
+application has a window, settings or a package. An application's tests keep
+the application's own id.
+
 **A test fails alone.** An assertion throws, and so may the code under test;
 either way that test is marked and the next one runs. An error nobody caught in
 a callback while a test runs — a `Timer`, an `Http` answer — is that test's.

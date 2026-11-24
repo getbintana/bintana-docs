@@ -33,7 +33,9 @@ the library beside itself under `share/bintana/`; the source tree finds
 - a `.js` on disk that `sources` does not list, so it is never loaded;
 - a key in `project.btp` that nothing reads;
 - a project with a `startup` or a `main` and no `id` (`declares no id`), which
-  neither host starts; a library, with neither key, needs none;
+  neither host starts; a library, with neither key, needs none, and an `id` on
+  one is a warning -- only an application uses it, and `bintana test` runs a
+  library under the test host's id;
 - a `singleInstance` that is not `true` or `false`, or is `true` with no `id`
   -- the two manifests the window's runtime refuses to start -- and one on a
   `main` project, where there is no window to bring forward and it does nothing;

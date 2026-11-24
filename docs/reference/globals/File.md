@@ -65,7 +65,7 @@ with `[object Object]`, and is now a refusal that says so.
 | | |
 |---|---|
 | `Load(path, [cancellable])` | the whole file as a string. **Throws if it cannot be read**, and the message names the file: there is no `null` to test for and no silent empty string. A **UTF-8 BOM is dropped** and a **UTF-16LE/BE or UTF-32LE/BE BOM is decoded**, so a `.btp`, `.form` or source file written by Notepad or PowerShell reads as the text it is; bytes with no BOM are returned unchanged. `LoadBytes` is the byte-for-byte road. A `Cancellable` last ends a read that is stuck |
-| `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file |
+| `Save(path, text)` | writes it **atomically** — a temporary beside it, renamed over — so a failed write leaves the old file intact and a reader never sees half a file. On Windows a read-only target is refused; elsewhere the folder's permission decides, as a rename does, and a read-only file in a writable folder is replaced |
 | `Append(path, text)` | adds `text` to the end, and creates the file when it is not there. A log or a CSV written line by line wants this: `Save(path, Load(path) + line)` is the whole file through memory for every line, and a window in which another writer's line is overwritten |
 
 **Text is UTF-8 throughout.** `Load` decodes and `Save` encodes, which is why
@@ -118,7 +118,7 @@ For a picture, an archive, anything downloaded: what
 |---|---|
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
 | `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
-| `Delete(path)` | a file, or an **empty** directory. Throws on failure |
+| `Delete(path)` | a file, or an **empty** directory. Throws on failure. On Windows a delete refused because another program holds the path a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second; a read-only file is refused at once, and a directory that is not empty is never taken. Elsewhere the folder's permission decides, as `unlink` does: a read-only file in a writable folder goes. A directory's read-only attribute is not honored by Windows, so an empty directory carrying it still goes |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 
 **`Trash` is what *Delete* usually should mean.** A program that offers *Delete*

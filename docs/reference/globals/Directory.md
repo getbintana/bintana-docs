@@ -10,8 +10,8 @@ three verbs. Like [`File`](File.md), all of it is synchronous.
 | | | |
 |---|---|---|
 | `Copy(from, to, [cancellable])` | a whole tree | [making and removing](#making-and-removing) |
-| `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is | [making and removing](#making-and-removing) |
-| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag | [making and removing](#making-and-removing) |
+| `Delete(path)` | an **empty** directory, or with `recursive` true it and everything under it — the shape of .NET's `Directory.Delete(path, recursive)` | [making and removing](#making-and-removing) |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the force one, and the reason it has a name of its own rather than a flag | [making and removing](#making-and-removing) |
 | `Files(path, [pattern-or-options], [cancellable])` | the **full paths** of the files, sorted | [what is in it](#what-is-in-it) |
 | `Folders(path, [pattern-or-options], [cancellable])` | the same for the directories | [what is in it](#what-is-in-it) |
 | `List(path, [pattern], [cancellable])` | the **names**, sorted, with no `.` or `..` — what a tree of one folder shows | [what is in it](#what-is-in-it) |
@@ -64,8 +64,8 @@ const files = Directory.Files(msg.src, { Recursive: true }, this.Cancellable);
 |---|---|
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
 | `Copy(from, to, [cancellable])` | a whole tree. A `Cancellable` last stops it part way, leaving what was copied |
-| `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is |
-| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag. A read-only file under it goes too, on Windows as on Linux; one that cannot go is named in the error. A `Cancellable` last stops it part way, leaving what was not yet deleted |
+| `Delete(path)` | an **empty** directory, or with `recursive` true it and everything under it — the shape of .NET's `Directory.Delete(path, recursive)`. **Platform-normal**: a read-only file on Windows, or a folder without write permission on POSIX, is refused; `Directory.DeleteTree` is the force variant. A `Cancellable` last stops it part way, leaving what was not yet deleted |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the force one, and the reason it has a name of its own rather than a flag. A read-only file on Windows and a folder without write permission on POSIX are taken; one that cannot go is named in the error. A `Cancellable` last stops it part way, leaving what was not yet deleted |
 
 `Copy` and `DeleteTree` walk the tree with the same signal as `Files`, so a
 task stopped halfway leaves what it had not reached. [`File.Trash`](File.md#moving-and-removing)
