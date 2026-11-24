@@ -274,7 +274,7 @@ reach a request that has not answered. A call handed none is not cancelled by
 | `FollowRedirects` | follow a `3xx`. Default `true` |
 | `Http1` | ask for HTTP/1.1 rather than HTTP/2. Default `false`. Over HTTP/2 libsoup notices a cancel only when the server next sends something, so a `Stop`, a `Timeout` or a `Cancellable` ends a request late; a program whose requests must stop when told sets this. `{ Http1 }` on one call does the same for that call. Needs libsoup 3.4; before it a request asking is refused, naming `SOUP_FORCE_HTTP1` |
 | `Language` | the `Accept-Language` it asks with |
-| `Proxy` | what to go through |
+| `Proxy` | what to go through: `"default"` (the system's, and the default), `null` (direct) or an `http(s)://` proxy of your own. The system's sends the machine's own addresses (`localhost`, `127.0.0.1`, `::1`) direct everywhere; on Windows it is `HTTP_PROXY`/`HTTPS_PROXY` and `NO_PROXY` first, then the user's Internet settings -- a fixed proxy and its exceptions, or automatic detection and a configuration script, answered by Windows itself |
 | `Auth` | `{ User, Password }`, Basic and preemptive; reads back `null` when none is set. An explicit `Authorization` header wins over it, and an explicit `Content-Type` header wins over the one the body's shape implies |
 | `Cookies` | `false` unless told: `true` keeps a jar of the session's own, so a login answers the next request |
 | `UserAgent` | sent as-is; `""` sends none — and some servers answer the nameless with an error |
