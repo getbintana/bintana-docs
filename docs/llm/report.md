@@ -208,7 +208,11 @@ reading order, the elements where they will print, and a property panel for the
 selection. Drag an element to move it; drag a band's bottom edge to change its
 height. The buttons add Text, Field, Total, Line, Box and Image elements, add a
 group by a field, and remove the selection. Paper, orientation and margin are at
-the top.
+the top. A report with no band yet opens with a page header and a detail, the
+detail selected, so the first field has somewhere to go; Cancel keeps it empty.
+
+`Report` is `lib/report`'s: a project that does not name `report` in `uses` finds
+it in the palette's *More* tab, where a click adds the library.
 
 **What it edits is `Sections`, and what it writes is the `.form`.** The data is
 not there -- every `Field` and `Total` shows a sample value while you arrange

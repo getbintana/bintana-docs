@@ -2593,6 +2593,11 @@ tree addresses nodes by path -- `"2/0/1"` is the second child of the first child
 of the third menu -- which is both the address and the identity, since the tree is
 rebuilt after every change.
 
+**Where a new node goes** is the selection's: *Item*, *Submenu* and *Rule* go
+inside a selected menu, or after a selected item. *Menu* goes at the end of the
+bar whatever is selected — a tree with rows always has a selection, so without it
+there was no gesture left that made a second menu on the bar.
+
 It refuses what the loader would refuse, and for the same reasons: an item that is
 neither a submenu nor named has no action to raise, a name used twice would make
 two items dispatch to one handler, and a name that is not an identifier could not
@@ -2817,6 +2822,13 @@ convenience:
 Each row's tooltip is where that library is, which is the only thing that tells
 one the project carries in its own `lib/` from one the system installed — and the
 difference somebody about to tick a box wants to know.
+
+**The palette is the other way in.** Its last tab, *More*, lists each library
+this machine has that the project does not use and that brings a control —
+`report: Report`, `charts: Chart, …` — and a click appends it to `uses`, the same
+edit a tick makes, and shows the library's own tab. A `Report` is a component of
+`lib/report`, so a palette built from `uses` alone never showed it, and the place
+to tick it was a dialog one had to know to open.
 
 Accepting re-lists the project (`Manifest.apply` ends in `listFiles`), so the
 library's components are on the palette from the moment the box is ticked.
