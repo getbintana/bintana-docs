@@ -55,6 +55,8 @@ derive it:
 | `Categories` | nowhere: Windows has no categories |
 | `Bugtracker` | nowhere: the installer is not the place for it |
 
+And two the metainfo does not hold, so the Apps page has no blanks: `DisplayIcon` is the project's own icon, or the runtime's (`bin\bintana-gui.exe`) when it ships none, and `EstimatedSize` is the installed folder's, measured once the copy is done. A metainfo the IDE creates names a developer from the start -- the id's prefix and the user's name -- so `Publisher` is there too; edit it in *Application info*.
+
 Per-user throughout (`RequestExecutionLevel user`,
 `$LOCALAPPDATA\Programs\<command>`), so installing needs no elevation. An NSIS
 string holds no `$` and no bare `"`, so both are escaped on the way in -- and a

@@ -75,7 +75,7 @@ The metainfo becomes the installer as: `Name` (installer, Start Menu folder,
 `DisplayName`), `Summary` (`FileDescription`), `Description` (the welcome
 page), `DeveloperName` (`Publisher`), `Homepage` (`URLInfoAbout` and the
 finish link). `ProjectLicense`, `Categories` and `Bugtracker` travel nowhere:
-an id is not copyright text, and Windows has no categories. The IDE builds
+an id is not copyright text, and Windows has no categories. The uninstall key also gets `DisplayIcon` (the project's icon, or the runtime's) and `EstimatedSize` (measured after the copy); a metainfo `Metainfo.create` writes names a developer -- the id's prefix and the user's name -- so `Publisher` is not empty. The IDE builds
 this under *Project → Windows installer…*; the compiler is the tree's own
 `share/bintana/tools/nsis` first and a `makensis` on the PATH after it.
 
