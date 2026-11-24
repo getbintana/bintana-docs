@@ -194,11 +194,12 @@ boundary is the process: the IDE already runs a project as a child.
 | Member | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | the application's identity in reverse DNS, from `project.btp`. **Every project that runs declares one** (a library needs none): a project with `startup` or `main` and no `id` does not start. It names `ConfigDirectory` and `DataDirectory`, it becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
+| `Id` | the application's identity in reverse DNS, from `project.btp`. **Every project that runs declares one** (a library needs none): a project with `startup` or `main` and no `id` does not start. It names `ConfigDirectory`, `DataDirectory` and `CacheDirectory`, it becomes the window's class — `GtkApplication`'s application id on Wayland, the program name (X11's `WM_CLASS`) too — and it is what a metainfo and a package carry. A value that is not an application id is refused when the project loads |
 | `Version` | what the project calls its own release, from `project.btp`; `""` when it declares none. **Not the runtime's**, which is `BTA_VERSION` |
 | `Directory` | the project directory, absolute |
 | `ConfigDirectory` | `~/.config/<id>`, **created at startup**: configuration, what a person chose. `Settings` writes there |
 | `DataDirectory` | `~/.local/share/<id>`, **created at startup**: what the application makes and keeps -- a database, a saved document, a download |
+| `CacheDirectory` | `~/.cache/<id>`, **created at startup**: what can be thrown away and made again -- thumbnails, a downloaded copy, an index. On Windows `%LOCALAPPDATA%\<id>\Cache` |
 | `Executable` | the `bintana` binary, from `/proc/self/exe`, so a project can re-invoke it |
 | `Arguments` | whatever followed the project directory on the command line |
 | `HasIcon(name)` | whether that icon will actually draw something |
@@ -317,10 +318,10 @@ recent list. What everybody was going to write in it has a name of its own:
 [`Settings`](#settings). **`DataDirectory`** is its other half: what the
 application makes and keeps rather than what a person chose -- a database, a
 saved document, a download -- in `~/.local/share/<id>`, because a backup or a
-sync usually wants one and not the other. Both are named by the id the way a
+sync usually wants one and not the other. **`CacheDirectory`** is the third, `~/.cache/<id>`: what can be made again, which a backup skips and a person short of space deletes. All three are named by the id the way a
 native program's or a Flatpak's are, and both are created at startup. On Windows
 GLib answers `%LOCALAPPDATA%` for both roots, so both are `%LOCALAPPDATA%\<id>`,
-one folder; in a Flatpak, the sandbox's own. `ConfigDirectory` was
+one folder, with the cache in `Cache` inside it (GLib's cache root there is the browser's); in a Flatpak, the sandbox's own. A new id starts with none of what the old one kept, and nothing moves it. `ConfigDirectory` was
 `~/.config/bintana/<name>` until the id became required, and what was saved
 there is not moved.
 

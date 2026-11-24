@@ -42,6 +42,11 @@ is -- and removing the entry touches the project and its files in no way. An
 entry whose project was moved, renamed or deleted is one pointing at nothing,
 which is why it can be removed without the project.
 
+Nor does it touch the application's own folders -- `ConfigDirectory`,
+`DataDirectory`, `CacheDirectory`, named by its id: they hold what the person
+made with it, and the same id installed again finds them. `Apps.Kept` names
+them, and `bintana apps remove` prints them as `kept <folder>`.
+
 ## Apps
 
 | | |
@@ -51,6 +56,7 @@ which is why it can be removed without the project.
 | `Apps.Installed(project)` | the entry that points at this project, or `null` |
 | `Apps.List()` | every entry this user has that the IDE installed, sorted by the name the menu shows |
 | `Apps.Files(id)` | the files one entry installed: its entry, and the `.ico` on Windows |
+| `Apps.Kept(id)` | the folders an uninstall leaves behind: the application's config, data and cache, those that exist |
 | `Apps.Entry(project, fields)` | the entry as the platform's installer takes it: a `.desktop` shape, or a target and an argv |
 | `Apps.EntryId(appId, name)` | the name an entry is installed under: `<id>.devel`, or a slug of the name |
 | `Apps.IdFor(name)` | the id for a name -- letters, digits, `-`, `_` and `.` -- made from what was typed |

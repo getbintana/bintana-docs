@@ -208,7 +208,7 @@ files, and `Dictionary`, `Regex`, `Stopwatch`, `Record`, `Field`, `Table` and
 `Namespace` out of the prelude. Plus `print`, `Logger`, `Day`/`Time`, `Hash`,
 `File` and `Directory` for reading, `Database`/`Sqlite`, and an `Application`
 that answers facts (`Name`, `Id`, `Version`, `Directory`, `ConfigDirectory`,
-`DataDirectory`, `Executable`, `Arguments`) -- so a worker opens the
+`DataDirectory`, `CacheDirectory`, `Executable`, `Arguments`) -- so a worker opens the
 application's database where the main thread does, in `DataDirectory`.
 
 **What is missing is what would leave a callback hanging off the main loop**,

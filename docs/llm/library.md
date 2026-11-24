@@ -7,7 +7,7 @@ Every name here is a global: ambient, always present, no import.
 | | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. **Every project that runs declares one**, and a project without one, or with one that is not an application id, does not start. It is **one name in five places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to -- and the name of `ConfigDirectory` and `DataDirectory` |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. **Every project that runs declares one**, and a project without one, or with one that is not an application id, does not start. It is **one name in five places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to -- and the name of `ConfigDirectory`, `DataDirectory` and `CacheDirectory`. **Changing it leaves those folders behind** under the old name: nothing moves them |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `Directory` | the project directory, absolute. What a relative path in a project resolves against — an image a report draws, a document a viewer opens, a data file that ships with the application |
 | `ConfigDirectory` | `~/.config/<id>`, **created at startup**: the application's configuration -- what a person chose, kept apart from what the application made. [`Settings`](../reference/globals/Settings.md) writes there. On Windows it is `%LOCALAPPDATA%\<id>`, the same folder as `DataDirectory`, which is what GLib answers for both. Nothing of yours should go in the project directory, which is a thing people hand to each other |
@@ -71,7 +71,7 @@ link held in a string; a file is `File.Open`'s.
 |---|---|
 | `DataDirectory` | `$XDG_DATA_HOME`, or `~/.local/share` when the desktop has not moved it. Application data that belongs to this user: a database, a saved document, an installed menu entry |
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config`. Settings, kept apart from data because a backup or a sync usually wants one and not the other |
-| `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt |
+| `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt. On Windows GLib answers the browser's cache (`...\Microsoft\Windows\INetCache`); an application's own cache is `Application.CacheDirectory` |
 | `Entries` | the module below |
 | `Shortcut` | the Windows `.lnk` object below; `Available` says whether it is there |
 | `OpenUri(uri)` | hands the address to whatever the desktop opens that kind with — a browser for `https:`, the mail program for `mailto:`. **It answers before anything is open**: the request was made, and a failure after it goes to the log. An address with no scheme is refused here, since a path is `File.Open`'s; so is any address under a `main`, which has no desktop in either host |
@@ -1032,7 +1032,7 @@ way the main one is — the same `init` functions, then the same `rad.js` — so
 `Table` are all there, with `print`, `Logger`, `Day`/`Time`, `Hash`,
 `File`/`Directory` for reading, `Database`/`Sqlite`, and an `Application` that
 answers facts (`Name`, `Id`, `Version`, `Directory`, `ConfigDirectory`,
-`DataDirectory`, `Executable`, `Arguments`) -- so a worker opens the
+`DataDirectory`, `CacheDirectory`, `Executable`, `Arguments`) -- so a worker opens the
 application's database where the main thread does.
 
 **What it lacks is what would leave a callback on the main loop** — not what
