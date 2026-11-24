@@ -14,7 +14,7 @@ and `Build` verifies that payload runs and compiles the script beside it with
 ```js
 const ctx = Nsis.Script("/home/ana/Notes", "/tmp/notes-nsis");
 Nsis.Stage("/home/ana/Notes", "/tmp/notes-nsis", { Prefix: "C:\\stage" });
-Nsis.Build(ctx.Script, "C:\\dist\\Notes-2.1-windows-x86_64.exe"); // Windows
+Nsis.Build(ctx.Script, File.Join("C:\\dist", ctx.Setup));          // Notes-2.1-setup.exe, on Windows
 ```
 
 **Only `Build` needs Windows, and only `Build` refuses anywhere else.**
