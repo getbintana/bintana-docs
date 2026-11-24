@@ -7,10 +7,11 @@ Every name here is a global: ambient, always present, no import.
 | | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in four places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, and on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those names is something nobody looks at until a dock shows the wrong icon |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. **Every project that runs declares one**, and a project without one, or with one that is not an application id, does not start. It is **one name in five places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to -- and the name of `ConfigDirectory`, `DataDirectory` and `CacheDirectory`. **Changing it leaves those folders behind** under the old name: nothing moves them |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `Directory` | the project directory, absolute. What a relative path in a project resolves against — an image a report draws, a document a viewer opens, a data file that ships with the application |
-| `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](../reference/globals/Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other |
+| `ConfigDirectory` | `~/.config/<id>`, **created at startup**: the application's configuration -- what a person chose, kept apart from what the application made. [`Settings`](../reference/globals/Settings.md) writes there. On Windows it is `%LOCALAPPDATA%\<id>`, the same folder as `DataDirectory`, which is what GLib answers for both. Nothing of yours should go in the project directory, which is a thing people hand to each other |
+| `DataDirectory` | `~/.local/share/<id>`, **created at startup**: what the application makes and keeps -- a database, a saved document, a download -- as against what a person configured. On Windows `%LOCALAPPDATA%\<id>`, local and not roaming, since a database copied around with a profile is a database that breaks; in a Flatpak, the sandbox's own |
 | `Executable` | the `bintana` binary that is running this, so a project can re-invoke it — which is how the IDE runs a project and how the test runner runs the suites |
 | `Arguments` | whatever followed the project directory on the command line, as an array |
 | `OnSecondInstance` | assign `(args, directory) => …`: called in the **first** instance of a project that declares `"singleInstance": true` when it is started again. `args` is what followed the project directory on the second command line, as `Arguments` is, and `directory` is where that run was started. The second process then exits `0`, and **the first's window is brought forward after the handler returns**, whether or not one was assigned. On Windows a local mutex and a named pipe carry the same message, so no session bus is needed. `null` until assigned |
@@ -70,13 +71,15 @@ link held in a string; a file is `File.Open`'s.
 |---|---|
 | `DataDirectory` | `$XDG_DATA_HOME`, or `~/.local/share` when the desktop has not moved it. Application data that belongs to this user: a database, a saved document, an installed menu entry |
 | `ConfigDirectory` | `$XDG_CONFIG_HOME`, or `~/.config`. Settings, kept apart from data because a backup or a sync usually wants one and not the other |
-| `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt |
+| `CacheDirectory` | `$XDG_CACHE_HOME`, or `~/.cache`. Anything that can be thrown away and rebuilt. On Windows GLib answers the browser's cache (`...\Microsoft\Windows\INetCache`); an application's own cache is `Application.CacheDirectory` |
 | `Entries` | the module below |
 | `Shortcut` | the Windows `.lnk` object below; `Available` says whether it is there |
 | `OpenUri(uri)` | hands the address to whatever the desktop opens that kind with — a browser for `https:`, the mail program for `mailto:`. **It answers before anything is open**: the request was made, and a failure after it goes to the log. An address with no scheme is refused here, since a path is `File.Open`'s; so is any address under a `main`, which has no desktop in either host |
 
-`ConfigDirectory` is the root and **not** `Application.ConfigDirectory`, which is
-this project's own directory inside it.
+`ConfigDirectory` and `DataDirectory` are the roots and **not**
+`Application.ConfigDirectory` and `Application.DataDirectory`, which are this
+application's own directories inside them, named by its `id` (`~/.config/<id>`,
+`~/.local/share/<id>`).
 
 ## Desktop.Entries
 
@@ -322,9 +325,9 @@ Notification.Withdraw(id)
 | `Send(title, [body], [options])` | shows a desktop notification and answers its id. With no body, the second argument may be the options: `{ Id, Urgency, Icon, Buttons }`. `Urgency` is `"Low"`, `"Normal"` (the default), `"High"` or `"Urgent"`; `Icon` is a theme icon name (the Windows toast uses the shortcut's icon and ignores it); `Buttons` is `[{ Label, Action }]`, where `Label` is prose and `Action` is the key `OnActivate` is handed. Sending again with the same `Id` **replaces** what is showing. The title, body and labels are not looked up in a catalogue -- wrap them in `Locale.Text`. Refused in a project with a `main`, which has no application to send from. On Windows the first send also writes a Start Menu shortcut with the project's `id`, which is what registers the toast's AppUserModelID |
 | `Withdraw(id)` | takes a notification back, by the id `Send` answered or was given. An id nothing is showing under is not an error. On Windows this hides the WinRT toast |
 
-**The project has to declare an `id`** in `project.btp`: a notification is sent in
-the name of an application, and without one GLib fails an assertion and sends
-nothing — so this refuses, saying what to declare. **A project with a `main` has no
+**A notification is sent in the name of the project's `id`**, which every
+project that runs declares (the runtime does not start one without it); with no
+id GLib would fail an assertion and send nothing. **A project with a `main` has no
 application at all** and refuses too; a tool says it is done on stdout.
 
 The options are `Id` (sending again with the same one **replaces** what is
@@ -507,7 +510,7 @@ made a folder called `undefined`. The one exception is the question:
 | `Exists(path)`, `IsDir(path)` | `false` for anything that is not a string, rather than asking about a file called `undefined` |
 | `Delete(path)` | a file, or an **empty** directory. Throws on failure |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
-| `Rename(from, to)` | also moves; refuses to clobber |
+| `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
 | `LoadBytes(path, [cancellable])` | the whole file as [`Bytes`](#bytes), untouched — what `Load` cannot do, since it answers text. A `Cancellable` last ends a read that is stuck |
 | `SaveBytes(path, bytes)` | those bytes, exactly; the pair of `LoadBytes` |
 | `Hash(path, [algorithm], [cancellable])` | the checksum as hex, `"Sha256"` unless told — see [`Hash`](../reference/globals/Hash.md). **Read in blocks**, so a video costs 64 KB of memory and not the video. A `Cancellable` last stops it between two blocks |
@@ -1032,7 +1035,9 @@ way the main one is — the same `init` functions, then the same `rad.js` — so
 `Decimal`, `Bytes`, `Dictionary`, `Regex`, `Stopwatch`, `UndoStack`, `Record`, `Field` and
 `Table` are all there, with `print`, `Logger`, `Day`/`Time`, `Hash`,
 `File`/`Directory` for reading, `Database`/`Sqlite`, and an `Application` that
-answers facts.
+answers facts (`Name`, `Id`, `Version`, `Directory`, `ConfigDirectory`,
+`DataDirectory`, `CacheDirectory`, `Executable`, `Arguments`) -- so a worker opens the
+application's database where the main thread does.
 
 **What it lacks is what would leave a callback on the main loop** — not what
 writes. Gone: every widget and `Dialog`/`Message`/`Clipboard`/`Screen` (GTK

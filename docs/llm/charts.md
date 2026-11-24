@@ -5,7 +5,7 @@
 library is: name it in `project.btp`, then use its class in a `.form`.
 
 ```json
-{ "name": "Sales", "startup": "MainForm", "uses": ["charts"] }
+{ "name": "Sales", "id": "io.github.you.Sales", "startup": "MainForm", "uses": ["charts"] }
 ```
 
 ```json
@@ -161,7 +161,7 @@ from a timer, a tool over ssh — never has one. A document needs nothing: it dr
 through [`Drawing`](library.md#drawing), so a console program has charts too.
 
 ```json
-{ "name": "nightly", "main": "Main", "uses": ["charts"] }
+{ "name": "nightly", "id": "io.github.you.Nightly", "main": "Main", "uses": ["charts"] }
 ```
 
 ```js

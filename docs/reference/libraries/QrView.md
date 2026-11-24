@@ -10,7 +10,7 @@ placed in a `.form` like any control and everything on
 from the code the `Code` property answers.
 
 ```json
-{ "name": "Cards", "startup": "MainForm", "uses": ["qr"] }
+{ "name": "Cards", "id": "io.github.you.Cards", "startup": "MainForm", "uses": ["qr"] }
 ```
 
 ```json

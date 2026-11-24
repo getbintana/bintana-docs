@@ -8,7 +8,7 @@ drop-down where the class declares the values it accepts. It ships in the
 `propertygrid` library and is a [`Component`](../widgets/Component.md).
 
 ```json
-{ "name": "Settings", "startup": "MainForm", "uses": ["propertygrid"] }
+{ "name": "Settings", "id": "io.github.you.Settings", "startup": "MainForm", "uses": ["propertygrid"] }
 ```
 
 ```json

@@ -10,7 +10,7 @@ It ships in the `datagrid` library, is reached with `uses`, and is a
 any other control.
 
 ```json
-{ "name": "Invoices", "startup": "MainForm", "uses": ["datagrid"] }
+{ "name": "Invoices", "id": "io.github.you.Invoices", "startup": "MainForm", "uses": ["datagrid"] }
 ```
 
 ```json

@@ -1,5 +1,6 @@
 {
   "name": "docs-check",
+  "id": "io.github.getbintana.docs.Check",
   "main": "Main",
   "version": "1.0",
   "description": "Does the documentation say what api.json says?",

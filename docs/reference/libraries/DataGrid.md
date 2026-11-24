@@ -9,7 +9,7 @@ rows go to LibreOffice or Excel and come back. It ships in the `datagrid`
 library and is a [`Component`](../widgets/Component.md).
 
 ```json
-{ "name": "Invoices", "startup": "MainForm", "uses": ["datagrid"] }
+{ "name": "Invoices", "id": "io.github.you.Invoices", "startup": "MainForm", "uses": ["datagrid"] }
 ```
 
 ```json

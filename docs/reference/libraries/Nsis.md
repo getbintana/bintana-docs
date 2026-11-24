@@ -14,7 +14,7 @@ and `Build` verifies that payload runs and compiles the script beside it with
 ```js
 const ctx = Nsis.Script("/home/ana/Notes", "/tmp/notes-nsis");
 Nsis.Stage("/home/ana/Notes", "/tmp/notes-nsis", { Prefix: "C:\\stage" });
-Nsis.Build(ctx.Script, "C:\\dist\\Notes-2.1-windows-x86_64.exe"); // Windows
+Nsis.Build(ctx.Script, File.Join("C:\\dist", ctx.Setup));          // Notes-2.1-setup.exe, on Windows
 ```
 
 **Only `Build` needs Windows, and only `Build` refuses anywhere else.**
@@ -54,6 +54,8 @@ derive it:
 | `ProjectLicense` | nowhere: it is a license id, not copyright text |
 | `Categories` | nowhere: Windows has no categories |
 | `Bugtracker` | nowhere: the installer is not the place for it |
+
+And two the metainfo does not hold, so the Apps page has no blanks: `DisplayIcon` is the project's own icon, or the runtime's (`bin\bintana-gui.exe`) when it ships none, and `EstimatedSize` is the installed folder's, measured once the copy is done. A metainfo the IDE creates names a developer from the start -- the id's prefix and the user's name -- so `Publisher` is there too; edit it in *Application info*.
 
 Per-user throughout (`RequestExecutionLevel user`,
 `$LOCALAPPDATA\Programs\<command>`), so installing needs no elevation. An NSIS

@@ -10,7 +10,7 @@ also what a `main` project writes a report with: the nightly job, the statement
 run from a timer, a tool run over ssh. It ships in the `report` library.
 
 ```json
-{ "name": "Statements", "main": "Main", "uses": ["report"] }
+{ "name": "Statements", "id": "io.github.you.Statements", "main": "Main", "uses": ["report"] }
 ```
 
 ```js

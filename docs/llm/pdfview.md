@@ -5,7 +5,7 @@ through them. It ships in the `pdfview` library and is a
 [`Component`](../reference/widgets/Component.md).
 
 ```json
-{ "name": "Manuals", "startup": "MainForm", "uses": ["pdfview"] }
+{ "name": "Manuals", "id": "io.github.you.Manuals", "startup": "MainForm", "uses": ["pdfview"] }
 ```
 
 ```json

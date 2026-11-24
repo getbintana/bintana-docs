@@ -15,14 +15,14 @@
 
 | Key | Meaning |
 |---|---|
-| `name` | `Application.Name`, and the folder under `~/.config/bintana` the settings go in |
-| `id` | reverse-DNS identity, optional: `Application.Id` reads it back. It is the window's class (`GtkApplication`'s application id, and the program name X11's `WM_CLASS` is built from) and the name the project's `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit) stops the program when the project loads |
+| `name` | `Application.Name`: what the program is called. It names no folder -- the `id` does |
+| `id` | reverse-DNS identity, **required for a project that runs** (one with `startup` or `main`): without it the runtime refuses to start the project, exits `2` and says what to add (`"id": "io.github.you.App"`); `bintana check` reports `declares no id`. A library (neither key) needs none. `Application.Id` reads it back. It names the settings and data folders, `~/.config/<id>` (`Application.ConfigDirectory`), `~/.local/share/<id>` (`Application.DataDirectory`) and `~/.cache/<id>` (`Application.CacheDirectory`), and it is the window's class (`GtkApplication`'s application id, and the program name X11's `WM_CLASS` is built from) and the name the project's `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit) stops the program when the project loads |
 | `version` | free text, optional. `Application.Version` reads it back; `""` when absent. **Not** the runtime's version, which is `BTA_VERSION` |
 | `startup` | the class instantiated and shown at launch. A `Form` subclass |
 | `main` | a **function** to call instead, for a tool with no window. Excludes `startup` |
 | `singleInstance` | `true` makes a second run of the project **hand its arguments to the first and exit `0`**, raising the first's window, instead of opening another. Optional, default `false`. It **needs an `id`** (the name the instances find each other by on the session bus) and a value that is not `true` or `false` **stops the program when the project loads**. The first instance hears it in `Application.OnSecondInstance(args, directory)`. With no session bus there is only ever one process, as before |
 | `privileged` | project directories under this one that `Privilege.Run`/`Privilege.Wait` may run elevated. Each must be a `main` project; a window is refused. Default none |
-| `sources` | the `.js` files to evaluate, **in this order**, as paths relative to the project |
+| `sources` | the `.js` files to evaluate, **in this order**, as paths relative to the project; an absolute path is read as it is |
 | `uses` | libraries of shared classes, by name (`["charts"]`). **A new form project created in the IDE starts with `["dialog"]`**, the two questions every program asks and its about box (see [`dialog.md`](dialog.md)) — a default and not a requirement, and a project with a `main` does not get one because it has no display to put a window on. Their `.js` loads before yours and their forms are found like yours, so a `.form` may use their classes. A library may also carry native code (`<name>/<name>.so`), which is loaded before its `.js` — see `docs/plugins.md` in the runtime's own documentation. A name that is not installed stops the program and says where it looked |
 | `description` | free text; the runtime ignores it |
 | `accessibility` | IDE only: how loudly it says a control cannot be named to a screen reader -- `"warning"` (default), `"info"` or `"off"`, one word for every rule. The runtime ignores it |
@@ -47,7 +47,7 @@ symlink. See [validation.md](https://github.com/getbintana/bintana-llm/blob/main
 ### A tool with no window
 
 ```json
-{ "name": "report", "main": "Main" }
+{ "name": "report", "id": "io.github.you.Report", "main": "Main" }
 ```
 
 `main` names a function, called once with no arguments after the sources load.

@@ -12,7 +12,9 @@ The running program: what it is called, where its files are, and how it ends.
 | `FreeNames(text)` | every name the text reads, writes or calls that nothing in it declares and the runtime does not answer — one row per use, in the order of the code, out of the compiler and with nothing run | [asking about the machine](#asking-about-the-machine) |
 | `Globals()` | every name on the global object: the runtime's own, the ones a library installed, and the JavaScript builtins -- `Math`, `JSON`, `Date`, `Map`, `Timer`, `Confirm` | [asking about the machine](#asking-about-the-machine) |
 | `ProtectPrototype()` | refuse every new name on `Object.prototype`, so code loaded later cannot change every `for...in` in the program | [protecting the prototype](#protecting-the-prototype) |
-| `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other | [where its files are](#where-its-files-are) |
+| `ConfigDirectory` | `~/.config/<id>`, **created at startup**: the application's configuration -- what a person chose, kept apart from what the application made. [`Settings`](Settings.md) writes there | [where its files are](#where-its-files-are) |
+| `DataDirectory` | `~/.local/share/<id>`, **created at startup**: what the application makes and keeps -- a database, a saved document, a download -- as against what a person configured | [where its files are](#where-its-files-are) |
+| `CacheDirectory` | `~/.cache/<id>`, **created at startup**: what the application can throw away and make again -- thumbnails, a downloaded copy, an index | [where its files are](#where-its-files-are) |
 | `DecorationLayout` | how this desktop arranges a title bar — which buttons, and on which side | [asking about the machine](#asking-about-the-machine) |
 | `Directory` | the project directory, absolute | [where its files are](#where-its-files-are) |
 | `Executable` | the `bintana` binary that is running this, so a project can re-invoke it — which is how the IDE runs a project and how the test runner runs the suites | [where its files are](#where-its-files-are) |
@@ -37,7 +39,7 @@ The running program: what it is called, where its files are, and how it ends.
 | | |
 |---|---|
 | `Name` | from `project.btp` |
-| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. It is **one name in four places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, and on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to. `""` when the project declares none, which is an ordinary project classed by the program's name; a value that is not an application id **stops the program when the project loads**, because every one of those names is something nobody looks at until a dock shows the wrong icon |
+| `Id` | from `project.btp`: the application's identity in reverse DNS — `io.github.you.App`. **Every project that runs declares one**, and a project without one, or with one that is not an application id, does not start. It is **one name in five places**: the window's own class (the runtime hands it to `GtkApplication` for Wayland and to the program name for X11's `WM_CLASS`), the `<id>` of the project's metainfo, the Flatpak app id, on Windows the process's AppUserModelID -- what the taskbar groups by and what a toast belongs to -- and the name of `ConfigDirectory`, `DataDirectory` and `CacheDirectory`. **Changing it leaves those folders behind** under the old name: nothing moves them |
 | `Version` | what the **project** calls its release; `""` when it declares none. **`BTA_VERSION` is the runtime's** and is not this — showing the wrong one is what an About box does until it knows the difference |
 | `BTA_VERSION` | **a bare global, not a member of this** — the runtime's own release as text, the one number `CMakeLists.txt` declares, and what `bintana --version` prints. It is here because this is where the confusion lives; a worker has it too |
 | `Arguments` | whatever followed the project directory on the command line, as an array |
@@ -47,7 +49,9 @@ The running program: what it is called, where its files are, and how it ends.
 | | |
 |---|---|
 | `Directory` | the project directory, absolute. What a relative path in a project resolves against — an image a report draws, a document a viewer opens, a data file that ships with the application |
-| `ConfigDirectory` | `~/.config/bintana/<name>`, **created at startup**, which is where anything the application remembers belongs. [`Settings`](Settings.md) writes there; nothing of yours should go in the project directory, which is a thing people hand to each other |
+| `ConfigDirectory` | `~/.config/<id>`, **created at startup**: the application's configuration -- what a person chose, kept apart from what the application made. [`Settings`](Settings.md) writes there. On Windows it is `%LOCALAPPDATA%\<id>`, the same folder as `DataDirectory`, which is what GLib answers for both. Nothing of yours should go in the project directory, which is a thing people hand to each other |
+| `DataDirectory` | `~/.local/share/<id>`, **created at startup**: what the application makes and keeps -- a database, a saved document, a download -- as against what a person configured. On Windows `%LOCALAPPDATA%\<id>`, local and not roaming, since a database copied around with a profile is a database that breaks; in a Flatpak, the sandbox's own |
+| `CacheDirectory` | `~/.cache/<id>`, **created at startup**: what the application can throw away and make again -- thumbnails, a downloaded copy, an index. A backup skips it and a person short of space deletes it, so nothing that cannot be rebuilt goes here. On Windows `%LOCALAPPDATA%\<id>\Cache`, inside the application's own folder |
 | `Executable` | the `bintana` binary that is running this, so a project can re-invoke it — which is how the IDE runs a project and how the test runner runs the suites |
 
 ## Asking about the machine
@@ -208,9 +212,9 @@ Application.OnSecondInstance = (args, directory) => {
 path has to be told apart first, as above; and `File.Absolute` resolves against the
 *first* instance's working directory, which is not where the second run was typed.
 
-**It needs `"id"` in `project.btp`** — the id is the name the instances find each
-other by, on the session bus — and a project that says `singleInstance` without one
-is refused when it loads. **Without a session bus** (a bare container, a CI run)
+**The `"id"` in `project.btp` is the name the instances find each other by**, on
+the session bus — and every project that runs declares one, so there is nothing
+more to add. **Without a session bus** (a bare container, a CI run)
 there is nothing to find, so every run is its own instance, as every project always
 was. A handler that throws is reported like any other handler and the window still
 comes forward.
@@ -280,6 +284,16 @@ window going and the main loop running out, or this.
   which is where the program was started from; `File.Join(Application.Directory,
   …)` is what a project's own file wants.
 - **Settings ended up in the project.** `ConfigDirectory`.
+- **A cache of thumbnails or downloads is backed up with the data.** `CacheDirectory`: what can be made again goes there, and a person short of space deletes it whole.
+- **A database, or a document the program keeps, ended up in the project or
+  among the settings.** `DataDirectory`: what the application makes goes there,
+  what a person chose in `ConfigDirectory`.
+- **The settings of an earlier version are gone.** `ConfigDirectory` was
+  `~/.config/bintana/<name>`; it is `~/.config/<id>` now, and nothing was moved.
+- **The settings are gone after the id changed.** The folders are named by the id, and a new one starts with none of what the old one kept; Project settings says so under the field, and nothing moves them.
+- **The program will not start: `declares no "id"`.** Every project with a
+  `startup` or a `main` names itself in `project.btp`
+  (`"id": "io.github.you.App"`); only a library needs none.
 - **An icon is missing on one machine.** Ask `HasIcon`, and keep a fallback —
   the icon theme is the user's, not the application's.
 - **`Exec` threw on a machine without the tool.** `HasCommand` first.

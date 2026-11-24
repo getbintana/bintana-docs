@@ -10,7 +10,7 @@ and is one class of statics over the runtime's [`Zip`](../globals/Zip.md) and
 else.
 
 ```json
-{ "name": "Clients", "startup": "ClientsForm", "uses": ["xlsx"] }
+{ "name": "Clients", "id": "io.github.you.Clients", "startup": "ClientsForm", "uses": ["xlsx"] }
 ```
 
 ```js

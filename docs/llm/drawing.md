@@ -9,7 +9,7 @@ keeps cairo, Pango and GdkPixbuf out of its link and loads them, as
 maps cairo. Naming `drawing` in `uses` loads it at the start instead.
 
 ```json
-{ "name": "ledger", "main": "Main", "uses": ["drawing"] }
+{ "name": "ledger", "id": "io.github.you.Ledger", "main": "Main", "uses": ["drawing"] }
 ```
 
 ```js

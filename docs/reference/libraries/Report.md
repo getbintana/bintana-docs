@@ -11,7 +11,7 @@ It ships in the `report` library, is reached with `uses`, and draws with the sam
 [`Painter`](../../llm/controls.md#painter) every other drawing here uses.
 
 ```json
-{ "name": "Statement", "startup": "ReportForm", "uses": ["report"] }
+{ "name": "Statement", "id": "io.github.you.Statement", "startup": "ReportForm", "uses": ["report"] }
 ```
 
 ```json
@@ -209,7 +209,7 @@ what it adds is a painter-level verb, and its `Refresh` answers:
 | `ReportDocument.PaintDesign(p, width, height, [sample])` | the design on a painter: the sheet, a tint and a rule for every band, and the elements where they will print. Scaled to fit `width`×`height`, as `Paint` scales a page; answers the same layout in the painter's coordinates, which is what a hit test wants. A missing image is a placeholder box, not a throw — the designer is where it is chosen. |
 
 ```js
-// project.btp: { "main": "Main", "uses": ["report"] }
+// project.btp: { "id": "io.github.you.Nightly", "main": "Main", "uses": ["report"] }
 function Main() {
     const d = new ReportDocument();
     d.Sections = sections();               // a function of your own, shared with a form

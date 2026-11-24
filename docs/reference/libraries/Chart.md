@@ -9,7 +9,7 @@ with `uses`, and is about a thousand lines of ordinary Bintana over a
 [`DrawingArea`](../widgets/DrawingArea.md).
 
 ```json
-{ "name": "Sales", "startup": "SalesForm", "uses": ["charts"] }
+{ "name": "Sales", "id": "io.github.you.Sales", "startup": "SalesForm", "uses": ["charts"] }
 ```
 
 ```json
@@ -333,7 +333,7 @@ has every property above, `Zoomable` included, and verbs of its own — `Paint`,
 | `ChartDocument.ToPng(width, height)` | the same drawing as `Save`, answered as `Bytes` — a chart to attach or put in a reply, with nothing on disk |
 
 ```js
-// project.btp: { "main": "Main", "uses": ["charts"] }
+// project.btp: { "id": "io.github.you.Nightly", "main": "Main", "uses": ["charts"] }
 function Main() {
     const c = new ChartDocument();
     c.Type   = "Bar";

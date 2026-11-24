@@ -65,7 +65,7 @@ const files = Directory.Files(msg.src, { Recursive: true }, this.Cancellable);
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
 | `Copy(from, to, [cancellable])` | a whole tree. A `Cancellable` last stops it part way, leaving what was copied |
 | `Delete(path)` | an **empty** directory, as [`File.Delete`](File.md) is |
-| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag. A `Cancellable` last stops it part way, leaving what was not yet deleted |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the one to be careful with, and the reason it has a name of its own rather than a flag. A read-only file under it goes too, on Windows as on Linux; one that cannot go is named in the error. A `Cancellable` last stops it part way, leaving what was not yet deleted |
 
 `Copy` and `DeleteTree` walk the tree with the same signal as `Files`, so a
 task stopped halfway leaves what it had not reached. [`File.Trash`](File.md#moving-and-removing)

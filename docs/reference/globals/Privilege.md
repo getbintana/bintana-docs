@@ -9,6 +9,7 @@ and exits. The window the person is using is never elevated.
 // project.btp
 {
   "name": "myapp",
+  "id": "io.github.you.Myapp",
   "startup": "MainForm",
   "sources": ["MainForm.js"],
   "privileged": ["tools/install"]

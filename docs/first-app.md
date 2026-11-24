@@ -6,7 +6,9 @@ the same shape as [`examples/hello`](https://github.com/getbintana/bintana/tree/
 
 ## 1. New project
 
-`Ctrl+Shift+N`, name it, pick a folder. The IDE creates the shape every
+`Ctrl+Shift+N`, name it, pick a folder. Keep the id it proposes
+(`io.github.you.MyApp`) or write your own: every application needs one, since
+its settings and data are kept under it. The IDE creates the shape every
 project has:
 
 ```
@@ -66,6 +68,50 @@ Run. Type a name, press the button — or Enter, once you wire
 - **Behaviour** in `Form1.js` (what you wrote).
 - **Text a person reads** in the `.form` needs nothing; text built at
   runtime goes through `Message`'s `{0}` holes or `Locale.Text`.
+
+### Where the program's own files go
+
+The project folder is the program, not its data: it is what you hand to
+somebody, export, and package. What the program reads and writes while it runs
+goes by what it is:
+
+| what | where | |
+|---|---|---|
+| a file the project brings — an image, a template, reference data | `File.Join(Application.Directory, "…")` | travels with the program |
+| what the program makes and keeps — a database, a saved document | `File.Join(Application.DataDirectory, "…")` | `~/.local/share/<id>`, `%LOCALAPPDATA%\<id>` on Windows |
+| what can be made again — thumbnails, a downloaded copy | `File.Join(Application.CacheDirectory, "…")` | a backup skips it |
+| a setting a person chose | `Settings.Set(…)` | in `Application.ConfigDirectory` |
+
+**Never a bare relative path.** `Database.Sqlite("clients.db")` is relative to
+the folder the program was *started from*, and that is a different folder
+every time:
+
+| started by | a relative path lands in |
+|---|---|
+| Run, in the IDE | the project folder — so it is packaged with the program |
+| the Start Menu, after the Windows installer | the installation folder — replaced by the next update, deleted by the uninstaller |
+| a desktop menu entry on Linux | usually the user's home |
+
+It works while you try it and loses the data once it is installed. The
+installer and `tools/pack` name every database they carry
+(`carries: clients.db`), which is how one left in the project by a Run is
+caught before it ships.
+
+**Shipping a database on purpose** is ordinary — keep it in the project, in a
+folder of its own, and choose by whether the program changes it:
+
+```js
+/* Reference data the program only reads: in place, so an update brings the
+ * new one. */
+const prices = Database.Sqlite(File.Join(Application.Directory, "data", "prices.db"));
+
+/* A starting copy the program then changes: copied the first time, and the
+ * copy is the one it writes. The installed one is never written. */
+const mine = File.Join(Application.DataDirectory, "clients.db");
+if (!File.Exists(mine))
+    File.Copy(File.Join(Application.Directory, "data", "clients.db"), mine);
+const db = Database.Sqlite(mine);
+```
 
 ## 6. Put it in your menu
 

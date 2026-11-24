@@ -104,14 +104,14 @@ soon as it lists the files. Qualifying the name is the way out.
 
 | Key | Meaning |
 |---|---|
-| `name` | `Application.Name`, and the folder under `~/.config/bintana` that `Application.ConfigDirectory` points at |
-| `id` | `Application.Id`: the application's identity in reverse DNS, optional. It is the window's class — `GtkApplication`'s application id, and the program name X11 builds `WM_CLASS` from — and the name its `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit — the platform's `g_application_id_is_valid`) **stops the program when the project loads**, because a class nothing matches is a window no dock recognises |
+| `name` | `Application.Name`: what the program is called. It names no folder -- the `id` does |
+| `id` | `Application.Id`: the application's identity in reverse DNS. **Required for every project that runs** (one that declares `startup` or `main`): without it neither host starts the project -- it exits `2` with a sentence saying what to add (`"id": "io.github.you.App"`) -- and `bintana check` reports `declares no id`. A library, with neither key, needs none. It names `Application.ConfigDirectory` (`~/.config/<id>`), `Application.DataDirectory` (`~/.local/share/<id>`) and `Application.CacheDirectory` (`~/.cache/<id>`), and it is the window's class — `GtkApplication`'s application id, and the program name X11 builds `WM_CLASS` from — and the name its `<id>.metainfo.xml` and a package carry. A value that is not a string, or not an application id (at least one dot, no element starting with a digit — the platform's `g_application_id_is_valid`) **stops the program when the project loads**, because a class nothing matches is a window no dock recognises |
 | `version` | `Application.Version`; free text, optional. What the project calls its own release — not the runtime's, which is `BTA_VERSION` |
 | `startup` | the class instantiated and shown at launch |
 | `main` | a **function** to call instead, for a project with no window (below). Excludes `startup` |
 | `singleInstance` | `true` makes a second run of the project **hand its arguments to the first and exit `0`**, raising the first's window, instead of opening another. Optional, default `false`. It **needs an `id`** (the name the instances find each other by on the session bus) and a value that is not `true` or `false` **stops the program when the project loads**. The first instance hears it in `Application.OnSecondInstance(args, directory)`. With no session bus there is only ever one process, as before; on Windows a local mutex and a named pipe do it, with no bus. **A window's key**: on a `main` project there is no window to bring forward and it does nothing, which `bintana check` says as a warning |
 | `privileged` | an array of project directories under this one that `Privilege.Run`/`Privilege.Wait` may ask the OS to run elevated. Each must be a `main` project; a helper with a window is refused, because the application's own window is never elevated. Optional, default none: `Privilege.Run` refuses every helper |
-| `sources` | `.js` files to evaluate, in this order, as paths relative to the project (`"widgets/Stepper.js"`) |
+| `sources` | `.js` files to evaluate, in this order, as paths relative to the project (`"widgets/Stepper.js"`); an absolute path is read as it is |
 | `uses` | libraries of shared classes to load **before** the project's own sources (`["charts"]`) — see [Libraries](#libraries-uses) |
 | `description` | not used by the runtime; the IDE writes it and leaves it alone |
 | `launch` | how the project is run, as named configurations — arguments, working directory, environment (below). **Read by the IDE and not by the runtime**, which takes its arguments from the command line like any program |
@@ -178,7 +178,7 @@ did: its own directory, no arguments.
 ### `main`: a project with no window
 
 ```json
-{ "name": "runner", "main": "Main" }
+{ "name": "runner", "id": "io.github.you.Runner", "main": "Main" }
 ```
 
 A project declares `startup` or it declares `main`, and the difference is whether
@@ -249,7 +249,7 @@ specification's own format, written and read with [`Xml`](reference/globals/Xml.
 
 | | |
 |---|---|
-| the name | `<id>.metainfo.xml`, from `project.btp`'s `id`. A project with no id has none, and is the one thing that cannot be packaged |
+| the name | `<id>.metainfo.xml`, from `project.btp`'s `id`. A project with no id has none — and, if it has a `startup` or a `main`, does not start either |
 | `<id>` | the same string as `project.btp`'s `id` |
 | the primary `<name>` | the same string as `project.btp`'s `name`; a `<name xml:lang="es">` is a translation and is not that name |
 | everything else | AppStream's: `<summary>`, `<description>` and its `<p>` paragraphs, `<developer>`, the two licenses, `<url type="homepage">`, `<categories>`, `<releases>`, `<screenshots>`… |
@@ -274,7 +274,7 @@ no dependencies of its own: what a project was short of is a place to keep share
 *classes*, and a directory of them is the whole of what that takes.
 
 ```json
-{ "name": "Sales", "startup": "MainForm", "uses": ["charts"] }
+{ "name": "Sales", "id": "io.github.you.Sales", "startup": "MainForm", "uses": ["charts"] }
 ```
 
 Its sources are evaluated **before** the project's own -- a project's class may
