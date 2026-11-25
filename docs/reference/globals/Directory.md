@@ -64,8 +64,8 @@ const files = Directory.Files(msg.src, { Recursive: true }, this.Cancellable);
 |---|---|
 | `Make(path)` | creates it **and any missing parent**, so there is no loop to write |
 | `Copy(from, to, [cancellable])` | a whole tree. A `Cancellable` last stops it part way, leaving what was copied |
-| `Delete(path)` | an **empty** directory, or with `recursive` true it and everything under it — the shape of .NET's `Directory.Delete(path, recursive)`. **Platform-normal**: a read-only file on Windows, or a folder without write permission on POSIX, is refused; `Directory.DeleteTree` is the force variant. A `Cancellable` last stops it part way, leaving what was not yet deleted |
-| `DeleteTree(path, [cancellable])` | it and everything under it — the force one, and the reason it has a name of its own rather than a flag. A read-only file on Windows and a folder without write permission on POSIX are taken; one that cannot go is named in the error. A `Cancellable` last stops it part way, leaving what was not yet deleted |
+| `Delete(path)` | an **empty** directory, or with `recursive` true it and everything under it — the shape of .NET's `Directory.Delete(path, recursive)`. **Platform-normal**: a read-only file or directory on Windows, or a folder without write permission on POSIX, is refused; `Directory.DeleteTree` is the force variant. A `Cancellable` last stops it part way, leaving what was not yet deleted |
+| `DeleteTree(path, [cancellable])` | it and everything under it — the force one, and the reason it has a name of its own rather than a flag. A read-only file or directory on Windows and a folder without write permission on POSIX are taken; one that cannot go is named in the error. A `Cancellable` last stops it part way, leaving what was not yet deleted |
 
 `Copy` and `DeleteTree` walk the tree with the same signal as `Files`, so a
 task stopped halfway leaves what it had not reached. [`File.Trash`](File.md#moving-and-removing)

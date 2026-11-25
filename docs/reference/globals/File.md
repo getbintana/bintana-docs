@@ -118,7 +118,7 @@ For a picture, an archive, anything downloaded: what
 |---|---|
 | `Copy(from, to, [cancellable])` | **byte for byte**, so it works on images; refuses to clobber. A `Cancellable` last stops a large copy part way |
 | `Rename(from, to)` | also moves; refuses to clobber. On Windows a rename refused because another program holds the file a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second |
-| `Delete(path)` | a file, or an **empty** directory. Throws on failure. On Windows a delete refused because another program holds the path a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second; a read-only file is refused at once, and a directory that is not empty is never taken. Elsewhere the folder's permission decides, as `unlink` does: a read-only file in a writable folder goes. A directory's read-only attribute is not honored by Windows, so an empty directory carrying it still goes |
+| `Delete(path)` | a file, or an **empty** directory. Throws on failure. On Windows a delete refused because another program holds the path a moment -- the antivirus or OneDrive right after it was written -- is tried again for up to a second; a read-only file or directory is refused at once, and a directory that is not empty is never taken. Elsewhere the folder's permission decides, as `unlink` does: a read-only file in a writable folder goes |
 | `Trash(path, [cancellable])` | to the desktop's trash, whole for a folder. Throws where there is no trash. A `Cancellable` last stops it |
 
 **`Trash` is what *Delete* usually should mean.** A program that offers *Delete*
