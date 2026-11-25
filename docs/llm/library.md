@@ -138,11 +138,14 @@ answer, and what a program should use.
 
 **They show and return.** They do not block and there is no answer. The first
 argument is a text position, so it takes `{0}` holes and goes through the
-catalogue — never a template literal there. With no display they print to
-stderr.
+catalogue — never a template literal there. **A function last is `done`**, run
+once the message is closed — quit there, not on the next line, or the program
+ends before it is read. With no display they print to stderr and `done` runs at
+once.
 
 ```js
 Message.Error("Cannot open {0}: {1}", path, e.message);
+Message.Error("Cannot open {0}", path, () => Application.Quit(1));
 ```
 
 A question that needs an answer is a form: [forms.md](forms.md#a-dialog-that-asks-something).

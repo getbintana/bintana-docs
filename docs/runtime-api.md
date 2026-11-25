@@ -779,16 +779,20 @@ with *Ñanculeo* between *Núñez* and *Ortiz* where somebody would look for it.
 
 ## Message
 
-`Message.Info(text, ...args)`, `Message.Warning(...)`, `Message.Error(...)`.
+`Message.Info(text, ...args, [done])`, `Message.Warning(...)`, `Message.Error(...)`.
 
-GTK4 alert dialogs are fire-and-forget, so these **show and return** rather than
-blocking like VB's `MsgBox`. A question that needs an answer is a form: see
-`ide/forms/ConfirmForm.js`, which is 39 lines and no runtime primitive at all,
+These **show and return** rather than blocking like VB's `MsgBox`: nothing in
+this language blocks. **A function last is `done`**, run once the message has
+been closed, which is how a program reports and then quits. The window is the
+runtime's own -- titled with `Application.Name`, the icon of its kind, the text
+selectable -- since GTK's alert has no title or icon to give it. A question
+that needs an answer is a form: `Confirm` and `AskText` in `lib/dialog`,
 or [`examples/notes`](https://github.com/getbintana/bintana/tree/main/examples/notes), which has one of each — a prompt whose
 `Default` is OK, and a confirmation where nothing is `Default` because Enter must
 not be able to delete anything.
 
-With no display (or before the application is up) they print to stderr.
+With no display (or before the application is up) they print to stderr and run
+`done` at once.
 
 ## Network
 
