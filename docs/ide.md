@@ -151,7 +151,7 @@ Inside:
 
 ```
 Pages (Switcher)        HAlign/VAlign Fill: the window, in two faces
-  "Welcome"  WelcomeBox   a column, centred: icon, title, the two commands,
+  "Welcome"  WelcomeBox   a column, centred: icon, title, the three commands,
                           and the recent list
   "Workspace" WorkBox     a Fixed holding everything below, unchanged
 ToolBar (Panel)         a row, HAlign Fill: the strip across the top
@@ -380,7 +380,7 @@ on screen.
 With no project open there is no workspace to show: an empty tree, a dead
 toolbar, a tab strip of no tabs and a line in the console asking for a project is
 a window pretending to be busy. What it shows instead is what it can *do* —
-open a project, start one, or go back to one it knows.
+open a project, start one, open an example, or go back to one it knows.
 
 `Pages` is a `Switcher` with `Strip: "None"`, which is a bare stack: one page on
 screen and nothing to click between them. `openProject()` moves it to the
@@ -392,7 +392,7 @@ whatever room there is — no coordinates, and so no measurement of a menu bar
 whose height is the theme's. (It was a `Fixed` with a centred anchor first,
 because `HAlign` in a box did nothing yet; fixing that made this the shorter
 answer.) Inside: an `Image` at 96px carrying the same icon the window does, the
-name in `title-1`, a line in `dim-label`, the two commands, and the recent
+name in `title-1`, a line in `dim-label`, the three commands, and the recent
 projects as a `ListBox`.
 
 The commands are not new ones. `BtnWelcomeOpen` calls `BtnOpen_Click` and
@@ -402,6 +402,18 @@ project has nowhere else to put them. The list is the menu's, built in one place
 choosing a row drops the selection afterwards — GTK does not report selecting
 what is already selected, so without that the same project could be chosen only
 once.
+
+**An example opens as a copy.** `BtnWelcomeExample` and *File > Open an
+example...* show `ExampleForm`: every folder with a `project.btp` in the
+examples that came with the runtime, `hello` first and selected, each with its
+`description`. Accepting copies the chosen one into the folder *New project*
+uses -- `hello`, then `hello-2` -- and opens the copy at its startup form. The
+examples are installed under a prefix nobody writes to, and in the source tree
+they are the repository's own, so the original is never the project edited.
+The folder is found beside the shipped libraries (`Application.LibraryPath`),
+where every layout puts it; an installation without one does not offer the
+command. A project open *inside* the examples does not make them the base a
+new project or the next copy goes into.
 
 ## What it says about itself
 
@@ -541,6 +553,15 @@ rather than the `Other` pile because those are not opened the way everything els
 a `.po` goes to the translation editor, a `.png` to the viewer, a `.record` to the
 dialog that edits its fields, a `.wav` to the desktop's player — and **`Other` is where
 every file the list does not know ends up**, shown and handed out like the rest.
+
+**Selecting a row shows its file; activating it goes in.** A click (or the
+arrows) opens a file that edits here in its tab and leaves the keys in the tree,
+so walking it with the arrows previews one file after another. Double click or
+Enter on the row of the file on screen puts the keys in its editor, or on the
+designer's canvas -- on the next turn, because the release that ends a double
+click hands the focus back to the row. Before that, typing after a double click
+on *code* went to the tree: its arrows moved the selection and Enter opened
+whichever file they had reached.
 
 `listFiles()` walks the project with `Classes.scan()`, so **every file is a path
 relative to the project** — `"widgets/Stepper.form"` — and that path is its key and
