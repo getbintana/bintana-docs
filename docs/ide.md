@@ -1774,6 +1774,7 @@ writing it wrong on purpose and watching what the runtime did:
 | a handler whose control is gone | `Btn1_Click()` after `Btn1` was renamed or deleted in the designer is called by nobody. Reported when the half after the underscore is **an event some control raises** — so `save_draft` is a helper and stays quiet — and not for a name the file builds itself (`this.Btn1 =` or `"Btn1"` in it), which binds by `Name` like a declared one |
 | a call to a name this language took | `setTimeout(fn, 100)` says `setTimeout is not part of this language: use Timer.After(delay, tick) — the delay comes first`. The table is the runtime's own (`Application.Replacements()`), built out of the rows it deletes the names with, and the check is asked of **call targets and nothing else** — a member on somebody else's object, a declaration, a key and a mention inside a string are all quiet, because a check that reports those is a check somebody switches off |
 | a name nothing declares | `helpr()` or `totl = 3` compiles, loads, and is a `ReferenceError` the day that line runs. The compiler says which names a file leaves to somebody else (`Application.FreeNames`), and the check reads them against what the project and its libraries publish: `helpr is not declared anywhere: did you mean helper?`, or, for a name another module declares and does not export, `MOD_IVA is declared in Prices.js and not exported`. A use behind `typeof **The collision is asked of a bare `Form`** -- the class, through
+| a control misspelt in code | `this.Labl1.Text = "hi"` beside a `Label1` compiles, loads, and is *cannot set property 'Text' of undefined* the first time the line runs. Inside a class that extends `Form`, a `this.Name.` is read against what that form can answer to -- its controls, parts, menu items and commands, what `Form` has, what the class declares, a member the project assigns anywhere (`dlg.record = …` in a dialog's `ask`), and a name the file spells in quotes -- and anything else is `Form1 has no control or member Labl1: this line fails when it runs -- did you mean Label1?`, once per name. A form that extends another form of the project is not asked, since its controls are partly that one's |
 | a member that hides a control's | a component or a form declaring `Expand(key)` hides the `Expand` every control has: it works until a `.form` says `Expand: true`, which puts a value on that control and the method is gone. Said when a method meets a property, or a method takes another number of parameters -- `Grid.Expand(key) hides Component's Expand, a property every control has`. The same shape is an override and is left alone, and so is an arity the base leaves open (`[x]`, `...rest`). It is the rule `tests/api.sh` holds the runtime's own classes to |
 `Widget.Member`, and not the project's `MainForm`, which would answer yes for
 every control and method the IDE itself has and flag a user's `Tabs` or
@@ -2238,9 +2239,12 @@ that built the failure are gone.
 
 **The keys are Visual Basic's**, which is the lineage this project claims, and
 `F9` for a breakpoint is also Gambas's, Delphi's, Lazarus's, Visual Studio's and
-VS Code's. *Run* gave it up and kept `Ctrl+R`: `F9` meaning *run* was this IDE's
-alone, and `F9` meaning *breakpoint* is what everybody who arrives here already
-knows.
+VS Code's. *Run* gave it up and is `F5`, Visual Basic's *Start*, with `Ctrl+R`
+beside it: `F9` meaning *run* was this IDE's alone, and `F9` meaning
+*breakpoint* is what everybody who arrives here already knows. `F5` used to be
+*Refresh*, the one key of the set that was not VB's -- pressed by habit on a
+first project it re-listed the files and ran nothing -- and *Refresh* is on the
+toolbar and the File menu now with no key of its own.
 
 **The gutter mark is the state.** `SourceEditor.Mark` has had a `Bookmark` kind
 since it was written, and its reference page says in as many words that a

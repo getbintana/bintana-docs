@@ -18,6 +18,7 @@ follows is what is its own.
 | | | |
 |---|---|---|
 | `Scrollbars` | `Both` `Horizontal` `Vertical` `None` | [which way it scrolls](#which-way-it-scrolls) |
+| `FollowFocus` | whether the view scrolls to show a control inside it that takes the focus -- Tab to a field below the fold and it comes into view | [following the focus](#following-the-focus) |
 | `ScrollMaxX` (ro) | the largest `ScrollX` that still shows content: the content's width minus one view | [where it is scrolled to](#where-it-is-scrolled-to) |
 | `ScrollMaxY` (ro) | the same downwards | [where it is scrolled to](#where-it-is-scrolled-to) |
 | `ScrollX` | how far across it is scrolled, in pixels | [where it is scrolled to](#where-it-is-scrolled-to) |
@@ -48,6 +49,19 @@ width of the *view* instead of the width it asked for, which is what makes a
 column of long lines wrap or ellipsize rather than run off the side. So
 `Vertical` is the setting for a page of text, and it is doing something more than
 hiding a bar.
+
+## Following the focus
+
+| | |
+|---|---|
+| `FollowFocus` | whether the view scrolls to show a control inside it that takes the focus -- Tab to a field below the fold and it comes into view. **A focused control larger than the view is scrolled to its far edge**, which is GTK's answer and rarely the wanted one: turn it off for a surface that takes the focus as a whole, a canvas or a board. Default `true` |
+
+Following is what a long form in a `Scroller` wants, and the far edge is what
+GTK answers for anything wider than the view: a 600-pixel panel at x 10 in a
+200-pixel view, focused, scrolls to 410. A surface that takes
+the focus as a whole, so the keys arrive there -- a canvas, a board, the IDE's
+own designer -- jumps sideways at every click; `FollowFocus = false` is the
+answer for it.
 
 **The child of a scroller sits on a `Fixed` surface**, which means what is in it
 is as big as it asks to be and not as big as the view — a declared `Width` does

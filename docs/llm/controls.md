@@ -1343,6 +1343,7 @@ Content whose size is not its parent's business: the view is as big as the room 
 | Member | |
 |---|---|
 | `Scrollbars` | `Both` `Horizontal` `Vertical` `None`. Default `"Both"` |
+| `FollowFocus` | whether the view scrolls to show a control inside it that takes the focus -- Tab to a field below the fold and it comes into view. **A focused control larger than the view is scrolled to its far edge**, which is GTK's answer and rarely the wanted one: turn it off for a surface that takes the focus as a whole, a canvas or a board. Default `true` |
 | `ScrollX` | how far across it is scrolled, in pixels. Assigning **clamps** to `[0, ScrollMaxX]`, so a number past the end means the end |
 | `ScrollY` | the same downwards |
 | `ScrollMaxX` (ro) | the largest `ScrollX` that still shows content: the content's width minus one view. `0` when there is nothing to scroll |
