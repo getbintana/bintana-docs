@@ -3897,7 +3897,7 @@ right. Which control is decided by the **value**, not by a table of names:
 | declares its accepted values (`PropertyOptions`) | `ComboBox` of those values |
 | boolean | `ComboBox` of true/false |
 | number | `SpinBox` |
-| anything else | `TextBox`, applied on Enter |
+| anything else | `TextBox`, applied on Enter or when the focus leaves it |
 
 The rows come from `PropertyNames()`, the same discovery the serialiser uses. That is
 what makes a property added in C appear here, edited properly, without the designer
