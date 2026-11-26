@@ -2058,7 +2058,10 @@ names the environment variable that holds it, read by the IDE and by the
 program alike, and a form's part sets it in code, which the IDE cannot run --
 so such a part opens in the IDE only when its DSN carries the password. **A database that is not there
 yet is shown as not created**, and looking at it does not create it: a schema
-browser that writes is not a browser.
+browser that writes is not a browser. **A statement run from the console does
+create it** -- folder and file -- since that is an order to write and not a
+look, and it is how a new project makes its first table; a query on a file
+that is not there is refused.
 
 **The tree is the runtime's answer.** `Tables` of `Database.Sqlite(path)` or
 `Database.Odbc(connection)` is the list, `Columns(table)` gives `{ Name, Type, Required, Key }` for each, and the
